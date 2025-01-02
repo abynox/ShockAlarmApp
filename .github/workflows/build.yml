@@ -43,6 +43,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Saber-Android
+          name: ShockAlarm-Android
           path: output/${{ steps.rename_apk.outputs.apkName }}
-      - run: tree 
