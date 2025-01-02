@@ -11,6 +11,8 @@ class AlarmListManager {
   final List<Shocker> shockers = [];
   final List<Token> _tokens = [];
 
+  final Map<String, bool> enabledHubs = {};
+
   AlarmListManager();
 
   Function? reloadAllMethod;
@@ -32,8 +34,17 @@ class AlarmListManager {
     for (var shocker in shockersList) {
       this.shockers.add(Shocker.fromJson(shocker));
     }
+    updateHubList();
+    rebuildAlarmShockers();
     if(reloadAllMethod != null) {
       reloadAllMethod!();
+    }
+  }
+
+  void updateHubList() {
+    List<String> hubs = shockers.map((e) => e.hub).toSet().toList();
+    for (var hub in hubs) {
+      enabledHubs.putIfAbsent(hub, () => true);
     }
   }
 
@@ -47,6 +58,7 @@ class AlarmListManager {
       _alarms[index] = alarm;
     }
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    rebuildAlarmShockers();
     prefs.setString("alarms", jsonEncode(_alarms));
   }
 
@@ -67,7 +79,8 @@ class AlarmListManager {
     this.shockers.addAll(shockers);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("shockers", jsonEncode(shockers));
-    print(this.shockers.length);
+    updateHubList();
+    rebuildAlarmShockers();
   }
 
   void saveToken(Token token) async {
@@ -84,9 +97,30 @@ class AlarmListManager {
   }
 
   void deleteAlarm(ObservableAlarmBase alarm) {
-    print(_alarms.length);
     _alarms.removeWhere((findAlarm) => alarm.id == findAlarm.id);
-    print(_alarms.length);
+  }
+
+  void rebuildAlarmShockers() {
+    for(var alarm in _alarms) {
+      // remove shockers which don't exist
+      alarm.shockers.removeWhere((element) => shockers.indexWhere((shocker) => shocker.id == element.shockerId) == -1);
+      for(var shocker in shockers) {
+        // check if shocker is already present in alarm
+        if(alarm.shockers.indexWhere((element) => element.shockerId == shocker.id) == -1) {
+          alarm.shockers.add(AlarmShocker()..shockerId = shocker.id);
+        }
+
+        // Set reference to shocker
+        for(var alarmShocker in alarm.shockers) {
+          if(alarmShocker.shockerId == shocker.id) {
+            alarmShocker.shockerReference = shocker;
+            if(shocker.paused) {
+              alarmShocker.enabled = false;
+            }
+          }
+        }
+      }
+    }
   }
 
   getAlarms() {

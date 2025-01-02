@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:shock_alarm_app/services/openshock.dart';
 import '../stores/alarm_store.dart';
 import '../services/alarm_list_manager.dart';
 import '../components/edit_alarm_days.dart';
@@ -86,6 +87,10 @@ class AlarmItemState extends State<AlarmItem> {
                       children: [
 
                         EditAlarmDays(alarm: this.alarm, onRebuild: onRebuild,),
+                        Text(alarm.shockers.length.toString() + " shockers"),
+                        Column(children: alarm.shockers.map((alarmShocker) {
+                          return AlarmShockerWidget(alarmShocker: alarmShocker, manager: manager, onRebuild: onRebuild);
+                        }).toList()),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -97,6 +102,105 @@ class AlarmItemState extends State<AlarmItem> {
                               onPressed: _save,
                               icon: Icon(Icons.save),
                             ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              ),
+            ),
+          );
+  }
+}
+
+class AlarmShockerWidget extends StatefulWidget {
+  final AlarmShocker alarmShocker;
+  final AlarmListManager manager;
+  final Function onRebuild;
+
+  const AlarmShockerWidget({Key? key, required this.alarmShocker, required this.manager, required this.onRebuild})
+      : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => AlarmShockerWidgetState(alarmShocker, manager, onRebuild);
+}
+
+class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
+  final AlarmShocker alarmShocker;
+  final AlarmListManager manager;
+  final Function onRebuild;
+  bool expanded = false;
+  
+  AlarmShockerWidgetState(this.alarmShocker, this.manager, this.onRebuild);
+
+  void enable(bool value) {
+    setState(() {
+      alarmShocker.enabled = value;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ThemeData t = Theme.of(context);
+    bool isPaused = alarmShocker.shockerReference?.paused ?? false;
+    return  GestureDetector(
+          onTap: () => {
+            setState(() {
+              expanded = !expanded;
+            })
+          },
+          child:
+            Card(
+              color: t.colorScheme.surface,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Row(
+                          spacing: 10,
+                          children: [
+                            Text(
+                              alarmShocker.shockerReference?.name ?? "Unknown",
+                              style: TextStyle(fontSize: 24),
+                            ),
+                            Chip(label: Text(alarmShocker.shockerReference?.hub ?? "Unknown")),
+                          ],
+                        ),
+                        Row(children: [
+                          if (isPaused)
+                            Chip(label: Text("paused"), backgroundColor: t.colorScheme.errorContainer, side: BorderSide.none,),
+                          Switch(value: alarmShocker.enabled, onChanged: isPaused ? null : enable,),
+
+                        ],)
+                      ],
+                    ),
+                    if (alarmShocker.enabled) Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+
+                          children: [
+                            DropdownMenu<ControlType?>(dropdownMenuEntries: [
+                                DropdownMenuEntry(label: "Tone", value: null,),
+                                if(alarmShocker.shockerReference?.shockAllowed ?? false) DropdownMenuEntry(label: "Shock", value: ControlType.shock,),
+                                if(alarmShocker.shockerReference?.vibrateAllowed ?? false) DropdownMenuEntry(label: "Vibration", value: ControlType.vibrate,),
+                                if(alarmShocker.shockerReference?.soundAllowed ?? false) DropdownMenuEntry(label: "Sound", value: ControlType.sound,),
+                              ],
+                              initialSelection: alarmShocker.type,
+                              onSelected: (value) {
+                                setState(() {
+                                  alarmShocker.type = value;
+                                });
+                              },
+                            ),
+                            if(alarmShocker.type != null)
+                              Text("Wee woo")
                           ],
                         ),
                       ],

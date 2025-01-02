@@ -13,7 +13,7 @@ class OpenShockClient {
     for (var element in deviceData.data!) {
       for (var shocker in element.shockers) {
         Shocker s = Shocker.fromOpenShockShocker(shocker);
-        s.name = "${element.name}.${s.name}";
+        s.hub = element.name;
         s.apiTokenId = t.id;
         shockers.add(s);
       }
@@ -27,7 +27,7 @@ class OpenShockClient {
       for(var device in element.devices) {
         for (var shocker in device.shockers) {
           Shocker s = Shocker.fromOpenShockShocker(shocker);
-          s.name = "${device.name}.${s.name}";
+          s.hub = device.name;
           s.apiTokenId = t.id;
           shockers.add(s);
         }
@@ -105,6 +105,7 @@ class Shocker {
   
   String id = "";
   String name = "";
+  String hub = "";
   int apiTokenId = 0;
   bool paused = false;
   bool shockAllowed = true;
@@ -132,6 +133,7 @@ class Shocker {
     return {
       "id": id,
       "name": name,
+      "hub": hub,
       "apiTokenId": apiTokenId,
       "paused": paused,
       "shockAllowed": shockAllowed,
@@ -146,6 +148,8 @@ class Shocker {
     Shocker s = Shocker();
     s.id = shocker["id"];
     s.name = shocker["name"];
+    if(shocker["hub"] != null)
+      s.hub = shocker["hub"];
     s.apiTokenId = shocker["apiTokenId"];
     s.paused = shocker["paused"];
     s.shockAllowed = shocker["shockAllowed"];

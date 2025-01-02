@@ -1,4 +1,5 @@
 import 'package:mobx/mobx.dart';
+import 'package:shock_alarm_app/services/openshock.dart';
 
 class Token with Store {
   Token(this.id, this.token, {this.server = "https://api.openshock.app"});
@@ -20,42 +21,52 @@ class Token with Store {
   }
 }
 
+class AlarmShocker {
+  String shockerId = "";
+  String? toneId;
+  int intensity = 25;
+  int duration = 1000;
+  ControlType? type = ControlType.vibrate;
+  Shocker? shockerReference;
+
+  bool enabled = false;
+  
+  Map<String, dynamic> toJson() {
+    return {
+      "shockerId": shockerId, 
+      "toneId": toneId,
+      "intensity": intensity,
+      "duration": duration,
+      "type": type?.index ?? -1,
+      "enabled": enabled
+    };
+  }
+
+  static AlarmShocker fromJson(shocker) {
+    return AlarmShocker()
+      ..shockerId = shocker["shockerId"]
+      ..toneId = shocker["toneId"]
+      ..intensity = shocker["intensity"]
+      ..duration = shocker["duration"]
+      ..type = shocker["type"] == -1 ? null : ControlType.values[shocker["type"]]
+      ..enabled = shocker["enabled"];
+  }
+}
 
 class ObservableAlarmBase with Store {
   int id;
-
-  @observable
   String name;
-
-  @observable
   int hour;
-
-  @observable
   int minute;
-
-  @observable
   bool monday;
-
-  @observable
   bool tuesday;
-
-  @observable
   bool wednesday;
-
-  @observable
   bool thursday;
-
-  @observable
   bool friday;
-
-  @observable
   bool saturday;
-
-  @observable
   bool sunday;
-
-  @observable
   bool active;
+  List<AlarmShocker> shockers = [];
 
   ObservableAlarmBase(
       {required this.id,
@@ -93,23 +104,28 @@ class ObservableAlarmBase with Store {
       "friday": friday,
       "saturday": saturday,
       "sunday": sunday,
-      "active": active
+      "active": active,
+      "shockers": shockers.map((e) => e.toJson()).toList()
     };
   }
 
   static ObservableAlarmBase fromJson(alarm) {
-    return ObservableAlarmBase(
-        id: alarm["id"],
-        name: alarm["name"],
-        hour: alarm["hour"],
-        minute: alarm["minute"],
-        monday: alarm["monday"],
-        tuesday: alarm["tuesday"],
-        wednesday: alarm["wednesday"],
-        thursday: alarm["thursday"],
-        friday: alarm["friday"],
-        saturday: alarm["saturday"],
-        sunday: alarm["sunday"],
-        active: alarm["active"]);
+    ObservableAlarmBase a = ObservableAlarmBase(
+      id: alarm["id"],
+      name: alarm["name"],
+      hour: alarm["hour"],
+      minute: alarm["minute"],
+      monday: alarm["monday"],
+      tuesday: alarm["tuesday"],
+      wednesday: alarm["wednesday"],
+      thursday: alarm["thursday"],
+      friday: alarm["friday"],
+      saturday: alarm["saturday"],
+      sunday: alarm["sunday"],
+      active: alarm["active"]);
+    if(alarm["shockers"] != null) {
+      a.shockers = (alarm["shockers"] as List).map((e) => AlarmShocker.fromJson(e)).toList();
+    }
+    return a;
   }
 }

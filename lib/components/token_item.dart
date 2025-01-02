@@ -25,6 +25,7 @@ class TokenItemState extends State<TokenItem> {
 
   void _delete() {
     manager.deleteToken(token);
+    onRebuild();
   }
 
   void _save() {
