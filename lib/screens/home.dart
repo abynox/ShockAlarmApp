@@ -94,7 +94,7 @@ class HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (context, index) {
                   final alarm = manager.getAlarms()[index];
 
-                  return AlarmItem(alarm: alarm, manager: manager, onRebuild: rebuild);
+                  return AlarmItem(alarm: alarm, manager: manager, onRebuild: rebuild, key: ValueKey(alarm.id));
                 },
                 itemCount: manager.getAlarms().length,
               ),

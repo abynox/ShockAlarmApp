@@ -88,7 +88,6 @@ class ShockerItemState extends State<ShockerItem> {
                               shocker.name,
                               style: TextStyle(fontSize: 24),
                             ),
-                            if(manager.enabledHubs.values.where((x) {return x;}).length >1)
                              Chip(label: Text(shocker.hub)),
                           ],
                           

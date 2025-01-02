@@ -25,28 +25,34 @@ class ShockerScreenState extends State<ShockerScreen> {
   ShockerScreenState(this.manager);
   @override
   Widget build(BuildContext context) {
-    List<Shocker> shockers = manager.shockers.where((shocker) => manager.enabledHubs[shocker.hub]!).toList();
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Text(
+    List<Shocker> filteredShockers = manager.shockers.where((shocker) {
+    return manager.enabledHubs[shocker.hub] ?? false;
+  }).toList();
+    return Column(children: [
+      Text(
             'All Shockers',
             style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
           ),
           Wrap(spacing: 5,runAlignment: WrapAlignment.start,children: manager.enabledHubs.keys.map<FilterChip>((hub) {
-            return FilterChip(label: Text(hub), onSelected: (bool value) {setState(() {
+            return FilterChip(label: Text(hub), onSelected: (bool value) {
               manager.enabledHubs[hub] = value;
-            });}, selected: manager.enabledHubs[hub]!);
+              setState(() {
+              }
+            );}, selected: manager.enabledHubs[hub]!);
           }).toList(),),
+          Flexible(
+      child: ListView(children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children:
-            shockers.isEmpty ? [Text('No shockers found', style: TextStyle(fontSize: 24))] :
-            shockers.map((shocker) {
-              return ShockerItem(shocker: shocker, manager: manager, onRebuild: rebuild);
+            filteredShockers.isEmpty ? [Text('No shockers found', style: TextStyle(fontSize: 24))] :
+            filteredShockers.map((shocker) {
+              return ShockerItem(shocker: shocker, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.id));
             }).toList()
           )
-        ],
-      );
+        ],)
+      )
+    ],);
+    
   }
 }
