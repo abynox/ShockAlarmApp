@@ -30,7 +30,7 @@ class ShockerScreenState extends State<ShockerScreen> {
   }).toList();
     return Column(children: [
       Text(
-            'All Shockers',
+            'All shockers',
             style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
           ),
           Wrap(spacing: 5,runAlignment: WrapAlignment.start,children: manager.enabledHubs.keys.map<FilterChip>((hub) {

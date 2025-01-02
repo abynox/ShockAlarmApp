@@ -12,7 +12,7 @@ class BottomAddButton extends StatelessWidget {
       child: Align(
         alignment: Alignment.center,
         child: SizedBox.fromSize(
-          size: Size.fromHeight(50),
+          size: Size.fromHeight(70),
           child: IconButton(
             onPressed: this.onPressed,
             icon: Icon(

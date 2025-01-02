@@ -54,9 +54,13 @@ class OpenShockClient {
     }, body: body);
   }
 
-  Future sendControls(Token t, List<Control> list) async {
-    String body = jsonEncode(list);
-    var response = await PostRequest(t, "/1/shockers/control", body);
+  Future sendControls(Token t, List<Control> list, {String customName = "ShockAlarm"}) async {
+
+    String body = jsonEncode({
+      "shocks": list.map((e) => e.toJson()).toList(),
+      "customName": customName
+    });
+    var response = await PostRequest(t, "/2/shockers/control", body);
   }
 }
 
@@ -75,19 +79,19 @@ class Control {
   ControlType type = ControlType.stop;
 
   toJson() {
-    int type = 0;
+    String type = "";
     switch(this.type) {
       case ControlType.stop:
-        type = 0;
+        type = "Stop";
         break;
       case ControlType.shock:
-        type = 1;
+        type = "Shock";
         break;
       case ControlType.vibrate:
-        type = 2;
+        type = "Vibrate";
         break;
       case ControlType.sound:
-        type = 3;
+        type = "Sound";
         break;
     } 
     return {
