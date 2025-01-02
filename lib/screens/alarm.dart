@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../stores/alarm_store.dart';
 import '../components/default_container.dart';
 import 'package:slide_to_act/slide_to_act.dart';
-import 'package:wakelock/wakelock.dart';
+//import 'package:wakelock/wakelock.dart';
 
 class AlarmScreen extends StatelessWidget {
   final ObservableAlarmBase alarm;
@@ -67,7 +67,7 @@ class AlarmScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 26),
               )),
               onSubmit: () async {
-                Wakelock.disable();
+                //Wakelock.disable();
 
                 //AlarmStatus().isAlarm = false;
                 //AlarmStatus().alarmId = null;

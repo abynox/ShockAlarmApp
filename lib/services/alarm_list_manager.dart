@@ -1,30 +1,58 @@
+import 'package:mobx/src/api/observable_collections.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../stores/alarm_store.dart';
+import 'dart:convert';
+
 
 class AlarmListManager {
-  final AlarmList _alarms;
+  final List<ObservableAlarmBase> _alarms = [];
   final List<Shocker> shockers = [];
-  final TokenList _tokens = TokenList();
-  //final JsonFileStorage _storage = JsonFileStorage();
+  final List<Token> _tokens = [];
 
-  AlarmListManager(this._alarms);
+  AlarmListManager();
+
+  Function? reloadAllMethod;
+
+  Future loadAllFromStorage() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String alarms = prefs.getString("alarms") ?? "[]";
+    String tokens = prefs.getString("tokens") ?? "[]";
+    String shockers = prefs.getString("shockers") ?? "[]";
+    List<dynamic> alarmsList = jsonDecode(alarms);
+    List<dynamic> tokensList = jsonDecode(tokens);
+    List<dynamic> shockersList = jsonDecode(shockers);
+    for (var alarm in alarmsList) {
+      _alarms.add(ObservableAlarmBase.fromJson(alarm));
+    }
+    for (var token in tokensList) {
+      _tokens.add(Token.fromJson(token));
+    }
+    for (var shocker in shockersList) {
+      this.shockers.add(Shocker.fromJson(shocker));
+    }
+    if(reloadAllMethod != null) {
+      reloadAllMethod!();
+    }
+  }
 
   saveAlarm(ObservableAlarmBase alarm) async {
     final index =
-        _alarms.alarms.indexWhere((findAlarm) => alarm.id == findAlarm.id);
+        _alarms.indexWhere((findAlarm) => alarm.id == findAlarm.id);
     if (index == -1) {
       print('Adding new alarm');
-      _alarms.alarms.add(alarm);
+      _alarms.add(alarm);
     } else {
-      _alarms.alarms[index] = alarm;
+      _alarms[index] = alarm;
     }
-    //await _storage.writeList(_alarms.alarms);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("alarms", jsonEncode(_alarms));
   }
 
   Future updateShockerStore() async {
     List<Shocker> shockers = [];
-    for(var token in _tokens.tokens) {
+    for(var token in _tokens) {
       OpenShockClient client = OpenShockClient();
       List<Shocker> s = await client.GetShockersForToken(token);
       // add shockers without duplicates
@@ -37,40 +65,45 @@ class AlarmListManager {
     }
     this.shockers.clear();
     this.shockers.addAll(shockers);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("shockers", jsonEncode(shockers));
     print(this.shockers.length);
   }
 
-  void saveToken(Token token) {
-    final index = _tokens.tokens.indexWhere((findToken) => token.id == findToken.id);
+  void saveToken(Token token) async {
+    final index = _tokens.indexWhere((findToken) => token.id == findToken.id);
     if (index == -1) {
-      _tokens.tokens.add(token);
+      _tokens.add(token);
     } else {
-      _tokens.tokens[index] = token;
+      _tokens[index] = token;
     }
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("tokens", jsonEncode(_tokens));
     updateShockerStore();
     //await _storage.writeList(_tokens.tokens);
   }
 
   void deleteAlarm(ObservableAlarmBase alarm) {
-    _alarms.alarms.removeWhere((findAlarm) => alarm.id == findAlarm.id);
-    //await _storage.writeList(_alarms.alarms);
+    print(_alarms.length);
+    _alarms.removeWhere((findAlarm) => alarm.id == findAlarm.id);
+    print(_alarms.length);
   }
 
   getAlarms() {
-    return _alarms.alarms;
+    return _alarms;
   }
 
   getTokens() {
-    return _tokens.tokens;
+    return _tokens;
   }
 
   void deleteToken(Token token) {
-    _tokens.tokens.removeWhere((findToken) => token.id == findToken.id);
+    _tokens.removeWhere((findToken) => token.id == findToken.id);
     //await _storage.writeList(_tokens.tokens);
   }
 
   Token? getToken(int id) {
-    return _tokens.tokens.firstWhere((findToken) => id == findToken.id);
+    return _tokens.firstWhere((findToken) => id == findToken.id);
   }
 
   void sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration) {
@@ -80,7 +113,7 @@ class AlarmListManager {
     control.type = type;
     control.id = shocker.id;
     control.exclusive = true;
-    Token? t = getToken(shocker.tokenId);
+    Token? t = getToken(shocker.apiTokenId);
     if(t == null) {
       print("Token not found");
       return;

@@ -13,9 +13,8 @@ class OpenShockClient {
     for (var element in deviceData.data!) {
       for (var shocker in element.shockers) {
         Shocker s = Shocker.fromOpenShockShocker(shocker);
-        s.name = element.name + "." + s.name;
-        s.tokenId = t.id;
-        print(s.name);
+        s.name = "${element.name}.${s.name}";
+        s.apiTokenId = t.id;
         shockers.add(s);
       }
     }
@@ -28,9 +27,8 @@ class OpenShockClient {
       for(var device in element.devices) {
         for (var shocker in device.shockers) {
           Shocker s = Shocker.fromOpenShockShocker(shocker);
-          s.name = device.name + "." + s.name;
-          s.tokenId = t.id;
-          print(s.name);
+          s.name = "${device.name}.${s.name}";
+          s.apiTokenId = t.id;
           shockers.add(s);
         }
       }
@@ -103,6 +101,8 @@ class Control {
 }
 
 class Shocker {
+  Shocker() {}
+  
   String id = "";
   String name = "";
   int apiTokenId = 0;
@@ -112,7 +112,6 @@ class Shocker {
   bool soundAllowed = true;
   int durationLimit = 30000;
   int intensityLimit = 100;
-  int tokenId = 0;
 
   Shocker.fromOpenShockShocker(OpenShockShocker shocker) {
     id = shocker.id;
@@ -127,6 +126,34 @@ class Shocker {
       durationLimit = shocker.limits!.duration;
       intensityLimit = shocker.limits!.intensity;
     }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "apiTokenId": apiTokenId,
+      "paused": paused,
+      "shockAllowed": shockAllowed,
+      "vibrateAllowed": vibrateAllowed,
+      "soundAllowed": soundAllowed,
+      "durationLimit": durationLimit,
+      "intensityLimit": intensityLimit
+    };
+  }
+
+  static Shocker fromJson(shocker) {
+    Shocker s = Shocker();
+    s.id = shocker["id"];
+    s.name = shocker["name"];
+    s.apiTokenId = shocker["apiTokenId"];
+    s.paused = shocker["paused"];
+    s.shockAllowed = shocker["shockAllowed"];
+    s.vibrateAllowed = shocker["vibrateAllowed"];
+    s.soundAllowed = shocker["soundAllowed"];
+    s.durationLimit = shocker["durationLimit"];
+    s.intensityLimit = shocker["intensityLimit"];
+    return s;
   }
 }
 

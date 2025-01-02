@@ -1,33 +1,7 @@
 import 'package:mobx/mobx.dart';
 
-class AlarmList with Store {
-  AlarmList();
-
-  @observable
-  ObservableList<ObservableAlarmBase> alarms = ObservableList();
-
-  @action
-  void setAlarms(List<ObservableAlarmBase> alarms) {
-    this.alarms.clear();
-    this.alarms.addAll(alarms);
-  }
-}
-
-class TokenList with Store {
-  TokenList();
-
-  @observable
-  ObservableList<Token> tokens = ObservableList();
-
-  @action
-  void setTokens(List<Token> tokens) {
-    this.tokens.clear();
-    this.tokens.addAll(tokens);
-  }
-}
-
 class Token with Store {
-  Token(this.id, this.token);
+  Token(this.id, this.token, {this.server = "https://api.openshock.app"});
 
   int id;
 
@@ -35,7 +9,15 @@ class Token with Store {
   String token;
 
   @observable
-  String server = "https://api.openshock.app";
+  String server;
+
+  static Token fromJson(token) {
+    return Token(token["id"], token["token"], server: token["server"]);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {"id": id, "token": token, "server": server};
+  }
 }
 
 
@@ -96,5 +78,38 @@ class ObservableAlarmBase with Store {
   // Good enough for debugging for now
   toString() {
     return "active: $active, name: $name, hour: $hour, minute: $minute, days: $days";
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "hour": hour,
+      "minute": minute,
+      "monday": monday,
+      "tuesday": tuesday,
+      "wednesday": wednesday,
+      "thursday": thursday,
+      "friday": friday,
+      "saturday": saturday,
+      "sunday": sunday,
+      "active": active
+    };
+  }
+
+  static ObservableAlarmBase fromJson(alarm) {
+    return ObservableAlarmBase(
+        id: alarm["id"],
+        name: alarm["name"],
+        hour: alarm["hour"],
+        minute: alarm["minute"],
+        monday: alarm["monday"],
+        tuesday: alarm["tuesday"],
+        wednesday: alarm["wednesday"],
+        thursday: alarm["thursday"],
+        friday: alarm["friday"],
+        saturday: alarm["saturday"],
+        sunday: alarm["sunday"],
+        active: alarm["active"]);
   }
 }

@@ -17,8 +17,7 @@ class BottomAddButton extends StatelessWidget {
             onPressed: this.onPressed,
             icon: Icon(
               Icons.add_circle,
-              size: 50,
-              color: Colors.white,
+              size: 50
             ),
           ),
         ),

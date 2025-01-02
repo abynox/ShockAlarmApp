@@ -39,76 +39,60 @@ class TokenItemState extends State<TokenItem> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      /*
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  EditAlarm(alarm: this.alarm, manager: manager))),
-                  */
-      child: Observer(
-        builder: (context) => GestureDetector(
-          onTap: () => {
-            setState(() {
-              expanded = !expanded;
-            })
-          },
-          child:
-            Card(
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              token.id.toString(),
-                              style: TextStyle(fontSize: 24),
-                            )
-                          ],
-                        ),
-                        Column(children: [
-                          IconButton(onPressed: () {setState(() {
-                            expanded = !expanded;
-                          });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded))
-                        ],)
-                      ],
-                    ),
-                    if (expanded) Column(
-                      children: [
-                        TextField(
-                              controller: TextEditingController(text: token.token),
-                              style: TextStyle(fontSize: 18),
-                              onChanged: (newToken) => token.token = newToken,
-                            ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: _delete,
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.save),
-                              onPressed: _save,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                )
+    ThemeData t = Theme.of(context);
+    return 
+      Card(
+        color: t.colorScheme.onInverseSurface,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        token.id.toString(),
+                        style: TextStyle(fontSize: 24),
+                      )
+                    ],
+                  ),
+                  Column(children: [
+                    IconButton(onPressed: () {setState(() {
+                      expanded = !expanded;
+                    });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded))
+                  ],)
+                ],
               ),
-            ),
-          ),
-      ),
-    );
+              if (expanded) Column(
+                children: [
+                  TextField(
+                        controller: TextEditingController(text: token.token),
+                        style: TextStyle(fontSize: 18),
+                        onChanged: (newToken) => token.token = newToken,
+                      ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: _delete,
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.save),
+                        onPressed: _save,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          )
+        ),
+      );
   }
 }

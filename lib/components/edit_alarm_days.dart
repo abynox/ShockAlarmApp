@@ -77,21 +77,21 @@ class WeekDayToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const size = 20.0;
-    final textColor = this.current ? Colors.white : Colors.deepPurple;
-    final blobColor = this.current ? Colors.deepPurple : Colors.white;
+    ThemeData t = Theme.of(context);
+    final textColor = this.current ? t.colorScheme.onPrimaryContainer : t.colorScheme.onPrimaryContainer;
+    final blobColor = this.current ? t.colorScheme.inversePrimary : Color(0x00000000);
 
     return GestureDetector(
       child: SizedBox.fromSize(
         size: Size.fromRadius(size),
         child: Container(
           decoration: BoxDecoration(
-              borderRadius: new BorderRadius.circular(size), color: blobColor),
+              borderRadius: new BorderRadius.circular(size), color: blobColor, border: this.current ? null : Border.all(color: textColor, width: 0.5)),
           child: Center(
               child: Text(
             this.text,
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
               color: textColor,
             ),
           )),

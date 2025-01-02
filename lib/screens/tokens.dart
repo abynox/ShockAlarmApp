@@ -28,7 +28,7 @@ class TokenScreenState extends State<TokenScreen> {
         children: <Widget>[
           Text(
             'Your tokens',
-            style: TextStyle(fontSize: 28, color: Colors.white),
+            style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
           ),
           Flexible(
             child: Observer(

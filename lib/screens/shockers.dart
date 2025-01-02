@@ -19,7 +19,7 @@ class ShockerScreenState extends State<ShockerScreen> {
 
   void rebuild() {
     setState(() {});
-  }
+  } 
 
   ShockerScreenState(this.manager);
   @override
@@ -28,7 +28,7 @@ class ShockerScreenState extends State<ShockerScreen> {
         children: <Widget>[
           Text(
             'Your shockers',
-            style: TextStyle(fontSize: 28, color: Colors.white),
+            style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
           ),
           Flexible(
             child: Observer(

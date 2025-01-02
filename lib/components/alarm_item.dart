@@ -30,6 +30,7 @@ class AlarmItemState extends State<AlarmItem> {
 
   void _delete() {
     manager.deleteAlarm(alarm);
+    onRebuild();
   }
 
   void _save() {
@@ -40,16 +41,8 @@ class AlarmItemState extends State<AlarmItem> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      /*
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  EditAlarm(alarm: this.alarm, manager: manager))),
-                  */
-      child: Observer(
-        builder: (context) => GestureDetector(
+    ThemeData t = Theme.of(context);
+    return  GestureDetector(
           onTap: () => {
             setState(() {
               expanded = !expanded;
@@ -57,6 +50,7 @@ class AlarmItemState extends State<AlarmItem> {
           },
           child:
             Card(
+              color: t.colorScheme.onInverseSurface,
               shape:
                   RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
               child: Padding(
@@ -78,7 +72,9 @@ class AlarmItemState extends State<AlarmItem> {
                           IconButton(onPressed: () {setState(() {
                             expanded = !expanded;
                           });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded)),
-                          Switch(value: alarm.active, onChanged: (value) {
+                          Switch(value: alarm.active,
+                            
+                            onChanged: (value) {
                             setState(() {
                               alarm.active = value;
                             });
@@ -109,9 +105,7 @@ class AlarmItemState extends State<AlarmItem> {
                 )
               ),
             ),
-          ),
-      ),
-    );
+          );
   }
 }
 

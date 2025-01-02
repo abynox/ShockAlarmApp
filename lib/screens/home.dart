@@ -30,6 +30,9 @@ class ScreenSelectorState extends State<ScreenSelector> {
 
   @override
   Widget build(BuildContext context) {
+    manager.reloadAllMethod = () {
+      setState(() {});
+    };
     final screens = <Widget>[
       HomeScreen(manager: manager),
       ShockerScreen(manager: manager),
@@ -82,7 +85,7 @@ class HomeScreenState extends State<HomeScreen> {
         children: <Widget>[
           Text(
             'Your alarms',
-            style: TextStyle(fontSize: 28, color: Colors.white),
+            style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
           ),
           Flexible(
             child: Observer(
