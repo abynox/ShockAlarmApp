@@ -1,3 +1,11 @@
+name: Build flutter
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 steps:
   - name: Clone repository
     uses: actions/checkout@v4
