@@ -1,5 +1,4 @@
 import 'package:mobx/mobx.dart';
-import 'package:json_annotation/json_annotation.dart';
 
 class AlarmList with Store {
   AlarmList();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:shock_alarm_app/screens/shockers.dart';
 import '../components/alarm_item.dart';
 import '../components/bottom_add_button.dart';
 import '../services/alarm_list_manager.dart';
@@ -7,19 +8,19 @@ import 'tokens.dart';
 import '../stores/alarm_store.dart';
 
 class ScreenSelector extends StatefulWidget {
-  final AlarmList alarms;
+  final AlarmListManager manager;
 
-  const ScreenSelector({Key? key, required this.alarms}) : super(key: key);
+  const ScreenSelector({Key? key, required this.manager}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => ScreenSelectorState(alarms: alarms);
+  State<StatefulWidget> createState() => ScreenSelectorState(manager: manager);
 }
 
 class ScreenSelectorState extends State<ScreenSelector> {
-  final AlarmList alarms;
+  final AlarmListManager manager;
   int _selectedIndex = 0;
 
-  ScreenSelectorState({required this.alarms});
+  ScreenSelectorState({required this.manager});
 
   void _tap(int index) {
     setState(() {
@@ -29,9 +30,9 @@ class ScreenSelectorState extends State<ScreenSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final AlarmListManager manager = AlarmListManager(alarms);
     final screens = <Widget>[
       HomeScreen(manager: manager),
+      ShockerScreen(manager: manager),
       TokenScreen(manager: manager)
     ];
     return Scaffold(
@@ -48,6 +49,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       bottomNavigationBar: BottomNavigationBar(items: 
         const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
+          BottomNavigationBarItem(icon: Icon(Icons.sports_hockey), label: 'Shockers'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
         currentIndex: _selectedIndex,
