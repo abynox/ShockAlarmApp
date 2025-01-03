@@ -31,7 +31,6 @@ void main() async {
 void alarmCallback(int id) {
   print("Woah");
   WakelockPlus.enable();
-  Intent i = 
   runApp(MyApp(id));
 }
 
