@@ -87,6 +87,8 @@ class HomeScreenState extends State<HomeScreen> {
             'Your alarms',
             style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
           ),
+          Text("Alarms are currently not working",
+          style: TextStyle(fontSize: 20),),
           Flexible(
             child: Observer(
               builder: (context) => ListView.builder(
