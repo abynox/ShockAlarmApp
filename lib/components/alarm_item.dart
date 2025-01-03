@@ -181,11 +181,9 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                       ],
                     ),
                     if (alarmShocker.enabled) Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 5,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-
-                          children: [
                             DropdownMenu<ControlType?>(dropdownMenuEntries: [
                                 DropdownMenuEntry(label: "Tone", value: null,),
                                 if(alarmShocker.shockerReference?.shockAllowed ?? false) DropdownMenuEntry(label: "Shock", value: ControlType.shock,),
@@ -199,12 +197,24 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                                 });
                               },
                             ),
+                            if(alarmShocker.type == null) DropdownMenu<String?>(dropdownMenuEntries: [
+                                DropdownMenuEntry(label: "Example alarm tone", value: null,)
+                              ],
+                              initialSelection: alarmShocker.toneId,
+                              onSelected: (value) {
+                                setState(() {
+                                  alarmShocker.toneId = value;
+                                });
+                              },
+                            ),
                             if(alarmShocker.type != null)
-                              Text("Wee woo")
+                              Column(children: [
+                                Text("Duration"),
+                                if(alarmShocker.type != ControlType.sound)
+                                  Text("Intensity")
+                              ],)
                           ],
                         ),
-                      ],
-                    ),
                   ],
                 )
               ),

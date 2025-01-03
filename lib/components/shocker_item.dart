@@ -30,23 +30,6 @@ class ShockerItemState extends State<ShockerItem> {
   void action(ControlType type) {
     manager.sendShock(type, shocker, currentIntensity, currentDuration);
   }
-
-  double cubicToLinear(double value) {
-    return pow(value, 6/3).toDouble();
-  }
-
-  double linearToCubic(double value) {
-    return pow(value,  3/6).toDouble();
-  }
-
-  double reverseMapDuration(double value) {
-
-    return linearToCubic((value - 300) / shocker.durationLimit);
-  }
-
-  int mapDuration(double value) {
-    return 300 + (cubicToLinear(value) * (shocker.durationLimit - 300) / 100).toInt() * 100;
-  }
   
   ShockerItemState(this.shocker, this.manager, this.onRebuild);
   @override
@@ -64,6 +47,7 @@ class ShockerItemState extends State<ShockerItem> {
         builder: (context) => GestureDetector(
           onTap: () => {
             setState(() {
+              if(shocker.paused) return;
               expanded = !expanded;
             })
           },
@@ -92,35 +76,25 @@ class ShockerItemState extends State<ShockerItem> {
                           ],
                           
                         ),
-                        Column(children: [
-                          IconButton(onPressed: () {setState(() {
-                            expanded = !expanded;
-                          });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded))
+                        Row(children: [
+
+                          if (shocker.paused)
+                            Chip(label: Text("paused"), backgroundColor: t.colorScheme.errorContainer, side: BorderSide.none,),
+                          if (!shocker.paused)
+                            IconButton(onPressed: () {setState(() {
+                              expanded = !expanded;
+                            });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded))
                         ],)
                       ],
                     ),
                     if (expanded) Column(
                       children: [
-                        Row(children: [
-                          Icon(Icons.sports_hockey),
-                          Text("Intensity: " + currentIntensity.toString(), style: TextStyle(fontSize: 24),),
-                        ], mainAxisAlignment: MainAxisAlignment.center,),
-                        Slider(value: currentIntensity.toDouble(), max: shocker.intensityLimit.toDouble(), onChanged: (double value) {
+                        IntensityDurationSelector(duration: currentDuration, intensity: currentIntensity, maxDuration: shocker.durationLimit, maxIntensity: shocker.intensityLimit, onSet: (intensity, duration) {
                           setState(() {
-                            currentIntensity = value.toInt();
+                            currentDuration = duration;
+                            currentIntensity = intensity;
                           });
                         }),
-                        Row(
-                          children: [
-                            Icon(Icons.timer),
-                            Text("Duration: " + (currentDuration / 1000.0).toString(), style: TextStyle(fontSize: 24),),
-                          ], mainAxisAlignment: MainAxisAlignment.center),
-                        Slider(value: reverseMapDuration(currentDuration.toDouble()), max: 1, onChanged: (double value) {
-                          setState(() {
-                            currentDuration = mapDuration(value);
-                          });
-                        }),
-                        
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
@@ -155,4 +129,76 @@ class ShockerItemState extends State<ShockerItem> {
       ),
     );
   }
+}
+
+class IntensityDurationSelector extends StatefulWidget {
+  final int duration;
+  final int intensity;
+  int maxDuration;
+  int maxIntensity;
+  final Function(int, int) onSet;
+
+  IntensityDurationSelector({Key? key, required this.duration, required this.intensity, required this.onSet, required this.maxDuration, required this.maxIntensity}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => IntensityDurationSelectorState(duration, intensity, onSet, this.maxDuration, this.maxIntensity);
+}
+
+class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
+  int maxDuration;
+  int maxIntensity;
+  int duration;
+  int intensity;
+  Function(int, int) onSet;
+
+
+  IntensityDurationSelectorState(this.duration, this.intensity, this.onSet, this.maxDuration, this.maxIntensity);
+
+  double cubicToLinear(double value) {
+    return pow(value, 6/3).toDouble();
+  }
+
+  double linearToCubic(double value) {
+    return pow(value,  3/6).toDouble();
+  }
+
+  double reverseMapDuration(double value) {
+
+    return linearToCubic((value - 300) / maxDuration);
+  }
+
+  int mapDuration(double value) {
+    return 300 + (cubicToLinear(value) * (maxDuration - 300) / 100).toInt() * 100;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ThemeData t = Theme.of(context);
+    return Column(
+      children: [
+        Row(children: [
+          Icon(Icons.sports_hockey),
+          Text("Intensity: " + intensity.toString(), style: TextStyle(fontSize: 24),),
+        ], mainAxisAlignment: MainAxisAlignment.center,),
+        Slider(value: intensity.toDouble(), max: maxIntensity.toDouble(), onChanged: (double value) {
+          setState(() {
+            intensity = value.toInt();
+            onSet(intensity, duration);
+          });
+        }),
+        Row(
+          children: [
+            Icon(Icons.timer),
+            Text("Duration: " + (duration / 1000.0).toString(), style: TextStyle(fontSize: 24),),
+          ], mainAxisAlignment: MainAxisAlignment.center),
+        Slider(value: reverseMapDuration(duration.toDouble()), max: 1, onChanged: (double value) {
+          setState(() {
+            duration = mapDuration(value);
+            onSet(intensity, duration);
+          });
+        }),
+      ],
+    );
+  }
+
 }

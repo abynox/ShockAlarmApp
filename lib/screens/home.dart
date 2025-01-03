@@ -108,7 +108,7 @@ class HomeScreenState extends State<HomeScreen> {
                   name: 'New Alarm',
                   hour: tod.hour,
                   minute: tod.minute,
-                  active: true);
+                  active: false);
               setState(() {
                 manager.saveAlarm(newAlarm);
               });
