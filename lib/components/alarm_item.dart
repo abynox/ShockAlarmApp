@@ -199,7 +199,7 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                                 });
                               },
                             ),
-                            if(alarmShocker.type == null) DropdownMenu<String?>(dropdownMenuEntries: [
+                            if(alarmShocker.type == null) Text("Alarm tones are not implemented yet", style: TextStyle(fontSize: 18),),/* DropdownMenu<String?>(dropdownMenuEntries: [
                                 DropdownMenuEntry(label: "Example alarm tone", value: null,)
                               ],
                               initialSelection: alarmShocker.toneId,
@@ -209,6 +209,7 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                                 });
                               },
                             ),
+                              */
                             if(alarmShocker.type != null)
                               IntensityDurationSelector(key: ValueKey(alarmShocker.type), duration: alarmShocker.duration, intensity: alarmShocker.intensity, onSet: (intensity, duration) {
                                 setState(() {
