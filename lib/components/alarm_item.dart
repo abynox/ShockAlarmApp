@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../stores/alarm_store.dart';
 import '../services/alarm_list_manager.dart';
@@ -175,7 +176,8 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                         Row(children: [
                           if (isPaused)
                             Chip(label: Text("paused"), backgroundColor: t.colorScheme.errorContainer, side: BorderSide.none,),
-                          Switch(value: alarmShocker.enabled, onChanged: isPaused ? null : enable,),
+                          if(!isPaused)
+                            Switch(value: alarmShocker.enabled, onChanged: isPaused ? null : enable,),
 
                         ],)
                       ],
@@ -208,11 +210,12 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                               },
                             ),
                             if(alarmShocker.type != null)
-                              Column(children: [
-                                Text("Duration"),
-                                if(alarmShocker.type != ControlType.sound)
-                                  Text("Intensity")
-                              ],)
+                              IntensityDurationSelector(key: ValueKey(alarmShocker.type), duration: alarmShocker.duration, intensity: alarmShocker.intensity, onSet: (intensity, duration) {
+                                setState(() {
+                                  alarmShocker.duration = duration;
+                                  alarmShocker.intensity = intensity;
+                                });
+                              }, maxDuration: alarmShocker.shockerReference?.durationLimit ?? 300, maxIntensity: alarmShocker.shockerReference?.intensityLimit ?? 0, showIntensity: alarmShocker.type != ControlType.sound),
                           ],
                         ),
                   ],

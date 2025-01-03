@@ -136,12 +136,13 @@ class IntensityDurationSelector extends StatefulWidget {
   final int intensity;
   int maxDuration;
   int maxIntensity;
+  bool showIntensity = true;
   final Function(int, int) onSet;
 
-  IntensityDurationSelector({Key? key, required this.duration, required this.intensity, required this.onSet, required this.maxDuration, required this.maxIntensity}) : super(key: key);
+  IntensityDurationSelector({Key? key, this.showIntensity = true, required this.duration, required this.intensity, required this.onSet, required this.maxDuration, required this.maxIntensity}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => IntensityDurationSelectorState(duration, intensity, onSet, this.maxDuration, this.maxIntensity);
+  State<StatefulWidget> createState() => IntensityDurationSelectorState(duration, intensity, onSet, this.maxDuration, this.maxIntensity, this.showIntensity);
 }
 
 class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
@@ -149,10 +150,11 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
   int maxIntensity;
   int duration;
   int intensity;
+  bool showIntensity;
   Function(int, int) onSet;
 
 
-  IntensityDurationSelectorState(this.duration, this.intensity, this.onSet, this.maxDuration, this.maxIntensity);
+  IntensityDurationSelectorState(this.duration, this.intensity, this.onSet, this.maxDuration, this.maxIntensity, this.showIntensity);
 
   double cubicToLinear(double value) {
     return pow(value, 6/3).toDouble();
@@ -174,18 +176,21 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
+    print(showIntensity);
     return Column(
       children: [
-        Row(children: [
-          Icon(Icons.sports_hockey),
-          Text("Intensity: " + intensity.toString(), style: TextStyle(fontSize: 24),),
-        ], mainAxisAlignment: MainAxisAlignment.center,),
-        Slider(value: intensity.toDouble(), max: maxIntensity.toDouble(), onChanged: (double value) {
-          setState(() {
-            intensity = value.toInt();
-            onSet(intensity, duration);
-          });
-        }),
+        if(showIntensity)
+          Row(children: [
+            Icon(Icons.sports_hockey),
+            Text("Intensity: " + intensity.toString(), style: TextStyle(fontSize: 24),),
+          ], mainAxisAlignment: MainAxisAlignment.center,),
+        if(showIntensity)
+          Slider(value: intensity.toDouble(), max: maxIntensity.toDouble(), onChanged: (double value) {
+            setState(() {
+              intensity = value.toInt();
+              onSet(intensity, duration);
+            });
+          }),
         Row(
           children: [
             Icon(Icons.timer),
@@ -194,7 +199,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
         Slider(value: reverseMapDuration(duration.toDouble()), max: 1, onChanged: (double value) {
           setState(() {
             duration = mapDuration(value);
-            onSet(intensity, duration);
+            onSet(showIntensity ? intensity : 1, duration);
           });
         }),
       ],
