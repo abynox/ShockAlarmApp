@@ -67,12 +67,12 @@ class AlarmListManager {
     List<Shocker> shockers = [];
     for(var token in _tokens) {
       OpenShockClient client = OpenShockClient();
+      token.name = await client.getNameForToken(token);
       List<Shocker> s = await client.GetShockersForToken(token);
       // add shockers without duplicates
       for(var shocker in s) {
         if(shockers.indexWhere((element) => element.id == shocker.id) == -1) {
           shockers.add(shocker);
-          print("Added shocker: " + shocker.name);
         }
       }
     }
@@ -82,6 +82,7 @@ class AlarmListManager {
     prefs.setString("shockers", jsonEncode(shockers));
     updateHubList();
     rebuildAlarmShockers();
+    reloadAllMethod!();
   }
 
   void saveToken(Token token) async {

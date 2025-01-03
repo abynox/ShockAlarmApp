@@ -20,18 +20,16 @@ Future requestPermissions() async{
 }
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AndroidAlarmManager.initialize();
-  await AndroidAlarmManager.oneShot(Duration(seconds: 10), 0, alarmCallback, alarmClock: true);
+  //await AndroidAlarmManager.initialize();
+  //await AndroidAlarmManager.oneShot(Duration(seconds: 10), 0, alarmCallback, alarmClock: true);
 
-  await requestPermissions();
+  //await requestPermissions();
   runApp(MyApp(null));
 }
 
 @pragma('vm:entry-point')
 void alarmCallback(int id) {
   print("Woah");
-  WakelockPlus.enable();
-  runApp(MyApp(id));
 }
 
 class MyApp extends StatelessWidget {

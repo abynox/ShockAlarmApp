@@ -1,23 +1,22 @@
 import 'package:mobx/mobx.dart';
+import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 
 class Token with Store {
-  Token(this.id, this.token, {this.server = "https://api.openshock.app"});
+  Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name=""});
 
   int id;
 
-  @observable
   String token;
-
-  @observable
   String server;
+  String name = "";
 
   static Token fromJson(token) {
-    return Token(token["id"], token["token"], server: token["server"]);
+    return Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "");
   }
 
   Map<String, dynamic> toJson() {
-    return {"id": id, "token": token, "server": server};
+    return {"id": id, "token": token, "server": server, "name": name};
   }
 }
 
@@ -84,6 +83,14 @@ class ObservableAlarmBase with Store {
 
   List<bool> get days {
     return [monday, tuesday, wednesday, thursday, friday, saturday, sunday];
+  }
+
+  void trigger(AlarmListManager manager) {
+    for (var shocker in shockers) {
+      if (shocker.enabled) {
+        manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration);
+      }
+    }
   }
 
   // Good enough for debugging for now

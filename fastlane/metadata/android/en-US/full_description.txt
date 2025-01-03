@@ -1,0 +1,5 @@
+ShockAlarm is a Material3 app which uses Material You theming.
+
+You can control your own and shared Shockers from within the app. It it also planned that you can set alarm which trigger a shock/vibration at a specific time.
+
+This app uses https://openshock.app/ by default but self hosted instances are planned to be supported (Just UI is missing currently)

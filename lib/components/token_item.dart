@@ -57,7 +57,7 @@ class TokenItemState extends State<TokenItem> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        token.id.toString(),
+                        token.name.toString(),
                         style: TextStyle(fontSize: 24),
                       )
                     ],

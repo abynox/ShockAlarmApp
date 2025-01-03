@@ -62,6 +62,24 @@ class OpenShockClient {
     });
     var response = await PostRequest(t, "/2/shockers/control", body);
   }
+
+  Future<String> getNameForToken(Token t) async {
+    var request = GetRequest(t, "/1/users/self");
+    var response = await request;
+    String name = "Unknown";
+    if(response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      name = data["data"]["name"];
+    }
+    request = GetRequest(t, "/1/tokens/self");
+    response = await request;
+    String tokenName = "";
+    if(response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      tokenName = data["name"];
+    }
+    return "$name ($tokenName)";
+  }
 }
 
 enum ControlType {
