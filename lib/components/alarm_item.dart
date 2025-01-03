@@ -66,7 +66,7 @@ class AlarmItemState extends State<AlarmItem> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(alarm.name),
-                            EditAlarmTime(alarm: this.alarm),
+                            EditAlarmTime(alarm: this.alarm, manager: this.manager,),
                             DateRow(alarm: alarm)
                           ],
                         ),
@@ -79,6 +79,7 @@ class AlarmItemState extends State<AlarmItem> {
                             onChanged: (value) {
                             setState(() {
                               alarm.active = value;
+                              _save();
                             });
                           }),
                         ],)

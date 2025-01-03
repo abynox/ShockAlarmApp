@@ -2,6 +2,21 @@
 An app for controling [OpenShock](https://openshock.org/) shockers and even setting alarms with custom tones.
 Based partly on https://github.com/mvarendorff/random-alarm/
 
+# Planned features
+- [ ] Grouping of shockers
+- [ ] (Un)Pausing of shockers
+- [ ] Alarm tones
+- [ ] Login with username/email and password
+- [ ] Random delay
+- [ ] (Big controls mode)
+- [ ] Renaming of shockers (global)
+- [ ] Change sharing limits
+- [ ] Redeem share codes
+- [ ] Create share codes
+- [ ] Viewing of logs
+- [ ] Linux support
+
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.

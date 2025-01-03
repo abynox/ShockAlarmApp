@@ -81,13 +81,14 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    manager.context = context;
     return Column(
         children: <Widget>[
           Text(
             'Your alarms',
             style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
           ),
-          Text("Alarms are currently not working",
+          Text("Alarms are currently semi working",
           style: TextStyle(fontSize: 20),),
           Flexible(
             child: Observer(
@@ -106,7 +107,7 @@ class HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               TimeOfDay tod = TimeOfDay.fromDateTime(DateTime.now());
               final newAlarm = new ObservableAlarmBase(
-                  id: DateTime.now().millisecondsSinceEpoch,
+                  id: manager.getNewAlarmId(),
                   name: 'New Alarm',
                   hour: tod.hour,
                   minute: tod.minute,

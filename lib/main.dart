@@ -20,15 +20,23 @@ Future requestPermissions() async{
 }
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //await AndroidAlarmManager.initialize();
-  //await AndroidAlarmManager.oneShot(Duration(seconds: 10), 0, alarmCallback, alarmClock: true);
+  await AndroidAlarmManager.initialize();
+  await requestPermissions();
 
-  //await requestPermissions();
   runApp(MyApp(null));
 }
 
 @pragma('vm:entry-point')
-void alarmCallback(int id) {
+void alarmCallback(int id) async {
+
+  AlarmListManager manager = AlarmListManager();
+  await manager.loadAllFromStorage();
+  manager.getAlarms().forEach((element) {
+    print("Checking alarm");
+    if(element.active && id ==element.id) {
+      element.trigger(manager, true);
+    }
+  });
   print("Woah");
 }
 

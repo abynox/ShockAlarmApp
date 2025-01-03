@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
@@ -16,6 +17,8 @@ class AlarmListManager {
   AlarmListManager();
 
   Function? reloadAllMethod;
+
+  BuildContext? context;
 
 
   Future loadAllFromStorage() async {
@@ -49,6 +52,30 @@ class AlarmListManager {
     }
   }
 
+  void rescheduleAlarms() async {
+    for (var alarm in _alarms) {
+      if (alarm.active) {
+        await alarm.schedule(this);
+      }
+    }
+  }
+
+  int getNewAlarmId() {
+    int id = 0;
+    bool foundNew = true;
+    while (!foundNew) {
+      foundNew = true;
+      for (var alarm in _alarms) {
+        if (alarm.id == id) {
+          id++;
+          foundNew = false;
+          break;
+        }
+      }
+    }
+    return id;
+  }
+
   saveAlarm(ObservableAlarmBase alarm) async {
     final index =
         _alarms.indexWhere((findAlarm) => alarm.id == findAlarm.id);
@@ -58,14 +85,15 @@ class AlarmListManager {
     } else {
       _alarms[index] = alarm;
     }
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     rebuildAlarmShockers();
-    prefs.setString("alarms", jsonEncode(_alarms));
+    rescheduleAlarms();
+    saveAlarms();
   }
 
   Future updateShockerStore() async {
     List<Shocker> shockers = [];
-    for(var token in _tokens) {
+    List<Token> tokensCopy = this._tokens.toList(); // create a copy
+    for(var token in tokensCopy) {
       OpenShockClient client = OpenShockClient();
       token.name = await client.getNameForToken(token);
       List<Shocker> s = await client.GetShockersForToken(token);
@@ -78,8 +106,8 @@ class AlarmListManager {
     }
     this.shockers.clear();
     this.shockers.addAll(shockers);
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("shockers", jsonEncode(shockers));
+    saveShockers();
+    saveTokens();
     updateHubList();
     rebuildAlarmShockers();
     reloadAllMethod!();
@@ -92,8 +120,7 @@ class AlarmListManager {
     } else {
       _tokens[index] = token;
     }
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("tokens", jsonEncode(_tokens));
+    saveTokens();
     updateShockerStore();
     //await _storage.writeList(_tokens.tokens);
   }
@@ -125,7 +152,7 @@ class AlarmListManager {
     }
   }
 
-  getAlarms() {
+  List<ObservableAlarmBase> getAlarms() {
     return _alarms;
   }
 
@@ -133,16 +160,31 @@ class AlarmListManager {
     return _tokens;
   }
 
+  void saveShockers() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("shockers", jsonEncode(shockers));
+  }
+
+  void saveAlarms() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("alarms", jsonEncode(_alarms));
+  }
+
+  void saveTokens() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("tokens", jsonEncode(_tokens));
+  }
+
   void deleteToken(Token token) {
     _tokens.removeWhere((findToken) => token.id == findToken.id);
-    //await _storage.writeList(_tokens.tokens);
+    saveTokens();
   }
 
   Token? getToken(int id) {
     return _tokens.firstWhere((findToken) => id == findToken.id);
   }
 
-  void sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration) {
+  void sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration, {String customName = "ShockAlarm"}) {
     Control control = Control();
     control.intensity = currentIntensity;
     control.duration = currentDuration;
@@ -154,7 +196,8 @@ class AlarmListManager {
       print("Token not found");
       return;
     }
+    print("Sending shock to ${shocker.name} with intensity $currentIntensity and duration $currentDuration");
     OpenShockClient client = OpenShockClient();
-    client.sendControls(t, [control]);
+    client.sendControls(t, [control], customName: customName);
   }
 }

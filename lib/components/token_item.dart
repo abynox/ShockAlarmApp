@@ -77,7 +77,7 @@ class TokenItemState extends State<TokenItem> {
                         onChanged: (newToken) => token.token = newToken,
                       ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
                       IconButton(
                         icon: Icon(Icons.delete),

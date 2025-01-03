@@ -1,6 +1,9 @@
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
+import '../main.dart';
 
 class Token with Store {
   Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name=""});
@@ -85,15 +88,22 @@ class ObservableAlarmBase with Store {
     return [monday, tuesday, wednesday, thursday, friday, saturday, sunday];
   }
 
-  void trigger(AlarmListManager manager) {
+  void trigger(AlarmListManager manager, bool disableIfApplicable) {
     for (var shocker in shockers) {
       if (shocker.enabled) {
-        manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration);
+        manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
+      }
+    }
+    if (disableIfApplicable) {
+      if(!shouldSchedulePerWeekday()) {
+        active = false;
+        manager.saveAlarm(this);
       }
     }
   }
 
   // Good enough for debugging for now
+  @override
   toString() {
     return "active: $active, name: $name, hour: $hour, minute: $minute, days: $days";
   }
@@ -134,5 +144,24 @@ class ObservableAlarmBase with Store {
       a.shockers = (alarm["shockers"] as List).map((e) => AlarmShocker.fromJson(e)).toList();
     }
     return a;
+  }
+
+  bool shouldSchedulePerWeekday() {
+    return days.any((element) {
+      return element == true;
+    });
+  }
+
+  schedule(AlarmListManager manager) async {
+    if (!shouldSchedulePerWeekday()) {
+      // Schedule for next occurrance 
+      DateTime now = DateTime.now();
+      DateTime nextOccurrance = DateTime(now.year, now.month, now.day, hour, minute);
+      if (nextOccurrance.isBefore(now)) {
+        nextOccurrance = nextOccurrance.add(Duration(days: 1));
+      }
+      ScaffoldMessenger.of(manager.context!).showSnackBar(SnackBar(content: Text("Scheduled alarm for ${nextOccurrance.toString()}")));
+      AndroidAlarmManager.oneShotAt(nextOccurrance, id, alarmCallback, exact: true, wakeup: true);
+    }
   }
 }
