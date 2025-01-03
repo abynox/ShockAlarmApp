@@ -1,6 +1,6 @@
 # shock_alarm_app
+An app for controling [OpenShock](https://openshock.org/) shockers and even setting alarms with custom tones.
 Based partly on https://github.com/mvarendorff/random-alarm/
-A new Flutter project.
 
 ## Getting Started
 
