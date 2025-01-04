@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'screens/home.dart';
@@ -18,8 +19,43 @@ Future requestPermissions() async{
     print('Schedule exact alarm permission ${res.isGranted ? '' : 'not'} granted.');
   }
 }
+
+void initNotification() async {
+  return;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+  // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('launcher_icon');
+  final DarwinInitializationSettings initializationSettingsDarwin =
+      DarwinInitializationSettings();
+  final LinuxInitializationSettings initializationSettingsLinux =
+      LinuxInitializationSettings(
+          defaultActionName: 'Open notification');
+  final InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+      macOS: initializationSettingsDarwin,
+      linux: initializationSettingsLinux);
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
+}
+
+void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
+    final String? payload = notificationResponse.payload;
+    if (notificationResponse.payload != null) {
+      debugPrint('notification payload: $payload');
+    }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  initNotification();
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+    AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
+  //flutterLocalNotificationsPlugin.show(0, "Test","Test", NotificationDetails(android: AndroidNotificationDetails("alarms", "Alarms")));
   await AndroidAlarmManager.initialize();
   await requestPermissions();
 
@@ -30,6 +66,7 @@ void main() async {
 void alarmCallback(int id) async {
 
   AlarmListManager manager = AlarmListManager();
+  initNotification(); 
   await manager.loadAllFromStorage();
   manager.getAlarms().forEach((element) {
     print("Checking alarm");

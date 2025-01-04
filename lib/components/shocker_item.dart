@@ -28,7 +28,13 @@ class ShockerItemState extends State<ShockerItem> {
   int currentDuration = 1000;
 
   void action(ControlType type) {
-    manager.sendShock(type, shocker, currentIntensity, currentDuration);
+    manager.sendShock(type, shocker, currentIntensity, currentDuration).then((errorMessage) {
+      if(errorMessage == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(errorMessage),
+        duration: Duration(seconds: 3),
+      ));
+    });
   }
   
   ShockerItemState(this.shocker, this.manager, this.onRebuild);
@@ -78,12 +84,21 @@ class ShockerItemState extends State<ShockerItem> {
                         ),
                         Row(children: [
 
+                          if(shocker.isOwn && shocker.paused)
+                            IconButton(onPressed: () {
+                              OpenShockClient().setPauseStateOfShocker(shocker, manager, false);
+                            }, icon: Icon(Icons.play_arrow)),
+                          if(shocker.isOwn && !shocker.paused)
+                            IconButton(onPressed: () {
+                              OpenShockClient().setPauseStateOfShocker(shocker, manager, true);
+                            }, icon: Icon(Icons.pause)),
+
                           if (shocker.paused)
                             Chip(label: Text("paused"), backgroundColor: t.colorScheme.errorContainer, side: BorderSide.none,),
                           if (!shocker.paused)
                             IconButton(onPressed: () {setState(() {
                               expanded = !expanded;
-                            });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded))
+                            });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded)),
                         ],)
                       ],
                     ),

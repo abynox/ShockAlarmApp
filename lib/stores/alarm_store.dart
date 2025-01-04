@@ -6,20 +6,21 @@ import 'package:shock_alarm_app/services/openshock.dart';
 import '../main.dart';
 
 class Token with Store {
-  Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name=""});
+  Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name="", this.isSession = false});
 
   int id;
 
   String token;
   String server;
+  bool isSession = false;
   String name = "";
 
   static Token fromJson(token) {
-    return Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "");
+    return Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "", isSession: token["isSession"] ?? false);
   }
 
   Map<String, dynamic> toJson() {
-    return {"id": id, "token": token, "server": server, "name": name};
+    return {"id": id, "token": token, "server": server, "name": name, "isSession": isSession};
   }
 }
 
@@ -89,6 +90,8 @@ class ObservableAlarmBase with Store {
   }
 
   void trigger(AlarmListManager manager, bool disableIfApplicable) {
+    // ToDo: show notification
+
     for (var shocker in shockers) {
       if (shocker.enabled) {
         manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
@@ -98,6 +101,15 @@ class ObservableAlarmBase with Store {
       if(!shouldSchedulePerWeekday()) {
         active = false;
         manager.saveAlarm(this);
+      }
+    }
+  }
+
+  void onAlarmStopped(AlarmListManager manager) {
+    for (var shocker in shockers) {
+      if (shocker.enabled) {
+        // Stop all shockers
+        manager.sendShock(ControlType.stop, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
       }
     }
   }

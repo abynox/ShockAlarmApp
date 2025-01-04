@@ -184,7 +184,7 @@ class AlarmListManager {
     return _tokens.firstWhere((findToken) => id == findToken.id);
   }
 
-  void sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration, {String customName = "ShockAlarm"}) {
+  Future<String?> sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration, {String customName = "ShockAlarm"}) async {
     Control control = Control();
     control.intensity = currentIntensity;
     control.duration = currentDuration;
@@ -193,11 +193,18 @@ class AlarmListManager {
     control.exclusive = true;
     Token? t = getToken(shocker.apiTokenId);
     if(t == null) {
-      print("Token not found");
-      return;
+      return "Token not found";
     }
     print("Sending shock to ${shocker.name} with intensity $currentIntensity and duration $currentDuration");
     OpenShockClient client = OpenShockClient();
-    client.sendControls(t, [control], customName: customName);
+    return await client.sendControls(t, [control], customName: customName) ? null : "Failed to send shock, is your token still valid?";
+  }
+
+  Future<bool> login(String serverAddress, String email, String password) async {
+    Token? session = await OpenShockClient().login(serverAddress, email, password, this);
+    if(session != null) {
+      saveToken(session);
+    }
+    return session != null;
   }
 }

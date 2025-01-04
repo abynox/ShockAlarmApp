@@ -21,26 +21,98 @@ class TokenScreenState extends State<TokenScreen> {
     setState(() {});
   }
 
+  Future showErrorDialog(String title, String message) async {
+    return showDialog(context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Ok")
+          )
+        ],
+      );
+    });
+  }
+
+  Future showLoginPopup() async {
+    TextEditingController serverController = TextEditingController();
+    TextEditingController usernameController = TextEditingController();
+    TextEditingController passwordController = TextEditingController();
+    serverController.text = "https://api.openshock.app";
+    return showDialog(context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Login to OpenShock"),
+        content: Column(
+          children: <Widget>[
+            TextField(
+              decoration: InputDecoration(
+                labelText: "Server"
+              ),
+              controller: serverController,
+
+            ),
+            TextField(
+              decoration: InputDecoration(
+                labelText: "Email"
+              ),
+              controller: usernameController,
+            ),
+            TextField(
+              decoration: InputDecoration(
+                labelText: "Password"
+              ),
+              obscureText: true,
+              obscuringCharacter: "*",
+              controller: passwordController,
+            )
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel")
+          ),
+          TextButton(
+            onPressed: () async {
+              bool worked  = await manager.login(serverController.text, usernameController.text, passwordController.text);
+              if(worked) Navigator.of(context).pop();
+              else {
+                showErrorDialog("Login failed", "Check server, email and password");
+              }
+            },
+            child: Text("Login")
+          )
+        ],
+      );
+    });
+  }
+
   TokenScreenState(this.manager);
   @override
   Widget build(BuildContext context) {
     return Column(
         children: <Widget>[
           Text(
-            'Your tokens',
+            'Your accounts/tokens',
             style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
           ),
           Flexible(
-            child: Observer(
-              builder: (context) => ListView.builder(
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  final token = manager.getTokens()[index];
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                final token = manager.getTokens()[index];
 
-                  return TokenItem(token: token, manager: manager, onRebuild: rebuild);
-                },
-                itemCount: manager.getTokens().length,
-              ),
+                return TokenItem(token: token, manager: manager, onRebuild: rebuild, key: ValueKey(token.id),);
+              },
+              itemCount: manager.getTokens().length,
             ),
           ),
           BottomAddButton(
@@ -53,7 +125,10 @@ class TokenScreenState extends State<TokenScreen> {
                 manager.saveToken(newToken);
               });
             },
-          )
+          ),
+          FilledButton(onPressed: () {
+            showLoginPopup();
+          }, child: Text("Log in to OpenShock", style: TextStyle(fontSize: 20)),)
         ],
       );
   }

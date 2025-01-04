@@ -75,7 +75,26 @@ class TokenItemState extends State<TokenItem> {
                         controller: TextEditingController(text: token.token),
                         style: TextStyle(fontSize: 18),
                         onChanged: (newToken) => token.token = newToken,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: "Token"
+                        ),
+                        obscuringCharacter: "*",
                       ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text("Is session"),
+                      Switch(
+                        value: token.isSession,
+                        onChanged: (value) {
+                          setState(() {
+                            token.isSession = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
