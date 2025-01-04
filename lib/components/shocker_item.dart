@@ -49,112 +49,110 @@ class ShockerItemState extends State<ShockerItem> {
               builder: (context) =>
                   EditAlarm(alarm: this.alarm, manager: manager))),
                   */
-      child: Observer(
-        builder: (context) => GestureDetector(
-          onTap: () => {
-            setState(() {
-              if(shocker.paused) return;
-              expanded = !expanded;
-            })
-          },
-          child:
-            Card(
-              color: t.colorScheme.onInverseSurface,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          spacing: 10,
-                          children: <Widget>[
-                            Text(
-                              shocker.name,
-                              style: TextStyle(fontSize: 24),
-                            ),
-                             Chip(label: Text(shocker.hub)),
-                          ],
-                          
-                        ),
-                        Row(children: [
-
-                          if(shocker.isOwn && shocker.paused)
-                            IconButton(onPressed: () {
-                              OpenShockClient().setPauseStateOfShocker(shocker, manager, false);
-                            }, icon: Icon(Icons.play_arrow)),
-                          if(shocker.isOwn && !shocker.paused)
-                            IconButton(onPressed: () {
-                              OpenShockClient().setPauseStateOfShocker(shocker, manager, true);
-                            }, icon: Icon(Icons.pause)),
-
-                          if (shocker.paused)
-                          GestureDetector( child: Chip(
-                              label: Text("paused"),
-                              backgroundColor: t.colorScheme.errorContainer,
-                              side: BorderSide.none,
-                              avatar: Icon(Icons.info, color: t.colorScheme.error,)
-                            ),
-                            onTap: () {
-                              showDialog(context: context, builder: (context) => AlertDialog(title: Text("Shocker is paused"), content: Text(shocker.isOwn ?
-                              "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by pressing the play button." 
-                              : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
-                              actions: [TextButton(onPressed: () {
-                                Navigator.of(context).pop();
-                              }, child: Text("Ok"))],));
-                            },),
-                          if (!shocker.paused)
-                            IconButton(onPressed: () {setState(() {
-                              expanded = !expanded;
-                            });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded)),
-                        ],)
-                      ],
-                    ),
-                    if (expanded) Column(
-                      children: [
-                        IntensityDurationSelector(duration: currentDuration, intensity: currentIntensity, maxDuration: shocker.durationLimit, maxIntensity: shocker.intensityLimit, onSet: (intensity, duration) {
-                          setState(() {
-                            currentDuration = duration;
-                            currentIntensity = intensity;
-                          });
-                        }),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            if(shocker.soundAllowed)
-                              IconButton(
-                                icon: OpenShockClient.getIconForControlType(ControlType.sound),
-                                onPressed: () {action(ControlType.sound);},
-                              ),
-                            if(shocker.vibrateAllowed)
-                              IconButton(
-                                icon: OpenShockClient.getIconForControlType(ControlType.vibrate),
-                                onPressed: () {action(ControlType.vibrate);},
-                              ),
-                            if(shocker.shockAllowed)
-                              IconButton(
-                                icon: OpenShockClient.getIconForControlType(ControlType.shock),
-                                onPressed: () {action(ControlType.shock);},
-                              ),
-                          ],
-                        ),
-                        SizedBox.fromSize(size: Size.fromHeight(50),child: 
-                        IconButton(onPressed: () {action(ControlType.stop);}, icon: Icon(Icons.stop),)
-                        ,)
+      child: GestureDetector(
+        onTap: () => {
+          setState(() {
+            if(shocker.paused) return;
+            expanded = !expanded;
+          })
+        },
+        child:
+          Card(
+            color: t.colorScheme.onInverseSurface,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        spacing: 10,
+                        children: <Widget>[
+                          Text(
+                            shocker.name,
+                            style: TextStyle(fontSize: 24),
+                          ),
+                            Chip(label: Text(shocker.hub)),
+                        ],
                         
-                      ],
-                    ),
-                  ],
-                )
-              ),
+                      ),
+                      Row(children: [
+
+                        if(shocker.isOwn && shocker.paused)
+                          IconButton(onPressed: () {
+                            OpenShockClient().setPauseStateOfShocker(shocker, manager, false);
+                          }, icon: Icon(Icons.play_arrow)),
+                        if(shocker.isOwn && !shocker.paused)
+                          IconButton(onPressed: () {
+                            OpenShockClient().setPauseStateOfShocker(shocker, manager, true);
+                          }, icon: Icon(Icons.pause)),
+
+                        if (shocker.paused)
+                        GestureDetector( child: Chip(
+                            label: Text("paused"),
+                            backgroundColor: t.colorScheme.errorContainer,
+                            side: BorderSide.none,
+                            avatar: Icon(Icons.info, color: t.colorScheme.error,)
+                          ),
+                          onTap: () {
+                            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Shocker is paused"), content: Text(shocker.isOwn ?
+                            "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by pressing the play button." 
+                            : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
+                            actions: [TextButton(onPressed: () {
+                              Navigator.of(context).pop();
+                            }, child: Text("Ok"))],));
+                          },),
+                        if (!shocker.paused)
+                          IconButton(onPressed: () {setState(() {
+                            expanded = !expanded;
+                          });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded)),
+                      ],)
+                    ],
+                  ),
+                  if (expanded) Column(
+                    children: [
+                      IntensityDurationSelector(duration: currentDuration, intensity: currentIntensity, maxDuration: shocker.durationLimit, maxIntensity: shocker.intensityLimit, onSet: (intensity, duration) {
+                        setState(() {
+                          currentDuration = duration;
+                          currentIntensity = intensity;
+                        });
+                      }),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          if(shocker.soundAllowed)
+                            IconButton(
+                              icon: OpenShockClient.getIconForControlType(ControlType.sound),
+                              onPressed: () {action(ControlType.sound);},
+                            ),
+                          if(shocker.vibrateAllowed)
+                            IconButton(
+                              icon: OpenShockClient.getIconForControlType(ControlType.vibrate),
+                              onPressed: () {action(ControlType.vibrate);},
+                            ),
+                          if(shocker.shockAllowed)
+                            IconButton(
+                              icon: OpenShockClient.getIconForControlType(ControlType.shock),
+                              onPressed: () {action(ControlType.shock);},
+                            ),
+                        ],
+                      ),
+                      SizedBox.fromSize(size: Size.fromHeight(50),child: 
+                      IconButton(onPressed: () {action(ControlType.stop);}, icon: Icon(Icons.stop),)
+                      ,)
+                      
+                    ],
+                  ),
+                ],
+              )
             ),
           ),
-      ),
+        ),
     );
   }
 }

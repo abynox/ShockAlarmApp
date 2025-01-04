@@ -91,16 +91,14 @@ class HomeScreenState extends State<HomeScreen> {
           Text("Alarms are currently semi working",
           style: TextStyle(fontSize: 20),),
           Flexible(
-            child: Observer(
-              builder: (context) => ListView.builder(
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  final alarm = manager.getAlarms()[index];
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                final alarm = manager.getAlarms()[index];
 
-                  return AlarmItem(alarm: alarm, manager: manager, onRebuild: rebuild, key: ValueKey(alarm.id));
-                },
-                itemCount: manager.getAlarms().length,
-              ),
+                return AlarmItem(alarm: alarm, manager: manager, onRebuild: rebuild, key: ValueKey(alarm.id));
+              },
+              itemCount: manager.getAlarms().length,
             ),
           ),
           BottomAddButton(

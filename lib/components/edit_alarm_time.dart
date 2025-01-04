@@ -23,16 +23,15 @@ class EditAlarmTimeState extends State<EditAlarmTime> {
 
   @override
   Widget build(BuildContext context) {
+    final hours = alarm.hour.toString().padLeft(2, '0');
+    final minutes = alarm.minute.toString().padLeft(2, '0');
     return Center(
       child: GestureDetector(
-        child: Observer(builder: (context) {
-          final hours = alarm.hour.toString().padLeft(2, '0');
-          final minutes = alarm.minute.toString().padLeft(2, '0');
-          return Text(
+        child:
+          Text(
             '$hours:$minutes',
-            style: TextStyle(fontSize: 36),
-          );
-        }),
+            style: TextStyle(fontSize: 36)
+          ),
         onTap: () async {
           final time = await showTimePicker(
             context: context,
