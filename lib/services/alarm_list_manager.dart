@@ -50,6 +50,11 @@ class AlarmListManager {
     for (var hub in hubs) {
       enabledHubs.putIfAbsent(hub, () => true);
     }
+    for(var hub in enabledHubs.keys.toList()) {
+      if(hubs.indexWhere((element) => element == hub) == -1) {
+        enabledHubs.remove(hub);
+      }
+    }
   }
 
   void rescheduleAlarms() async {
