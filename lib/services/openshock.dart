@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import '../stores/alarm_store.dart';
@@ -38,6 +39,19 @@ class OpenShockClient {
     }
 
     return shockers;
+  }
+
+  static getIconForControlType(ControlType type) {
+    switch(type) {
+      case ControlType.stop:
+        return Icon(Icons.stop);
+      case ControlType.shock:
+        return Icon(Icons.flash_on);
+      case ControlType.vibrate:
+        return Icon(Icons.vibration);
+      case ControlType.sound:
+        return Icon(Icons.volume_up);
+    }
   }
 
 

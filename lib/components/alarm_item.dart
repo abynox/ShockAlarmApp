@@ -231,7 +231,10 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                                   alarmShocker.duration = duration;
                                   alarmShocker.intensity = intensity;
                                 });
-                              }, maxDuration: alarmShocker.shockerReference?.durationLimit ?? 300, maxIntensity: alarmShocker.shockerReference?.intensityLimit ?? 0, showIntensity: alarmShocker.type != ControlType.sound),
+                              }, maxDuration: alarmShocker.shockerReference?.durationLimit ?? 300,
+                              maxIntensity: alarmShocker.shockerReference?.intensityLimit ?? 0,
+                              showIntensity: alarmShocker.type != ControlType.sound,
+                              type: alarmShocker.type ?? ControlType.shock,),
                           ],
                         ),
                   ],

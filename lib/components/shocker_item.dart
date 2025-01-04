@@ -126,20 +126,20 @@ class ShockerItemState extends State<ShockerItem> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            if(shocker.shockAllowed)
+                            if(shocker.soundAllowed)
                               IconButton(
-                                icon: Icon(Icons.sports_hockey),
-                                onPressed: () {action(ControlType.shock);},
+                                icon: OpenShockClient.getIconForControlType(ControlType.sound),
+                                onPressed: () {action(ControlType.sound);},
                               ),
                             if(shocker.vibrateAllowed)
                               IconButton(
-                                icon: Icon(Icons.vibration),
+                                icon: OpenShockClient.getIconForControlType(ControlType.vibrate),
                                 onPressed: () {action(ControlType.vibrate);},
                               ),
-                            if(shocker.soundAllowed)
+                            if(shocker.shockAllowed)
                               IconButton(
-                                icon: Icon(Icons.volume_down),
-                                onPressed: () {action(ControlType.sound);},
+                                icon: OpenShockClient.getIconForControlType(ControlType.shock),
+                                onPressed: () {action(ControlType.shock);},
                               ),
                           ],
                         ),
@@ -165,12 +165,13 @@ class IntensityDurationSelector extends StatefulWidget {
   int maxDuration;
   int maxIntensity;
   bool showIntensity = true;
+  ControlType type = ControlType.shock;
   final Function(int, int) onSet;
 
-  IntensityDurationSelector({Key? key, this.showIntensity = true, required this.duration, required this.intensity, required this.onSet, required this.maxDuration, required this.maxIntensity}) : super(key: key);
+  IntensityDurationSelector({Key? key, this.showIntensity = true, this.type = ControlType.shock, required this.duration, required this.intensity, required this.onSet, required this.maxDuration, required this.maxIntensity}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => IntensityDurationSelectorState(duration, intensity, onSet, this.maxDuration, this.maxIntensity, this.showIntensity);
+  State<StatefulWidget> createState() => IntensityDurationSelectorState(duration, intensity, onSet, this.maxDuration, this.maxIntensity, this.showIntensity, this.type);
 }
 
 class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
@@ -179,10 +180,11 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
   int duration;
   int intensity;
   bool showIntensity;
+  ControlType type = ControlType.shock;
   Function(int, int) onSet;
 
 
-  IntensityDurationSelectorState(this.duration, this.intensity, this.onSet, this.maxDuration, this.maxIntensity, this.showIntensity);
+  IntensityDurationSelectorState(this.duration, this.intensity, this.onSet, this.maxDuration, this.maxIntensity, this.showIntensity, this.type);
 
   double cubicToLinear(double value) {
     return pow(value, 6/3).toDouble();
@@ -208,10 +210,10 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
     return Column(
       children: [
         if(showIntensity)
-          Row(children: [
-            Icon(Icons.sports_hockey),
-            Text("Intensity: " + intensity.toString(), style: TextStyle(fontSize: 24),),
-          ], mainAxisAlignment: MainAxisAlignment.center,),
+          Row(mainAxisAlignment: MainAxisAlignment.center, spacing: 10,children: [
+            OpenShockClient.getIconForControlType(type),
+            Text("Intensity: $intensity", style: TextStyle(fontSize: 24),),
+          ],),
         if(showIntensity)
           Slider(value: intensity.toDouble(), max: maxIntensity.toDouble(), onChanged: (double value) {
             setState(() {
@@ -220,10 +222,11 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
             });
           }),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center, spacing: 10,
           children: [
             Icon(Icons.timer),
-            Text("Duration: " + (duration / 1000.0).toString(), style: TextStyle(fontSize: 24),),
-          ], mainAxisAlignment: MainAxisAlignment.center),
+            Text("Duration: ${duration / 1000.0}", style: TextStyle(fontSize: 24),),
+          ],),
         Slider(value: reverseMapDuration(duration.toDouble()), max: 1, onChanged: (double value) {
           setState(() {
             duration = mapDuration(value);
