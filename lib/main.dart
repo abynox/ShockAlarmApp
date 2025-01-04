@@ -4,6 +4,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shock_alarm_app/stores/alarm_store.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'screens/home.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
@@ -21,12 +22,11 @@ Future requestPermissions() async{
 }
 
 void initNotification() async {
-  return;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
   // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
   const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('launcher_icon');
+      AndroidInitializationSettings("launcher_icon");
   final DarwinInitializationSettings initializationSettingsDarwin =
       DarwinInitializationSettings();
   final LinuxInitializationSettings initializationSettingsLinux =
@@ -42,10 +42,32 @@ void initNotification() async {
 }
 
 void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
-    final String? payload = notificationResponse.payload;
-    if (notificationResponse.payload != null) {
-      debugPrint('notification payload: $payload');
+
+  AlarmListManager manager = AlarmListManager();
+  await manager.loadAllFromStorage();
+  print("Notification received");
+  if(notificationResponse.id != null) {
+    print("Notification id owo: ${notificationResponse.id}");
+  }
+  ObservableAlarmBase? alarm;
+  manager.getAlarms().forEach((element) {
+    if(element.id == notificationResponse.id) {
+      alarm = element;
     }
+  });
+  if(alarm == null) {
+    print("Alarm not found");
+    return;
+  }
+  print(notificationResponse.actionId);
+  switch(notificationResponse.actionId) {
+    case "stop":
+      alarm?.onAlarmStopped(manager);
+      break;
+    case "detail":
+      print("Dismiss");
+      break;
+  }
 }
 
 void main() async {
@@ -55,7 +77,6 @@ void main() async {
         FlutterLocalNotificationsPlugin();
 flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
     AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
-  //flutterLocalNotificationsPlugin.show(0, "Test","Test", NotificationDetails(android: AndroidNotificationDetails("alarms", "Alarms")));
   await AndroidAlarmManager.initialize();
   await requestPermissions();
 
@@ -74,7 +95,6 @@ void alarmCallback(int id) async {
       element.trigger(manager, true);
     }
   });
-  print("Woah");
 }
 
 class MyApp extends StatelessWidget {

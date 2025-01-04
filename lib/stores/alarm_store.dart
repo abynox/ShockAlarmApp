@@ -1,5 +1,6 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mobx/mobx.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
@@ -91,28 +92,49 @@ class ObservableAlarmBase with Store {
 
   void trigger(AlarmListManager manager, bool disableIfApplicable) {
     // ToDo: show notification
+    FlutterLocalNotificationsPlugin().show(id, name,"Your alarm is firing", NotificationDetails(android: AndroidNotificationDetails("alarms", "Alarms", enableVibration: true, priority: Priority.high, importance: Importance.max, actions: [
+      AndroidNotificationAction("stop", "Stop alarm", showsUserInterface: true),
+      AndroidNotificationAction("detail", "Detail", showsUserInterface: true),
+    ])), payload: id.toString());
+
+    var maxDuration = 0;
 
     for (var shocker in shockers) {
       if (shocker.enabled) {
+        if (shocker.duration > maxDuration) {
+          maxDuration = shocker.duration;
+        }
         // If a shocker is paused the backend will return an error. So we don't need to check if it's paused. Especially as the saved state may not reflect the real paused state.
         manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
       }
     }
+
+    // Wait until all shockers have finished
+    Future.delayed(Duration(milliseconds: maxDuration), () {
+      onAlarmStopped(manager);
+    });
+
     if (disableIfApplicable) {
       if(!shouldSchedulePerWeekday()) {
         active = false;
         manager.saveAlarm(this);
       }
     }
+
   }
 
-  void onAlarmStopped(AlarmListManager manager) {
-    for (var shocker in shockers) {
-      if (shocker.enabled) {
-        // Stop all shockers
-        manager.sendShock(ControlType.stop, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
+  void onAlarmStopped(AlarmListManager manager, {bool needStop = true}) {
+    if(needStop) {
+      for (var shocker in shockers) {
+        if (shocker.enabled) {
+          // Stop all shockers
+          manager.sendShock(ControlType.stop, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
+        }
       }
     }
+
+    FlutterLocalNotificationsPlugin().show(id, name,"Alarm stopped", NotificationDetails(android: AndroidNotificationDetails("alarms", "Alarms", enableVibration: true, priority: Priority.high, importance: Importance.max)), payload: id.toString());
+
   }
 
   // Good enough for debugging for now
