@@ -176,9 +176,23 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                         ),
                         Row(children: [
                           if (isPaused)
-                            Chip(label: Text("paused"), backgroundColor: t.colorScheme.errorContainer, side: BorderSide.none,),
-                          if(!isPaused)
-                            Switch(value: alarmShocker.enabled, onChanged: isPaused ? null : enable,),
+                          GestureDetector(child:
+                            Chip(
+                              label: Text("paused"),
+                              backgroundColor: t.colorScheme.errorContainer,
+                              side: BorderSide.none,
+                              avatar: Icon(Icons.info, color: t.colorScheme.error,)
+                            ),
+                            onTap: () {
+                              showDialog(context: context, builder: (context) => AlertDialog(title: Text("Shocker is paused"), content: Text(alarmShocker.shockerReference!.isOwn ?? false ?
+                              "This shocker was pause by you. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. Unpause it so it can be triggered." 
+                              : "This shocker was paused by the owner. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. It needs to be unpaused so it can be triggered."),
+                              actions: [TextButton(onPressed: () {
+                                Navigator.of(context).pop();
+                              }, child: Text("Ok"))],));
+                            },),
+                            
+                          Switch(value: alarmShocker.enabled, onChanged: enable,),
 
                         ],)
                       ],

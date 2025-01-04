@@ -94,7 +94,20 @@ class ShockerItemState extends State<ShockerItem> {
                             }, icon: Icon(Icons.pause)),
 
                           if (shocker.paused)
-                            Chip(label: Text("paused"), backgroundColor: t.colorScheme.errorContainer, side: BorderSide.none,),
+                          GestureDetector( child: Chip(
+                              label: Text("paused"),
+                              backgroundColor: t.colorScheme.errorContainer,
+                              side: BorderSide.none,
+                              avatar: Icon(Icons.info, color: t.colorScheme.error,)
+                            ),
+                            onTap: () {
+                              showDialog(context: context, builder: (context) => AlertDialog(title: Text("Shocker is paused"), content: Text(shocker.isOwn ?
+                              "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by pressing the play button." 
+                              : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
+                              actions: [TextButton(onPressed: () {
+                                Navigator.of(context).pop();
+                              }, child: Text("Ok"))],));
+                            },),
                           if (!shocker.paused)
                             IconButton(onPressed: () {setState(() {
                               expanded = !expanded;

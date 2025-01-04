@@ -143,9 +143,6 @@ class AlarmListManager {
         for(var alarmShocker in alarm.shockers) {
           if(alarmShocker.shockerId == shocker.id) {
             alarmShocker.shockerReference = shocker;
-            if(shocker.paused) {
-              alarmShocker.enabled = false;
-            }
           }
         }
       }

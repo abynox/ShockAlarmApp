@@ -4,9 +4,9 @@ Based partly on https://github.com/mvarendorff/random-alarm/
 
 # Planned features
 - [ ] Grouping of shockers
-- [ ] (Un)Pausing of shockers
+- [x] (Un)Pausing of shockers
 - [ ] Alarm tones
-- [ ] Login with username/email and password
+- [x] Login with username/email and password
 - [ ] Random delay
 - [ ] (Big controls mode)
 - [ ] Renaming of shockers (global)

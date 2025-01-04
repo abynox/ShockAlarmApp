@@ -94,6 +94,7 @@ class ObservableAlarmBase with Store {
 
     for (var shocker in shockers) {
       if (shocker.enabled) {
+        // If a shocker is paused the backend will return an error. So we don't need to check if it's paused. Especially as the saved state may not reflect the real paused state.
         manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
       }
     }
