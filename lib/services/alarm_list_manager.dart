@@ -221,4 +221,12 @@ class AlarmListManager {
   Future<List<OpenShockShare>> getShockerShares(Shocker shocker) {
     return OpenShockClient().getShockerShares(shocker, this);
   }
+
+  Future<List<OpenShockShareCode>> getShockerShareCodes(Shocker shocker) {
+    return OpenShockClient().getShockerShareCodes(shocker, this);
+  }
+
+  Future<String?> deleteShareCode(OpenShockShareCode shareCode) {
+    return OpenShockClient().deleteShareCode(shareCode, this);
+  }
 }

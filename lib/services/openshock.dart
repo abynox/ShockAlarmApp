@@ -90,6 +90,15 @@ class OpenShockClient {
     }, body: body);
   }
 
+  Future<http.Response> DeleteRequest(Token t, String path, String body) {
+    var url = Uri.parse(t.server + path);
+    return http.delete(url, headers: {
+      if(t.isSession) "Cookie": "openShockSession=${t.token}"
+      else "OpenShockToken": t.token,
+      "Content-Type": "application/json"
+    }, body: body);
+  }
+
   Future setPauseStateOfShocker(Shocker s, AlarmListManager manager, bool paused) async {
     Token? t = manager.getToken(s.apiTokenId);
     if(t == null) return;
@@ -220,6 +229,25 @@ class OpenShockClient {
     return [];
   }
 
+  Future<List<OpenShockShareCode>> getShockerShareCodes(Shocker shocker, AlarmListManager manager) async {
+    Token? t = manager.getToken(shocker.apiTokenId);
+    if(t == null) {
+      return [];
+    }
+    var response = await GetRequest(t, "/1/shockers/${shocker.id}/shareCodes");
+    if(response.statusCode == 200) {
+      List<OpenShockShareCode> codes = [];
+      var data = jsonDecode(response.body);
+      for(var code in data["data"]) {
+        OpenShockShareCode shareCode = OpenShockShareCode.fromJson(code);
+        shareCode.shockerReference = shocker;
+        codes.add(shareCode);
+      }
+      return codes;
+    }
+    return [];
+  }
+
   Future<String?> setPauseStateOfShare(OpenShockShare share, AlarmListManager manager, bool pause) async {
     if(share.shockerReference == null) return "Shocker not found";
     Shocker s = share.shockerReference!;
@@ -237,10 +265,10 @@ class OpenShockClient {
   }
 
   Future<String?> setLimitsOfShare(OpenShockShare share, OpenShockShareLimits limits, AlarmListManager manager) async {
-    if(share.shockerReference == null) return Future.value("Shocker not found");
+    if(share.shockerReference == null) return "Shocker not found";
     Shocker s = share.shockerReference!;
     Token? t = manager.getToken(s.apiTokenId);
-    if(t == null) return Future.value("Token not found");
+    if(t == null) return "Token not found";
     String body = jsonEncode(limits.toJson());
     var response = await PatchRequest(t, "/1/shockers/${s.id}/shares/${share.sharedWith.id}", body);
     if(response.statusCode == 200) {
@@ -249,6 +277,29 @@ class OpenShockClient {
       return null;
     }
     return "${response.statusCode} - Failed to set limits";
+  }
+
+  Future<String?> addShare(Shocker shocker, OpenShockShareLimits limits, AlarmListManager manager) async {
+    Token? t = manager.getToken(shocker.apiTokenId);
+    if(t == null) return "Token not found";
+    String body = jsonEncode(limits.toJson());
+    var response = await PostRequest(t, "/1/shockers/${shocker.id}/shares", body);
+    if(response.statusCode == 200) {
+      return null;
+    }
+    return "${response.statusCode} - Failed to create share";
+  }
+
+  Future<String?> deleteShareCode(OpenShockShareCode shareCode, AlarmListManager alarmListManager) async {
+    if(shareCode.shockerReference == null) return "Shocker not found";
+    Shocker s = shareCode.shockerReference!;
+    Token? t = alarmListManager.getToken(s.apiTokenId);
+    if(t == null) return "Token not found";
+    var response = await DeleteRequest(t, "/1/shares/code/${shareCode.id}", "");
+    if(response.statusCode == 200) {
+      return null;
+    }
+    return "${response.statusCode} - Failed to delete share code";
   }
 }
 
@@ -260,9 +311,22 @@ enum ControlType {
   live 
 }
 
+class OpenShockShareCode {
+  String id = "";
+  DateTime createdOn = DateTime.now();
+  Shocker? shockerReference;
+
+  OpenShockShareCode.fromJson(Map<String, dynamic> json) {
+    id = json["id"];
+    createdOn = DateTime.parse(json["createdOn"]);
+  }
+}
+
 class OpenShockShareLimits {
   OpenShockShockerLimits limits = OpenShockShockerLimits();
   OpenShockShockerPermissions permissions = OpenShockShockerPermissions();
+
+  OpenShockShareLimits();
 
   dynamic toJson() {
     return {
@@ -540,6 +604,8 @@ class OpenShockShare {
   OpenShockShockerLimits limits = OpenShockShockerLimits();
   bool paused = false;
   Shocker? shockerReference;
+
+  OpenShockShare();
 
   OpenShockShare.fromJson(Map<String, dynamic> json) {
     sharedWith.id = json["sharedWith"]["id"];
