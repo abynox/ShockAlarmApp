@@ -2,19 +2,23 @@
 An app for controling [OpenShock](https://openshock.org/) shockers and even setting alarms with custom tones.
 Based partly on https://github.com/mvarendorff/random-alarm/
 
-# Planned features
-- [ ] Grouping of shockers
+# Planned features (ordered by priority)
 - [x] (Un)Pausing of shockers
-- [ ] Alarm tones
 - [x] Login with username/email and password
 - [ ] Random delay
-- [ ] (Big controls mode)
 - [ ] Renaming of shockers (global)
-- [ ] Change sharing limits
+- [ ] Add option to repeat default shock/vibration... option for one minute (perhaps adjustable in settings). Needs reworking of the alarm stop feature
+- [ ] Alarm tones
+- [ ] Viewing of logs
 - [ ] Redeem share codes
 - [ ] Create share codes
-- [ ] Viewing of logs
+- [ ] Change sharing limits
+- [ ] Grouping of shockers
+- [ ] (Big controls mode)
 - [ ] Linux support
+
+# Planned settings
+- [ ] Hide/unhiding of the delay option
 
 
 ## Getting Started
