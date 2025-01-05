@@ -40,7 +40,13 @@ class LogScreenState extends State<LogScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Logs for ${shocker.name}'),
+        title: Row(
+          spacing: 10,
+          children: [
+            Text('Logs for ${shocker.name}'),
+            Chip(label: Text(shocker.hub)),
+          ],
+        ),
       ),
       body: initialLoading ? Center(child: CircularProgressIndicator()) :
         RefreshIndicator(child: ListView.builder(
@@ -73,23 +79,42 @@ class ShockerLogEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return 
+    Column(
       children: [
         Row(
           spacing: 10,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              spacing: 10,
+            OpenShockClient.getIconForControlType(log.type),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                OpenShockClient.getIconForControlType(log.type),
-                Text(log.getName()),
-              ],
-            ),
-            Text(formatDateTime(log.createdOn.toLocal())),
-        ],)
-      ]
+                Row(
+                  spacing: 10,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      spacing: 10,
+                      children: [
+                        Text(log.getName(), style: TextStyle(fontSize: 18),),
+                      ],
+                    ),
+                    Text(formatDateTime(log.createdOn.toLocal())),
+                ],),
+                Row(
+                  children: [
+                    Text("${(log.duration / 100).round() / 10} s"),
+                    Text(" @ "),
+                    Text("${log.intensity}"),
+                  ],
+                ),
+              ]
+            )
+          ]),
+          Divider()
+      ],
     );
+    
   }
 }
 
