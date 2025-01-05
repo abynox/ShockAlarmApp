@@ -213,4 +213,8 @@ class AlarmListManager {
   Future<String?> renameShocker(Shocker shocker, String text) {
     return OpenShockClient().renameShocker(shocker, text, this);
   }
+
+  Future<List<ShockerLog>> getShockerLogs(Shocker shocker) {
+    return OpenShockClient().getShockerLogs(shocker, this);
+  }
 }

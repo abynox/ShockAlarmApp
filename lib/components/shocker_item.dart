@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import '../screens/logs.dart';
 import '../stores/alarm_store.dart';
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
@@ -195,11 +196,20 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                               children: [
                               Icon(Icons.edit, color: t.colorScheme.onSurfaceVariant,),
                               Text("Rename")
+                            ],)),
+                            PopupMenuItem(value: "logs", child: Row(
+                              spacing: 10,
+                              children: [
+                                Icon(Icons.list, color: t.colorScheme.onSurfaceVariant,),
+                              Text("Logs")
                             ],))
                         ];
                         }, onSelected: (String value) {
                           if(value == "rename") {
                             startRenameShocker();
+                          }
+                          if(value == "logs") {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => LogScreen(shocker: shocker, manager: manager)));
                           }
                         },),
 

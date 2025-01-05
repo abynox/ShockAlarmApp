@@ -38,17 +38,21 @@ class ShockerScreenState extends State<ShockerScreen> {
             );}, selected: manager.enabledHubs[hub]!);
           }).toList(),),
           Flexible(
-      child: ListView(children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children:
-            filteredShockers.isEmpty ? [Text('No shockers found', style: TextStyle(fontSize: 24))] :
-            filteredShockers.map((shocker) {
-              return ShockerItem(shocker: shocker, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.id));
-            }).toList()
+            child: RefreshIndicator(child: ListView(children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children:
+                  filteredShockers.isEmpty ? [Text('No shockers found', style: TextStyle(fontSize: 24))] :
+                  filteredShockers.map((shocker) {
+                    return ShockerItem(shocker: shocker, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.id));
+                  }).toList()
+                )
+              ],), onRefresh: () async {
+                await manager.updateShockerStore();
+                setState(() {});
+              }
+            )
           )
-        ],)
-      )
     ],);
     
   }

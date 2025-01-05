@@ -174,6 +174,23 @@ class OpenShockClient {
     }
     return "${response.statusCode} - failed to rename shocker";
   }
+
+  Future<List<ShockerLog>> getShockerLogs(Shocker shocker, AlarmListManager manager) async {
+    Token? t = manager.getToken(shocker.apiTokenId);
+    if(t == null) {
+      return [];
+    }
+    var response = await GetRequest(t, "/1/shockers/${shocker.id}/logs");
+    if(response.statusCode == 200) {
+      List<ShockerLog> logs = [];
+      var data = jsonDecode(response.body);
+      for(var log in data["data"]) {
+        logs.add(ShockerLog.fromJson(log));
+      }
+      return logs;
+    }
+    return [];
+  }
 }
 
 enum ControlType {
@@ -216,6 +233,51 @@ class Control {
   }
 }
 
+class ShockerLog {
+  String id = "";
+  DateTime createdOn = DateTime.now();
+  ControlType type = ControlType.shock;
+  ShockerLogUser controlledBy = ShockerLogUser();
+  int intensity = 0;
+  int duration = 0;
+
+  ShockerLog.fromJson(Map<String, dynamic> json) {
+    id = json["id"];
+    createdOn = DateTime.parse(json["createdOn"]);
+    switch(json["type"]) {
+      case "Shock":
+        type = ControlType.shock;
+        break;
+      case "Vibrate":
+        type = ControlType.vibrate;
+        break;
+      case "Sound":
+        type = ControlType.sound;
+        break;
+      case "Stop":
+        type = ControlType.stop;
+        break;
+    }
+    controlledBy.id = json["controlledBy"]["id"];
+    controlledBy.name = json["controlledBy"]["name"];
+    controlledBy.image = json["controlledBy"]["image"];
+    controlledBy.customName = json["controlledBy"]["customName"];
+    intensity = json["intensity"];
+    duration = json["duration"];
+  }
+
+  String getName() {
+    return controlledBy.customName != null ? "${controlledBy.customName} [${controlledBy.name}]" : controlledBy.name;
+  }
+}
+
+class ShockerLogUser {
+  String id = "";
+  String name = "";
+  String image = "";
+  String? customName;
+}
+
 class Shocker {
   Shocker() {}
   
@@ -227,8 +289,8 @@ class Shocker {
   bool shockAllowed = true;
   bool vibrateAllowed = true;
   bool soundAllowed = true;
-  int durationLimit = 30000;
-  int intensityLimit = 100;
+  int? durationLimit = 30000;
+  int? intensityLimit = 100;
   bool isOwn = false;
 
   Shocker.fromOpenShockShocker(OpenShockShocker shocker) {
@@ -241,8 +303,8 @@ class Shocker {
       soundAllowed = shocker.permissions!.sound;
     }
     if(shocker.limits != null) {
-      durationLimit = shocker.limits!.duration;
-      intensityLimit = shocker.limits!.intensity;
+      durationLimit = shocker.limits!.duration ?? 30000;
+      intensityLimit = shocker.limits!.intensity ?? 100;
     }
   }
 
@@ -381,8 +443,8 @@ class OpenShockShocker
 
 class OpenShockShockerLimits
 {
-    int intensity = 100;
-    int duration = 30000;
+    int? intensity = 100;
+    int? duration = 30000;
 }
 
 class OpenShockShockerPermissions
