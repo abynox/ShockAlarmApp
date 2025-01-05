@@ -48,17 +48,27 @@ class LogScreenState extends State<LogScreen> {
           ],
         ),
       ),
-      body: initialLoading ? Center(child: CircularProgressIndicator()) :
-        RefreshIndicator(child: ListView.builder(
-        itemCount: logs.length,
-        itemBuilder: (context, index) {
-          final log = logs[index];
-          return ShockerLogEntry(log: log);
-        },
-      ),onRefresh: () async{
-        return loadLogs();
-      })
-      
+      body: 
+      Padding(
+        padding: const EdgeInsets.only(
+          bottom: 15,
+          left: 15,
+          right: 15,
+          top: 50,
+        ),
+        child: 
+          initialLoading ? Center(child: CircularProgressIndicator()) :
+            RefreshIndicator(child: ListView.builder(
+            itemCount: logs.length,
+            itemBuilder: (context, index) {
+              final log = logs[index];
+              return ShockerLogEntry(log: log);
+            },
+          ),onRefresh: () async{
+            return loadLogs();
+          }
+        )
+      )
     );
   }
 }

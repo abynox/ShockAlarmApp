@@ -217,4 +217,8 @@ class AlarmListManager {
   Future<List<ShockerLog>> getShockerLogs(Shocker shocker) {
     return OpenShockClient().getShockerLogs(shocker, this);
   }
+
+  Future<List<OpenShockShare>> getShockerShares(Shocker shocker) {
+    return OpenShockClient().getShockerShares(shocker, this);
+  }
 }

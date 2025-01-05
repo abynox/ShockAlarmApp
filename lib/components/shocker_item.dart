@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import '../screens/logs.dart';
+import '../screens/shares.dart';
 import '../stores/alarm_store.dart';
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
@@ -203,6 +204,12 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                                   children: [
                                     Icon(Icons.list, color: t.colorScheme.onSurfaceVariant,),
                                   Text("Logs")
+                                ],)),
+                                PopupMenuItem(value: "shares", child: Row(
+                                  spacing: 10,
+                                  children: [
+                                    Icon(Icons.share, color: t.colorScheme.onSurfaceVariant,),
+                                  Text("Shares")
                                 ],))
                             ];
                         }, onSelected: (String value) {
@@ -211,6 +218,9 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                           }
                           if(value == "logs") {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => LogScreen(shocker: shocker, manager: manager)));
+                          }
+                          if(value == "shares") {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => SharesScreen(shocker: shocker, manager: manager)));
                           }
                         },),
 

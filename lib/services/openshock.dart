@@ -41,17 +41,26 @@ class OpenShockClient {
     return shockers;
   }
 
-  static getIconForControlType(ControlType type) {
+  static getIconForControlType(ControlType type, {Color? color}) {
+    IconData icon = Icons.stop;
     switch(type) {
       case ControlType.stop:
-        return Icon(Icons.stop);
+        icon = Icons.stop;
+        break;
       case ControlType.shock:
-        return Icon(Icons.flash_on);
+        icon = Icons.flash_on;
+        break;
       case ControlType.vibrate:
-        return Icon(Icons.vibration);
+        icon = Icons.vibration;
+        break;
       case ControlType.sound:
-        return Icon(Icons.volume_up);
+        icon = Icons.volume_up;
+        break;
+      case ControlType.live:
+        icon = Icons.wifi_tethering;
+        break;
     }
+    return Icon(icon, color: color);
   }
 
 
@@ -191,13 +200,49 @@ class OpenShockClient {
     }
     return [];
   }
+
+  Future<List<OpenShockShare>> getShockerShares(Shocker shocker, AlarmListManager manager) async {
+    Token? t = manager.getToken(shocker.apiTokenId);
+    if(t == null) {
+      return [];
+    }
+    var response = await GetRequest(t, "/1/shockers/${shocker.id}/shares");
+    if(response.statusCode == 200) {
+      List<OpenShockShare> shares = [];
+      var data = jsonDecode(response.body);
+      for(var share in data["data"]) {
+        OpenShockShare s = OpenShockShare.fromJson(share);
+        s.shockerReference = shocker;
+        shares.add(s);
+      }
+      return shares;
+    }
+    return [];
+  }
+
+  Future<String?> setPauseStateOfShare(OpenShockShare share, AlarmListManager manager, bool pause) async {
+    if(share.shockerReference == null) return "Shocker not found";
+    Shocker s = share.shockerReference!;
+    Token? t = manager.getToken(s.apiTokenId);
+    if(t == null) return "Token not found";
+    String body = jsonEncode({
+      "pause": pause
+    });
+    var response = await PostRequest(t, "/1/shockers/${s.id}/shares/${share.sharedWith.id}/pause", body);
+    if(response.statusCode == 200) {
+      share.paused = pause;
+      return null;
+    }
+    return "${response.statusCode} - Failed to set pause state";
+  }
 }
 
 enum ControlType {
   stop,
   shock,
   vibrate,
-  sound 
+  sound,
+  live 
 }
 
 class Control {
@@ -222,6 +267,9 @@ class Control {
       case ControlType.sound:
         type = "Sound";
         break;
+      case ControlType.live:
+        type = "Live";
+        break;
     } 
     return {
       "id": id,
@@ -237,7 +285,7 @@ class ShockerLog {
   String id = "";
   DateTime createdOn = DateTime.now();
   ControlType type = ControlType.shock;
-  ShockerLogUser controlledBy = ShockerLogUser();
+  OpenShockUser controlledBy = OpenShockUser();
   int intensity = 0;
   int duration = 0;
 
@@ -271,7 +319,7 @@ class ShockerLog {
   }
 }
 
-class ShockerLogUser {
+class OpenShockUser {
   String id = "";
   String name = "";
   String image = "";
@@ -441,6 +489,29 @@ class OpenShockShocker
     }
 }
 
+class OpenShockShare {
+  OpenShockUser sharedWith = OpenShockUser();
+  DateTime createdOn = DateTime.now();
+  OpenShockShockerPermissions permissions = OpenShockShockerPermissions();
+  OpenShockShockerLimits limits = OpenShockShockerLimits();
+  bool paused = false;
+  Shocker? shockerReference;
+
+  OpenShockShare.fromJson(Map<String, dynamic> json) {
+    sharedWith.id = json["sharedWith"]["id"];
+    sharedWith.name = json["sharedWith"]["name"];
+    sharedWith.image = json["sharedWith"]["image"];
+    createdOn = DateTime.parse(json["createdOn"]);
+    permissions.shock = json["permissions"]["shock"];
+    permissions.vibrate = json["permissions"]["vibrate"];
+    permissions.sound = json["permissions"]["sound"];
+    permissions.live = json["permissions"]["live"];
+    limits.intensity = json["limits"]["intensity"];
+    limits.duration = json["limits"]["duration"];
+    paused = json["paused"];
+  }
+}
+
 class OpenShockShockerLimits
 {
     int? intensity = 100;
@@ -452,4 +523,5 @@ class OpenShockShockerPermissions
     bool shock = true;
     bool vibrate = true;
     bool sound = true;
+    bool live = false;
 }
