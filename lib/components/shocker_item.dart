@@ -46,6 +46,7 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
 
   void realAction(ControlType type) {
     setState(() {
+      actionDoneTime = DateTime.now().add(Duration(milliseconds: currentDuration));
       progressCircularController = AnimationController(
         vsync: this,
         duration: Duration(milliseconds: currentDuration),
@@ -58,7 +59,6 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
         });
       });
       progressCircularController!.forward();
-      actionDoneTime = DateTime.now().add(Duration(milliseconds: currentDuration));
     });
     manager.sendShock(type, shocker, currentIntensity, currentDuration).then((errorMessage) {
       if(errorMessage == null) return;
@@ -315,12 +315,12 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                         children: [
                         Text("Delaying action... ${(delayDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
                         CircularProgressIndicator(
-                          value: delayVibrationController == null ? 0 : 1 - (delayDoneTime.difference(DateTime.now()).inMilliseconds / (delayDuration*1000))
+                          value: delayVibrationController == null ? 0 : (delayDoneTime.difference(DateTime.now()).inMilliseconds / (delayDuration*1000))
                           ),
                       ],),
                       if(progressCircularController != null)
                         CircularProgressIndicator(
-                          value: progressCircularController == null ? 0 : 1 - (actionDoneTime.difference(DateTime.now()).inMilliseconds / currentDuration),
+                          value: progressCircularController == null ? 0 : (actionDoneTime.difference(DateTime.now()).inMilliseconds / currentDuration),
                         ),
                       SizedBox.fromSize(size: Size.fromHeight(50),child: 
                       IconButton(onPressed: () {action(ControlType.stop);}, icon: Icon(Icons.stop),)

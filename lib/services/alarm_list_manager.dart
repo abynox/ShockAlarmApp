@@ -197,7 +197,7 @@ class AlarmListManager {
     if(t == null) {
       return "Token not found";
     }
-    print("Sending shock to ${shocker.name} with intensity $currentIntensity and duration $currentDuration");
+    print("Sending ${type} to ${shocker.name} with intensity $currentIntensity and duration $currentDuration");
     OpenShockClient client = OpenShockClient();
     return await client.sendControls(t, [control], customName: customName) ? null : "Failed to send shock, is your token still valid?";
   }
