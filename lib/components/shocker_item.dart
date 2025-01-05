@@ -189,21 +189,22 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                       Row(
                         spacing: 5,
                         children: [
-                        PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
-                          return [
-                            PopupMenuItem(value: "rename", child: Row(
-                              spacing: 10,
-                              children: [
-                              Icon(Icons.edit, color: t.colorScheme.onSurfaceVariant,),
-                              Text("Rename")
-                            ],)),
-                            PopupMenuItem(value: "logs", child: Row(
-                              spacing: 10,
-                              children: [
-                                Icon(Icons.list, color: t.colorScheme.onSurfaceVariant,),
-                              Text("Logs")
-                            ],))
-                        ];
+                          if(shocker.isOwn)
+                            PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
+                              return [
+                                PopupMenuItem(value: "rename", child: Row(
+                                  spacing: 10,
+                                  children: [
+                                  Icon(Icons.edit, color: t.colorScheme.onSurfaceVariant,),
+                                  Text("Rename")
+                                ],)),
+                                PopupMenuItem(value: "logs", child: Row(
+                                  spacing: 10,
+                                  children: [
+                                    Icon(Icons.list, color: t.colorScheme.onSurfaceVariant,),
+                                  Text("Logs")
+                                ],))
+                            ];
                         }, onSelected: (String value) {
                           if(value == "rename") {
                             startRenameShocker();
