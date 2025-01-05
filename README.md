@@ -5,7 +5,7 @@ Based partly on https://github.com/mvarendorff/random-alarm/
 # Planned features (ordered by priority)
 - [x] (Un)Pausing of shockers
 - [x] Login with username/email and password
-- [ ] Random delay
+- [x] Random delay
 - [ ] Renaming of shockers (global)
 - [ ] Add option to repeat default shock/vibration... option for one minute (perhaps adjustable in settings). Needs reworking of the alarm stop feature
 - [ ] Alarm tones
