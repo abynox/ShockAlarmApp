@@ -289,8 +289,8 @@ class Shocker {
   bool shockAllowed = true;
   bool vibrateAllowed = true;
   bool soundAllowed = true;
-  int? durationLimit = 30000;
-  int? intensityLimit = 100;
+  int durationLimit = 30000;
+  int intensityLimit = 100;
   bool isOwn = false;
 
   Shocker.fromOpenShockShocker(OpenShockShocker shocker) {
