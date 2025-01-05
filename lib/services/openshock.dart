@@ -235,6 +235,21 @@ class OpenShockClient {
     }
     return "${response.statusCode} - Failed to set pause state";
   }
+
+  Future<String?> setLimitsOfShare(OpenShockShare share, OpenShockShareLimits limits, AlarmListManager manager) async {
+    if(share.shockerReference == null) return Future.value("Shocker not found");
+    Shocker s = share.shockerReference!;
+    Token? t = manager.getToken(s.apiTokenId);
+    if(t == null) return Future.value("Token not found");
+    String body = jsonEncode(limits.toJson());
+    var response = await PatchRequest(t, "/1/shockers/${s.id}/shares/${share.sharedWith.id}", body);
+    if(response.statusCode == 200) {
+      share.limits = limits.limits;
+      share.permissions = limits.permissions;
+      return null;
+    }
+    return "${response.statusCode} - Failed to set limits";
+  }
 }
 
 enum ControlType {
@@ -243,6 +258,35 @@ enum ControlType {
   vibrate,
   sound,
   live 
+}
+
+class OpenShockShareLimits {
+  OpenShockShockerLimits limits = OpenShockShockerLimits();
+  OpenShockShockerPermissions permissions = OpenShockShockerPermissions();
+
+  dynamic toJson() {
+    return {
+      "limits": {
+        "intensity": limits.intensity,
+        "duration": limits.duration
+      },
+      "permissions": {
+        "shock": permissions.shock,
+        "vibrate": permissions.vibrate,
+        "sound": permissions.sound,
+        "live": permissions.live
+      }
+    };
+  }
+
+  OpenShockShareLimits.from(OpenShockShare share) {
+    limits.duration = share.limits.duration;
+    limits.intensity = share.limits.intensity;
+    permissions.shock = share.permissions.shock;
+    permissions.vibrate = share.permissions.vibrate;
+    permissions.sound = share.permissions.sound;
+    permissions.live = share.permissions.live;
+  }
 }
 
 class Control {

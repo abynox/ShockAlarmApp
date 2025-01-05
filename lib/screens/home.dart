@@ -83,14 +83,15 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     manager.context = context;
+    ThemeData t = Theme.of(context);
     return Column(
         children: <Widget>[
           Text(
             'Your alarms',
-            style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
+            style: t.textTheme.headlineMedium,
           ),
           Text("Alarms are currently semi working",
-          style: TextStyle(fontSize: 20),),
+          style: t.textTheme.headlineSmall),
           Flexible(
             child: ListView.builder(
               shrinkWrap: true,

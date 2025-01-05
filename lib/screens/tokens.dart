@@ -98,11 +98,12 @@ class TokenScreenState extends State<TokenScreen> {
   TokenScreenState(this.manager);
   @override
   Widget build(BuildContext context) {
+    ThemeData t = Theme.of(context);
     return Column(
         children: <Widget>[
           Text(
             'Your accounts/tokens',
-            style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
+            style: t.textTheme.headlineMedium,
           ),
           Flexible(
             child: ListView.builder(
@@ -128,7 +129,7 @@ class TokenScreenState extends State<TokenScreen> {
           ),
           FilledButton(onPressed: () {
             showLoginPopup();
-          }, child: Text("Log in to OpenShock", style: TextStyle(fontSize: 20)),)
+          }, child: Text("Log in to OpenShock", style: TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),)
         ],
       );
   }

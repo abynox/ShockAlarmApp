@@ -181,7 +181,7 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                         children: <Widget>[
                           Text(
                             shocker.name,
-                            style: TextStyle(fontSize: 24),
+                            style: t.textTheme.headlineSmall,
                           ),
                             Chip(label: Text(shocker.hub)),
                         ],
@@ -326,12 +326,19 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                         children: [
                         Text("Delaying action... ${(delayDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
                         CircularProgressIndicator(
-                          value: delayVibrationController == null ? 0 : (delayDoneTime.difference(DateTime.now()).inMilliseconds / (delayDuration*1000))
+                            value: delayVibrationController == null ? 0 : (delayDoneTime.difference(DateTime.now()).inMilliseconds / (delayDuration*1000))
                           ),
                       ],),
                       if(progressCircularController != null)
-                        CircularProgressIndicator(
-                          value: progressCircularController == null ? 0 : (actionDoneTime.difference(DateTime.now()).inMilliseconds / currentDuration),
+                        Row(
+                          spacing: 10,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Executing... ${(actionDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
+                            CircularProgressIndicator(
+                              value: progressCircularController == null ? 0 : 1 - (actionDoneTime.difference(DateTime.now()).inMilliseconds / currentDuration),
+                            )
+                          ]
                         ),
                       SizedBox.fromSize(size: Size.fromHeight(50),child: 
                       IconButton(onPressed: () {action(ControlType.stop);}, icon: Icon(Icons.stop),)
@@ -400,7 +407,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
         if(showIntensity)
           Row(mainAxisAlignment: MainAxisAlignment.center, spacing: 10,children: [
             OpenShockClient.getIconForControlType(type),
-            Text("Intensity: $intensity", style: TextStyle(fontSize: 24),),
+            Text("Intensity: $intensity", style: t.textTheme.headlineSmall,),
           ],),
         if(showIntensity)
           Slider(value: intensity.toDouble(), max: maxIntensity.toDouble(), onChanged: (double value) {
@@ -413,7 +420,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
           mainAxisAlignment: MainAxisAlignment.center, spacing: 10,
           children: [
             Icon(Icons.timer),
-            Text("Duration: ${duration / 1000.0}", style: TextStyle(fontSize: 24),),
+            Text("Duration: ${duration / 1000.0}", style: t.textTheme.headlineSmall,),
           ],),
         Slider(value: reverseMapDuration(duration.toDouble()), max: 1, onChanged: (double value) {
           setState(() {

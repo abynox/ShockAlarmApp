@@ -22,13 +22,14 @@ class ShockerScreenState extends State<ShockerScreen> {
   ShockerScreenState(this.manager);
   @override
   Widget build(BuildContext context) {
+    ThemeData t = Theme.of(context);
     List<Shocker> filteredShockers = manager.shockers.where((shocker) {
     return manager.enabledHubs[shocker.hub] ?? false;
   }).toList();
     return Column(children: [
       Text(
         'All shockers',
-        style: TextStyle(fontSize: 28, color: Theme.of(context).textTheme.headlineMedium?.color),
+        style: t.textTheme.headlineMedium,
       ),
       Wrap(spacing: 5,runAlignment: WrapAlignment.start,children: manager.enabledHubs.keys.map<FilterChip>((hub) {
         return FilterChip(label: Text(hub), onSelected: (bool value) {
@@ -42,7 +43,7 @@ class ShockerScreenState extends State<ShockerScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children:
-              filteredShockers.isEmpty ? [Text('No shockers found', style: TextStyle(fontSize: 24))] :
+              filteredShockers.isEmpty ? [Text('No shockers found', style: t.textTheme.headlineSmall)] :
               filteredShockers.map((shocker) {
                 return ShockerItem(shocker: shocker, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.id));
               }).toList()

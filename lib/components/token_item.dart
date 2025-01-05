@@ -58,7 +58,7 @@ class TokenItemState extends State<TokenItem> {
                     children: <Widget>[
                       Text(
                         token.name.toString(),
-                        style: TextStyle(fontSize: 24),
+                        style: t.textTheme.headlineSmall,
                       )
                     ],
                   ),
@@ -73,7 +73,7 @@ class TokenItemState extends State<TokenItem> {
                 children: [
                   TextField(
                         controller: TextEditingController(text: token.token),
-                        style: TextStyle(fontSize: 18),
+                        style: t.textTheme.bodyMedium,
                         onChanged: (newToken) => token.token = newToken,
                         obscureText: true,
                         decoration: InputDecoration(

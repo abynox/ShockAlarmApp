@@ -5,7 +5,6 @@ import 'package:shock_alarm_app/services/openshock.dart';
 import '../stores/alarm_store.dart';
 import '../services/alarm_list_manager.dart';
 import '../components/edit_alarm_days.dart';
-import '../components/edit_alarm_head.dart';
 import '../components/edit_alarm_time.dart';
 
 const dates = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
@@ -169,7 +168,7 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                           children: [
                             Text(
                               alarmShocker.shockerReference?.name ?? "Unknown",
-                              style: TextStyle(fontSize: 24),
+                              style: t.textTheme.headlineSmall,
                             ),
                             Chip(label: Text(alarmShocker.shockerReference?.hub ?? "Unknown")),
                           ],

@@ -89,6 +89,7 @@ class ShockerLogEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData t = Theme.of(context);
     return 
     Column(
       children: [
@@ -106,7 +107,7 @@ class ShockerLogEntry extends StatelessWidget {
                     Row(
                       spacing: 10,
                       children: [
-                        Text(log.getName(), style: TextStyle(fontSize: 18),),
+                        Text(log.getName(), style: t.textTheme.titleMedium,),
                       ],
                     ),
                     Text(formatDateTime(log.createdOn.toLocal())),

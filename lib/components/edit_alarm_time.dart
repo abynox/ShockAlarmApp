@@ -25,12 +25,13 @@ class EditAlarmTimeState extends State<EditAlarmTime> {
   Widget build(BuildContext context) {
     final hours = alarm.hour.toString().padLeft(2, '0');
     final minutes = alarm.minute.toString().padLeft(2, '0');
+    ThemeData t = Theme.of(context);
     return Center(
       child: GestureDetector(
         child:
           Text(
             '$hours:$minutes',
-            style: TextStyle(fontSize: 36)
+            style: t.textTheme.displayMedium
           ),
         onTap: () async {
           final time = await showTimePicker(

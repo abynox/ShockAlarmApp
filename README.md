@@ -8,12 +8,13 @@ Based partly on https://github.com/mvarendorff/random-alarm/
 - [x] Random delay
 - [x] Renaming of shockers (global)
 - [x] Viewing of logs
-- [ ] Change sharing limits
+- [x] Change sharing limits
 - [ ] Create share codes
 - [ ] Redeem share codes
 - [ ] Add option to repeat default shock/vibration... option for one minute (perhaps adjustable in settings). Needs reworking of the alarm stop feature
 - [ ] Alarm tones
 - [ ] Grouping of shockers
+- [ ] Redo settings
 - [ ] (Big controls mode)
 - [ ] Linux support
 

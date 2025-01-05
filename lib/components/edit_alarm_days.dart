@@ -90,10 +90,7 @@ class WeekDayToggle extends StatelessWidget {
           child: Center(
               child: Text(
             this.text,
-            style: TextStyle(
-              fontSize: 18,
-              color: textColor,
-            ),
+            style: t.textTheme.bodyLarge,
           )),
         ),
       ),
