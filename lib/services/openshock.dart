@@ -72,6 +72,15 @@ class OpenShockClient {
     }, body: body);
   }
 
+  Future<http.Response> PatchRequest(Token t, String path, String body) {
+    var url = Uri.parse(t.server + path);
+    return http.patch(url, headers: {
+      if(t.isSession) "Cookie": "openShockSession=${t.token}"
+      else "OpenShockToken": t.token,
+      "Content-Type": "application/json"
+    }, body: body);
+  }
+
   Future setPauseStateOfShocker(Shocker s, AlarmListManager manager, bool paused) async {
     Token? t = manager.getToken(s.apiTokenId);
     if(t == null) return;
@@ -139,6 +148,31 @@ class OpenShockClient {
       });
     }
     return token;
+  }
+
+  Future<String?> renameShocker(Shocker shocker, String text, AlarmListManager manager) async {
+    Token? t = manager.getToken(shocker.apiTokenId);
+    if(t == null) {
+      return Future.value("Token not found");
+    }
+    var response = await GetRequest(t, "/1/shockers/${shocker.id}");
+
+    if(response.statusCode != 200) {
+      return "${response.statusCode} - failed to get shocker";
+    }
+    // replace name of response
+    var responseBody = jsonDecode(response.body)["data"];
+    print(response.body);
+    responseBody["name"] = text;
+    String body = jsonEncode(responseBody);
+
+    response = await PatchRequest(t, "/1/shockers/${shocker.id}", body);
+    if(response.statusCode == 200) {
+      shocker.name = text;
+      manager.saveTokens();
+      return null;
+    }
+    return "${response.statusCode} - failed to rename shocker";
   }
 }
 

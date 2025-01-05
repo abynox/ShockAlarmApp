@@ -209,4 +209,8 @@ class AlarmListManager {
     }
     return session != null;
   }
+
+  Future<String?> renameShocker(Shocker shocker, String text) {
+    return OpenShockClient().renameShocker(shocker, text, this);
+  }
 }

@@ -6,7 +6,7 @@ Based partly on https://github.com/mvarendorff/random-alarm/
 - [x] (Un)Pausing of shockers
 - [x] Login with username/email and password
 - [x] Random delay
-- [ ] Renaming of shockers (global)
+- [x] Renaming of shockers (global)
 - [ ] Add option to repeat default shock/vibration... option for one minute (perhaps adjustable in settings). Needs reworking of the alarm stop feature
 - [ ] Alarm tones
 - [ ] Viewing of logs

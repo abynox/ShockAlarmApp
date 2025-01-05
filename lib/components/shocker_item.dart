@@ -109,6 +109,37 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
     });
     delayVibrationController!.forward();
   }
+
+  void startRenameShocker() {
+    TextEditingController controller = TextEditingController();
+    controller.text = shocker.name;
+    showDialog(context: context, builder: (context) => AlertDialog(
+      title: Text("Rename shocker"),
+      content: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: "Name"
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () {
+          Navigator.of(context).pop();
+        }, child: Text("Cancel")),
+        TextButton(onPressed: () {
+          manager.renameShocker(shocker, controller.text).then((errorMessage) {
+            if(errorMessage != null) {
+              showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to rename shocker"), content: Text(errorMessage), actions: [TextButton(onPressed: () {
+                Navigator.of(context).pop();
+              }, child: Text("Ok"))],));
+              return;
+            }
+            Navigator.of(context).pop();
+            onRebuild();
+          });
+        }, child: Text("Rename"))
+      ],
+    ));
+  }
   
   ShockerItemState(this.shocker, this.manager, this.onRebuild);
   @override
@@ -154,7 +185,23 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                         ],
                         
                       ),
-                      Row(children: [
+                      Row(
+                        spacing: 5,
+                        children: [
+                        PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
+                          return [
+                            PopupMenuItem(value: "rename", child: Row(
+                              spacing: 10,
+                              children: [
+                              Icon(Icons.edit, color: t.colorScheme.onSurfaceVariant,),
+                              Text("Rename")
+                            ],))
+                        ];
+                        }, onSelected: (String value) {
+                          if(value == "rename") {
+                            startRenameShocker();
+                          }
+                        },),
 
                         if(shocker.isOwn && shocker.paused)
                           IconButton(onPressed: () {
@@ -166,7 +213,7 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                             OpenShockClient().setPauseStateOfShocker(shocker, manager, true);
                           }, icon: Icon(Icons.pause)),
 
-                        if (shocker.paused)
+                        if (shocker.paused && !shocker.isOwn)
                         GestureDetector( child: Chip(
                             label: Text("paused"),
                             backgroundColor: t.colorScheme.errorContainer,
