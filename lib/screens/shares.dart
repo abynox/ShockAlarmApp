@@ -98,6 +98,21 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
     setState(() { });
   }
 
+  void openEditLimitsDialog() {
+    showDialog(context: context, builder: (context) => AlertDialog(title: Text("Edit limits"), content: Column(
+      children: [
+        Text("This is ToDo")
+      ],
+      
+    ),
+    actions: [
+      TextButton(onPressed: () {
+        Navigator.of(context).pop();
+      }, child: Text("Ok"))
+    ],
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
@@ -116,7 +131,9 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
               Row(
                 spacing: 10,
                 children: [
-
+                  IconButton(onPressed: () {
+                    openEditLimitsDialog();
+                  }, icon: Icon(Icons.edit)),
                   if(share.paused)
                     IconButton(onPressed: () {
                       setPausedState(false);
