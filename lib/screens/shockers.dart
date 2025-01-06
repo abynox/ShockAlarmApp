@@ -278,7 +278,7 @@ class ShockerScreenState extends State<ShockerScreen> {
               children:
               filteredShockers.isEmpty ? [Text('No shockers found', style: t.textTheme.headlineSmall)] :
               filteredShockers.map((shocker) {
-                return ShockerItem(shocker: shocker, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.id));
+                return ShockerItem(shocker: shocker, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.id + shocker.paused.toString()));
               }).toList()
             )
           ],), onRefresh: () async {

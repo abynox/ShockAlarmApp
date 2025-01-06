@@ -423,8 +423,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
   }
 
   double reverseMapDuration(double value) {
-
-    return linearToCubic((value - 300) / maxDuration);
+    return linearToCubic((value - 300) / (maxDuration - 300));
   }
 
   int mapDuration(double value) {

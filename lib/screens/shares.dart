@@ -101,7 +101,6 @@ class SharesScreenState extends State<SharesScreen> {
           initialLoading ? Center(child: CircularProgressIndicator()) :
             
             RefreshIndicator(child: 
-              Flexible(child: 
                   ListView(children: [
                   for(OpenShockShare share in shares)
                     ShockerShareEntry(share: share, manager: manager),
@@ -112,7 +111,6 @@ class SharesScreenState extends State<SharesScreen> {
                       });
                     },),
                 ]),
-              ),
               
               onRefresh: () async{
                 return loadShares();
