@@ -43,8 +43,7 @@ class LogScreenState extends State<LogScreen> {
         title: Row(
           spacing: 10,
           children: [
-            Text('Logs for ${shocker.name}'),
-            Chip(label: Text(shocker.hub)),
+            Text('Logs for ${shocker.name}')
           ],
         ),
       ),
@@ -81,7 +80,7 @@ class ShockerLogEntry extends StatelessWidget {
   String formatDateTime(DateTime dateTime) {
     final now = DateTime.now();
     final isToday = dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day;
-    final timeString = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    final timeString = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
     final dateString = '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
 
     return isToday ? timeString : '$dateString $timeString';

@@ -19,7 +19,7 @@ class ScreenSelector extends StatefulWidget {
 
 class ScreenSelectorState extends State<ScreenSelector> {
   final AlarmListManager manager;
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
   ScreenSelectorState({required this.manager});
 

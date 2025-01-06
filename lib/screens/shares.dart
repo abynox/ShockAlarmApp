@@ -85,8 +85,7 @@ class SharesScreenState extends State<SharesScreen> {
         title: Row(
           spacing: 10,
           children: [
-            Text('Shares for ${shocker.name}'),
-            Chip(label: Text(shocker.hub)),
+            Text('Shares for ${shocker.name}')
           ],
         ),
       ),
@@ -182,6 +181,26 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
               Row(
                 spacing: 10,
                 children: [
+                  if(editing) 
+
+                    IconButton(onPressed: () async {
+                      setState(() {
+                        editing = false;
+                      });
+                    }, icon: Icon(Icons.cancel)),
+                  if(editing)
+                    IconButton(onPressed: () async {
+                      String? error = await OpenShockClient().setLimitsOfShare(share, limits, manager);
+                        if(error != null) {
+                          showDialog(context: context, builder: (context) => AlertDialog(title: Text("Error"), content: Text(error), actions: [TextButton(onPressed: () {
+                            Navigator.of(context).pop();
+                          }, child: Text("Ok"))],));
+                          return;
+                        }
+                        setState(() {
+                          editing = false;
+                        });
+                    }, icon: Icon(Icons.save)),
                   if(!editing)
                     IconButton(onPressed: () {
                       openEditLimitsDialog();
@@ -243,30 +262,6 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
           if(editing)
             ShockerShareEntryEditor(share: share, manager: manager, limits: limits,),
           
-          if(editing) 
-          Padding(padding: EdgeInsets.only(top: 30), child:
-            Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                  IconButton(onPressed: () async {
-                    setState(() {
-                      editing = false;
-                    });
-                  }, icon: Icon(Icons.cancel)),
-                  IconButton(onPressed: () async {
-                    String? error = await OpenShockClient().setLimitsOfShare(share, limits, manager);
-                      if(error != null) {
-                        showDialog(context: context, builder: (context) => AlertDialog(title: Text("Error"), content: Text(error), actions: [TextButton(onPressed: () {
-                          Navigator.of(context).pop();
-                        }, child: Text("Ok"))],));
-                        return;
-                      }
-                      setState(() {
-                        editing = false;
-                      });
-                  }, icon: Icon(Icons.save))
-                ],)
-          )
         ],
       ),
       ) 

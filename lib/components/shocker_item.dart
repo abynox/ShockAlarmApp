@@ -127,17 +127,22 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
         TextButton(onPressed: () {
           Navigator.of(context).pop();
         }, child: Text("Cancel")),
-        TextButton(onPressed: () {
-          manager.renameShocker(shocker, controller.text).then((errorMessage) {
-            if(errorMessage != null) {
-              showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to rename shocker"), content: Text(errorMessage), actions: [TextButton(onPressed: () {
-                Navigator.of(context).pop();
-              }, child: Text("Ok"))],));
-              return;
-            }
-            Navigator.of(context).pop();
-            onRebuild();
-          });
+        TextButton(onPressed: () async {
+          showDialog(context: context, builder: (context) => AlertDialog(
+            title: Text("Renaming shocker"),
+            content: Row(children: [CircularProgressIndicator()]),
+          ));
+          String? errorMessage = await manager.renameShocker(shocker, controller.text);
+          Navigator.of(context).pop();
+          if(errorMessage != null) {
+            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to rename shocker"), content: Text(errorMessage), actions: [TextButton(onPressed: () {
+              Navigator.of(context).pop();
+            }, child: Text("Ok"))],));
+            return;
+          }
+          Navigator.of(context).pop();
+          onRebuild();
+        
         }, child: Text("Rename"))
       ],
     ));
@@ -174,26 +179,13 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Expanded(child: 
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          spacing: 10,
-                          children: <Widget>[
                             Expanded(child: 
-                                Text(
-                                shocker.name,
+                              Text(
+                              shocker.name,
                                 style: t.textTheme.headlineSmall,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            
-                              Chip(label: Text(shocker.hub)),
-                          ],
-                          
-                        ),
-                        
-                      ),
+                            ),
                       
                       Row(
                         spacing: 5,

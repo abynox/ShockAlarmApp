@@ -257,8 +257,23 @@ class ShockerScreenState extends State<ShockerScreen> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     List<Shocker> filteredShockers = manager.shockers.where((shocker) {
-    return manager.enabledHubs[shocker.hub] ?? false;
-  }).toList();
+      return manager.enabledHubs[shocker.hub] ?? false;
+    }).toList();
+    // group by hub
+    Map<String, List<Shocker>> groupedShockers = {};
+    for(Shocker shocker in filteredShockers) {
+      if(!groupedShockers.containsKey(shocker.hub)) {
+        groupedShockers[shocker.hub] = [];
+      }
+      groupedShockers[shocker.hub]!.add(shocker);
+    }
+    List<Widget> shockers = [];
+    for(var shocker in groupedShockers.entries) {
+      shockers.add(Text(shocker.value[0].hub, style: t.textTheme.headlineSmall, textAlign: TextAlign.start,));
+      for(var s in shocker.value) {
+        shockers.add(ShockerItem(shocker: s, manager: manager, onRebuild: rebuild, key: ValueKey(s.id + s.paused.toString())));
+      }
+    }
     return Column(children: [
       Text(
         'All shockers',
@@ -274,12 +289,9 @@ class ShockerScreenState extends State<ShockerScreen> {
       Flexible(
         child: RefreshIndicator(child: ListView(children: [
             Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children:
-              filteredShockers.isEmpty ? [Text('No shockers found', style: t.textTheme.headlineSmall)] :
-              filteredShockers.map((shocker) {
-                return ShockerItem(shocker: shocker, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.id + shocker.paused.toString()));
-              }).toList()
+              groupedShockers.isEmpty ? [Text('No shockers found', style: t.textTheme.headlineSmall)] : shockers
             )
           ],), onRefresh: () async {
             await manager.updateShockerStore();
