@@ -10,7 +10,8 @@ Based partly on https://github.com/mvarendorff/random-alarm/
 - [x] Viewing of logs
 - [x] Change sharing limits
 - [x] Create share codes
-- [ ] Redeem share codes
+- [x] Redeem share codes (untested)
+- [x] Adding of shockers
 - [ ] Add option to repeat default shock/vibration... option for one minute (perhaps adjustable in settings). Needs reworking of the alarm stop feature
 - [ ] Alarm tones
 - [ ] Grouping of shockers

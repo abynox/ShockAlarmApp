@@ -190,7 +190,7 @@ class OpenShockClient {
       manager.saveTokens();
       return null;
     }
-    return "${response.statusCode} - failed to rename shocker";
+    return getErrorCode(response, "Failed to rename shocker");
   }
 
   Future<List<ShockerLog>> getShockerLogs(Shocker shocker, AlarmListManager manager) async {
@@ -261,7 +261,7 @@ class OpenShockClient {
       share.paused = pause;
       return null;
     }
-    return "${response.statusCode} - Failed to set pause state";
+    return getErrorCode(response, "Failed to set pause state");
   }
 
   Future<String?> setLimitsOfShare(OpenShockShare share, OpenShockShareLimits limits, AlarmListManager manager) async {
@@ -276,18 +276,14 @@ class OpenShockClient {
       share.permissions = limits.permissions;
       return null;
     }
-    return "${response.statusCode} - Failed to set limits";
+    return getErrorCode(response, "Failed to set limits");
   }
 
   Future<String?> addShare(Shocker shocker, OpenShockShareLimits limits, AlarmListManager manager) async {
     Token? t = manager.getToken(shocker.apiTokenId);
     if(t == null) return "Token not found";
     String body = jsonEncode(limits.toJson());
-    var response = await PostRequest(t, "/1/shockers/${shocker.id}/shares", body);
-    if(response.statusCode == 200) {
-      return null;
-    }
-    return "${response.statusCode} - Failed to create share";
+    return getErrorCode(PostRequest(t, "/1/shockers/${shocker.id}/shares", body), "Failed to create share");
   }
 
   Future<String?> deleteShareCode(OpenShockShareCode shareCode, AlarmListManager alarmListManager) async {
@@ -295,11 +291,77 @@ class OpenShockClient {
     Shocker s = shareCode.shockerReference!;
     Token? t = alarmListManager.getToken(s.apiTokenId);
     if(t == null) return "Token not found";
-    var response = await DeleteRequest(t, "/1/shares/code/${shareCode.id}", "");
+    return getErrorCode(await DeleteRequest(t, "/1/shares/code/${shareCode.id}", ""), "Failed to delete share code");
+  }
+
+  Future<String?> redeemShareCode(String code, AlarmListManager alarmListManager) async {
+    // first get a valid token
+    Token? t;
+    alarmListManager.getTokens().forEach((element) {
+      if(element.isSession) {
+        t = element;
+      }
+    });
+    if(t == null) {
+      return "No valid session token found";
+    }
+    return getErrorCode(await PostRequest(t!, "/1/shares/code/${code}", ""), "Failed to redeem share code. Did you copy it correctly?");
+  }
+
+  Future<List<OpenShockDevice>> getDevices(Token t) async {
+    var response = await GetRequest(t, "/1/devices");
+    List<OpenShockDevice> devices = [];
+    if(response.statusCode == 200) {
+      jsonDecode(response.body)["data"].forEach((element) {
+        OpenShockDevice device = OpenShockDevice.fromJson(element);
+        device.apiTokenReference = t;
+        devices.add(device);
+      });
+    }
+    return devices;
+  }
+
+  String? getErrorCode(var response, String defaultError) {
     if(response.statusCode == 200) {
       return null;
     }
-    return "${response.statusCode} - Failed to delete share code";
+    try{
+      var data = jsonDecode(response.body);
+      if(data["message"] != null) {
+        return "${response.statusCode} - ${data["message"]}";
+      }
+    } catch (e) {
+
+    }
+    return "${response.statusCode} - $defaultError";
+  }
+
+  Future<String?> addShocker(String name, int rfId, String shockerType, OpenShockDevice? device, AlarmListManager alarmListManager) async {
+    if(device == null) return "No device selected";
+    Token? t = device.apiTokenReference;
+    if(t == null) return "Token not found";
+    String body = jsonEncode({
+      "name": name,
+      "rfId": rfId,
+      "model": shockerType,
+      "device": device.id
+    });
+    var response = await PostRequest(t, "/1/shockers", body);
+    if(response.statusCode == 201) {
+      return null;
+    }
+    return getErrorCode(response, "Failed to create shocker");
+  }
+
+  Future<String?> deleteShocker(Shocker shocker, AlarmListManager alarmListManager) async {
+    Token? t = alarmListManager.getToken(shocker.apiTokenId);
+    if(t == null) return "Token not found";
+    var response = await DeleteRequest(t, "/1/shockers/${shocker.id}", "");
+    if(response.statusCode == 200) {
+      alarmListManager.shockers.remove(shocker);
+      alarmListManager.saveShockers();
+    }
+    return getErrorCode(response, "Failed to delete shocker");
   }
 }
 
@@ -552,6 +614,8 @@ class OpenShockDevice
     String name = "";
     String id = "";
     List<OpenShockShocker> shockers = [];
+    
+    Token? apiTokenReference;
 
     OpenShockDevice.fromJson(Map<String, dynamic> json)
     {

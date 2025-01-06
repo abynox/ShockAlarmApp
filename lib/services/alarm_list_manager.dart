@@ -67,10 +67,11 @@ class AlarmListManager {
 
   int getNewAlarmId() {
     int id = 0;
-    bool foundNew = true;
+    bool foundNew = false;
     while (!foundNew) {
       foundNew = true;
-      for (var alarm in _alarms) {
+      for (var alarm in getAlarms()) {
+        print(alarm.id);
         if (alarm.id == id) {
           id++;
           foundNew = false;
@@ -158,7 +159,7 @@ class AlarmListManager {
     return _alarms;
   }
 
-  getTokens() {
+  List<Token> getTokens() {
     return _tokens;
   }
 
@@ -228,5 +229,29 @@ class AlarmListManager {
 
   Future<String?> deleteShareCode(OpenShockShareCode shareCode) {
     return OpenShockClient().deleteShareCode(shareCode, this);
+  }
+
+  bool hasValidAccount() {
+    return getTokens().where((element) => element.isSession && element.name.isNotEmpty).isNotEmpty;
+  }
+
+  Future<String?> redeemShareCode(String code) {
+    return OpenShockClient().redeemShareCode(code, this);
+  }
+
+  Future<List<OpenShockDevice>> getDevices() async {
+    List<OpenShockDevice> devices = [];
+    for(var token in getTokens()) {
+      devices.addAll(await OpenShockClient().getDevices(token));
+    }
+    return devices;
+  }
+
+  Future<String?> addShocker(String name, int rfId, String shockerType, OpenShockDevice? device) {
+    return OpenShockClient().addShocker(name, rfId, shockerType, device, this);
+  }
+
+  Future<String?> deleteShocker(Shocker shocker) {
+    return OpenShockClient().deleteShocker(shocker, this);
   }
 }

@@ -39,6 +39,29 @@ class ScreenSelectorState extends State<ScreenSelector> {
       ShockerScreen(manager: manager),
       TokenScreen(manager: manager)
     ];
+    final floatingActionButtons = <Widget?>[
+      FloatingActionButton(onPressed: () {
+        TimeOfDay tod = TimeOfDay.fromDateTime(DateTime.now());
+        print("alarms: ${manager.getAlarms().length}");
+        final newAlarm = new ObservableAlarmBase(
+            id: manager.getNewAlarmId(),
+            name: 'New Alarm',
+            hour: tod.hour,
+            minute: tod.minute,
+            active: false);
+        setState(() {
+          manager.saveAlarm(newAlarm);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Alarm added'),
+          duration: Duration(seconds: 3),
+        ));
+      }, child: Icon(Icons.add)),
+      ShockerScreen.getFloatingActionButton(manager, context, () {
+        setState(() {});
+      }),
+      null
+    ];
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.only(
@@ -50,6 +73,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
         child: screens.elementAt(_selectedIndex),
       ),
       appBar: null,
+      floatingActionButton: floatingActionButtons.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(items: 
          [
           BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
@@ -102,20 +126,6 @@ class HomeScreenState extends State<HomeScreen> {
               },
               itemCount: manager.getAlarms().length,
             ),
-          ),
-          BottomAddButton(
-            onPressed: () {
-              TimeOfDay tod = TimeOfDay.fromDateTime(DateTime.now());
-              final newAlarm = new ObservableAlarmBase(
-                  id: manager.getNewAlarmId(),
-                  name: 'New Alarm',
-                  hour: tod.hour,
-                  minute: tod.minute,
-                  active: false);
-              setState(() {
-                manager.saveAlarm(newAlarm);
-              });
-            },
           )
         ],
       );

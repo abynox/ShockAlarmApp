@@ -210,6 +210,12 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                                   children: [
                                     Icon(Icons.share, color: t.colorScheme.onSurfaceVariant,),
                                   Text("Shares")
+                                ],)),
+                                PopupMenuItem(value: "delete", child: Row(
+                                  spacing: 10,
+                                  children: [
+                                    Icon(Icons.delete, color: t.colorScheme.onSurfaceVariant,),
+                                  Text("Delete")
                                 ],))
                             ];
                         }, onSelected: (String value) {
@@ -221,6 +227,24 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                           }
                           if(value == "shares") {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => SharesScreen(shocker: shocker, manager: manager)));
+                          }
+                          if(value == "delete") {
+                            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Delete shocker"), content: Text("Are you sure you want to delete the shocker ${shocker.name}?\n\n(You can add it again later)"), actions: [
+                              TextButton(onPressed: () {
+                                Navigator.of(context).pop();
+                              }, child: Text("Cancel")),
+                              TextButton(onPressed: () async {
+                                String? errorMessage = await manager.deleteShocker(shocker);
+                                if(errorMessage != null) {
+                                  showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to delete shocker"), content: Text(errorMessage), actions: [TextButton(onPressed: () {
+                                    Navigator.of(context).pop();
+                                  }, child: Text("Ok"))],));
+                                  return;
+                                }
+                                Navigator.of(context).pop();
+                                onRebuild();
+                              }, child: Text("Delete"))
+                            ],));
                           }
                         },),
 
