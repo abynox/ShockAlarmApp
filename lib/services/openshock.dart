@@ -283,7 +283,7 @@ class OpenShockClient {
     Token? t = manager.getToken(shocker.apiTokenId);
     if(t == null) return "Token not found";
     String body = jsonEncode(limits.toJson());
-    return getErrorCode(PostRequest(t, "/1/shockers/${shocker.id}/shares", body), "Failed to create share");
+    return getErrorCode(await PostRequest(t, "/1/shockers/${shocker.id}/shares", body), "Failed to create share");
   }
 
   Future<String?> deleteShareCode(OpenShockShareCode shareCode, AlarmListManager alarmListManager) async {

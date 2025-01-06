@@ -58,7 +58,10 @@ class SharesScreenState extends State<SharesScreen> {
           Navigator.of(context).pop();
         }, child: Text("Cancel")),
         TextButton(onPressed: () async {
+          showDialog(context: context, builder: (context) => AlertDialog(title: Text("Creating share"), content: Row(children: [CircularProgressIndicator()]), actions: []));
+
           String? error = await OpenShockClient().addShare(shocker, limits, manager);
+          Navigator.of(context).pop();
           if(error != null) {
             showDialog(context: context, builder: (context) => AlertDialog(title: Text("Error"), content: Text(error), actions: [TextButton(onPressed: () {
               Navigator.of(context).pop();
@@ -108,7 +111,6 @@ class SharesScreenState extends State<SharesScreen> {
                         loadShares();
                       });
                     },),
-                  BottomAddButton(onPressed: addShare)
                 ]),
               ),
               
@@ -117,6 +119,9 @@ class SharesScreenState extends State<SharesScreen> {
               }
             )
         ),
+        floatingActionButton: FloatingActionButton(onPressed: () {
+          addShare();
+        }, child: Icon(Icons.add),),
       )
     ;
     } catch(e) {
@@ -288,6 +293,7 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
   final Function() onDeleted;
   OpenShockShareLimits limits = OpenShockShareLimits();
   bool editing = false;
+  bool deleting = false;
 
   ShockerShareCodeEntryState(this.shareCode, this.manager, this.onDeleted);
 
@@ -319,16 +325,20 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                   IconButton(onPressed: () async {
                     Share.share("Claim my shocker with this share code: ${shareCode.id}");
                   }, icon: Icon(Icons.share)),
-                  IconButton(onPressed: () async {
-                    String? error = await manager.deleteShareCode(shareCode);
-                    if(error != null) {
-                      showDialog(context: context, builder: (context) => AlertDialog(title: Text("Error"), content: Text(error), actions: [TextButton(onPressed: () {
-                        Navigator.of(context).pop();
-                      }, child: Text("Ok"))],));
-                      return;
-                    }
-                    onDeleted();
-                  }, icon: Icon(Icons.delete))
+                  if(deleting)
+                    CircularProgressIndicator()
+                  else
+                    IconButton(onPressed: () async {
+                      deleting = true;
+                      String? error = await manager.deleteShareCode(shareCode);
+                      if(error != null) {
+                        showDialog(context: context, builder: (context) => AlertDialog(title: Text("Error"), content: Text(error), actions: [TextButton(onPressed: () {
+                          Navigator.of(context).pop();
+                        }, child: Text("Ok"))],));
+                        return;
+                      }
+                      onDeleted();
+                    }, icon: Icon(Icons.delete))
                 ],
               )
             ],
