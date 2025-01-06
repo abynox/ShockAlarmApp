@@ -100,9 +100,10 @@ class TokenScreenState extends State<TokenScreen> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     return Column(
+      spacing: 10,
         children: <Widget>[
           Text(
-            'Your accounts/tokens',
+            'Your accounts',
             style: t.textTheme.headlineMedium,
           ),
           Flexible(
@@ -115,17 +116,6 @@ class TokenScreenState extends State<TokenScreen> {
               },
               itemCount: manager.getTokens().length,
             ),
-          ),
-          BottomAddButton(
-            onPressed: () {
-              final newToken = new Token(
-                DateTime.now().millisecondsSinceEpoch,
-                ""
-              );
-              setState(() {
-                manager.saveToken(newToken);
-              });
-            },
           ),
           FilledButton(onPressed: () {
             showLoginPopup();

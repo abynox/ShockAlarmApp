@@ -191,7 +191,7 @@ class ShockerScreen extends StatefulWidget {
               });
               return;
             }
-            reloadState();
+            manager.updateShockerStore();
             Navigator.of(context).pop();
             showDialog(context: context, builder: (context) {
               return AlertDialog(
