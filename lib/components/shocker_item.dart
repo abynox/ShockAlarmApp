@@ -174,19 +174,27 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        spacing: 10,
-                        children: <Widget>[
-                          Text(
-                            shocker.name,
-                            style: t.textTheme.headlineSmall,
-                          ),
-                            Chip(label: Text(shocker.hub)),
-                        ],
+                      Expanded(child: 
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          spacing: 10,
+                          children: <Widget>[
+                            Expanded(child: 
+                                Text(
+                                shocker.name,
+                                style: t.textTheme.headlineSmall,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            
+                              Chip(label: Text(shocker.hub)),
+                          ],
+                          
+                        ),
                         
                       ),
+                      
                       Row(
                         spacing: 5,
                         children: [
