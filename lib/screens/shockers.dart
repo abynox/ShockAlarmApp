@@ -258,7 +258,6 @@ class ShockerScreenState extends State<ShockerScreen> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     List<Shocker> filteredShockers = manager.shockers.where((shocker) {
-      print(shocker.hubReference == null);
       return manager.enabledHubs[shocker.hubReference?.id] ?? false;
     }).toList();
     // group by hub
