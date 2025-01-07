@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
+import '../components/hub_item.dart';
 import '../components/shocker_item.dart';
 
 class ShockerScreen extends StatefulWidget {
@@ -257,19 +258,20 @@ class ShockerScreenState extends State<ShockerScreen> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     List<Shocker> filteredShockers = manager.shockers.where((shocker) {
-      return manager.enabledHubs[shocker.hub] ?? false;
+      print(shocker.hubReference == null);
+      return manager.enabledHubs[shocker.hubReference?.id] ?? false;
     }).toList();
     // group by hub
-    Map<String, List<Shocker>> groupedShockers = {};
+    Map<Hub?, List<Shocker>> groupedShockers = {};
     for(Shocker shocker in filteredShockers) {
-      if(!groupedShockers.containsKey(shocker.hub)) {
-        groupedShockers[shocker.hub] = [];
+      if(!groupedShockers.containsKey(shocker.hubReference)) {
+        groupedShockers[shocker.hubReference] = [];
       }
-      groupedShockers[shocker.hub]!.add(shocker);
+      groupedShockers[shocker.hubReference]!.add(shocker);
     }
     List<Widget> shockers = [];
     for(var shocker in groupedShockers.entries) {
-      shockers.add(Text(shocker.value[0].hub, style: t.textTheme.headlineSmall, textAlign: TextAlign.start,));
+      shockers.add(HubItem(hub: shocker.value[0].hubReference!, manager: manager, key: ValueKey(shocker.key),));
       for(var s in shocker.value) {
         shockers.add(ShockerItem(shocker: s, manager: manager, onRebuild: rebuild, key: ValueKey(s.id + s.paused.toString())));
       }
@@ -280,7 +282,7 @@ class ShockerScreenState extends State<ShockerScreen> {
         style: t.textTheme.headlineMedium,
       ),
       Wrap(spacing: 5,runAlignment: WrapAlignment.start,children: manager.enabledHubs.keys.map<FilterChip>((hub) {
-        return FilterChip(label: Text(hub), onSelected: (bool value) {
+        return FilterChip(label: Text(manager.getHub(hub)?.name ?? "Unknown hub"), onSelected: (bool value) {
           manager.enabledHubs[hub] = value;
           setState(() {
           }

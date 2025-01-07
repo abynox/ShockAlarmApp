@@ -11,7 +11,7 @@ class AlarmListManager {
   final List<ObservableAlarmBase> _alarms = [];
   final List<Shocker> shockers = [];
   final List<Token> _tokens = [];
-
+  final List<Hub> hubs = [];
   final Map<String, bool> enabledHubs = {};
 
   AlarmListManager();
@@ -26,17 +26,29 @@ class AlarmListManager {
     String alarms = prefs.getString("alarms") ?? "[]";
     String tokens = prefs.getString("tokens") ?? "[]";
     String shockers = prefs.getString("shockers") ?? "[]";
+    String hubs = prefs.getString("hubs") ?? "[]";
     List<dynamic> alarmsList = jsonDecode(alarms);
     List<dynamic> tokensList = jsonDecode(tokens);
     List<dynamic> shockersList = jsonDecode(shockers);
+    List<dynamic> hubsList = jsonDecode(hubs);
     for (var alarm in alarmsList) {
       _alarms.add(ObservableAlarmBase.fromJson(alarm));
     }
     for (var token in tokensList) {
       _tokens.add(Token.fromJson(token));
     }
+    for (var hub in hubsList) {
+      this.hubs.add(Hub.fromJson(hub));
+    }
     for (var shocker in shockersList) {
-      this.shockers.add(Shocker.fromJson(shocker));
+      Shocker s = Shocker.fromJson(shocker);
+      for(var hub in this.hubs) {
+        if(s.hubId == hub.id) {
+          s.hubReference = hub;
+          hub.apiTokenId = s.apiTokenId;
+        }
+      }
+      this.shockers.add(s);
     }
     updateHubList();
     rebuildAlarmShockers();
@@ -46,12 +58,11 @@ class AlarmListManager {
   }
 
   void updateHubList() {
-    List<String> hubs = shockers.map((e) => e.hub).toSet().toList();
     for (var hub in hubs) {
-      enabledHubs.putIfAbsent(hub, () => true);
+      enabledHubs.putIfAbsent(hub.id, () => true);
     }
     for(var hub in enabledHubs.keys.toList()) {
-      if(hubs.indexWhere((element) => element == hub) == -1) {
+      if(hubs.indexWhere((element) => element.id == hub) == -1) {
         enabledHubs.remove(hub);
       }
     }
@@ -98,6 +109,7 @@ class AlarmListManager {
 
   Future updateShockerStore() async {
     List<Shocker> shockers = [];
+    List<Hub> hubs = [];
     List<Token> tokensCopy = this._tokens.toList(); // create a copy
     for(var token in tokensCopy) {
       OpenShockClient client = OpenShockClient();
@@ -105,6 +117,11 @@ class AlarmListManager {
       List<Shocker> s = await client.GetShockersForToken(token);
       // add shockers without duplicates
       for(var shocker in s) {
+        if(shocker.hubReference != null) {
+          if(hubs.indexWhere((element) => element.id == shocker.hubReference!.id) == -1) {
+            hubs.add(shocker.hubReference!);
+          }
+        }
         if(shockers.indexWhere((element) => element.id == shocker.id) == -1) {
           shockers.add(shocker);
         }
@@ -112,6 +129,8 @@ class AlarmListManager {
     }
     this.shockers.clear();
     this.shockers.addAll(shockers);
+    this.hubs.clear();
+    this.hubs.addAll(hubs);
     saveShockers();
     saveTokens();
     updateHubList();
@@ -166,6 +185,7 @@ class AlarmListManager {
   void saveShockers() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("shockers", jsonEncode(shockers));
+    prefs.setString("hubs", jsonEncode(hubs));
   }
 
   void saveAlarms() async {
@@ -215,6 +235,11 @@ class AlarmListManager {
     return OpenShockClient().renameShocker(shocker, text, this);
   }
 
+
+  Future<String?> renameHub(Hub hub, String text) {
+    return OpenShockClient().renameHub(hub, text, this);
+  }
+
   Future<List<ShockerLog>> getShockerLogs(Shocker shocker) {
     return OpenShockClient().getShockerLogs(shocker, this);
   }
@@ -253,5 +278,13 @@ class AlarmListManager {
 
   Future<String?> deleteShocker(Shocker shocker) {
     return OpenShockClient().deleteShocker(shocker, this);
+  }
+
+  Hub? getHub(String hubId) {
+    for(var hub in hubs) {
+      if(hub.id == hubId) {
+        return hub;
+      }
+    }
   }
 }

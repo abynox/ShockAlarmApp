@@ -102,9 +102,9 @@ class SharesScreenState extends State<SharesScreen> {
             RefreshIndicator(child: 
                   ListView(children: [
                   for(OpenShockShare share in shares)
-                    ShockerShareEntry(share: share, manager: manager),
+                    ShockerShareEntry(share: share, manager: manager, key: ValueKey(share.sharedWith.id),),
                   for(OpenShockShareCode code in shareCodes)
-                    ShockerShareCodeEntry(shareCode: code, manager: manager, onDeleted: () {
+                    ShockerShareCodeEntry(shareCode: code, manager: manager, key: ValueKey(code.id), onDeleted: () {
                       setState(() {
                         loadShares();
                       });

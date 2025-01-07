@@ -13,9 +13,12 @@ class OpenShockClient {
     if (response.statusCode == 200) {
       OpenShockDevicesData deviceData = OpenShockDevicesData.fromJson(jsonDecode(response.body));
       for (var element in deviceData.data!) {
+        Hub h = Hub.fromOpenShockDevice(element);
+        h.isOwn = true;
+        h.apiTokenId = t.id;
         for (var shocker in element.shockers) {
           Shocker s = Shocker.fromOpenShockShocker(shocker);
-          s.hub = element.name;
+          s.hubReference = h;
           s.hubId = element.id;
           s.isOwn = true;
           s.apiTokenId = t.id;
@@ -29,9 +32,11 @@ class OpenShockClient {
       OpenShockContainerData deviceData = OpenShockContainerData.fromJson(jsonDecode(response.body));
       for (var element in deviceData.data!) {
         for(var device in element.devices) {
+          Hub h = Hub.fromOpenShockDevice(device);
+          h.apiTokenId = t.id;
           for (var shocker in device.shockers) {
             Shocker s = Shocker.fromOpenShockShocker(shocker);
-            s.hub = device.name;
+            s.hubReference = h;
             s.hubId = device.id;
             s.apiTokenId = t.id;
             shockers.add(s);
@@ -189,6 +194,32 @@ class OpenShockClient {
     response = await PatchRequest(t, "/1/shockers/${shocker.id}", body);
     if(response.statusCode == 200) {
       shocker.name = text;
+      manager.saveTokens();
+      return null;
+    }
+    return getErrorCode(response, "Failed to rename shocker");
+  }
+
+
+  Future<String?> renameHub(Hub hub, String text, AlarmListManager manager) async {
+    Token? t = manager.getToken(hub.apiTokenId);
+    if(t == null) {
+      return Future.value("Token not found");
+    } 
+    var response = await GetRequest(t, "/1/devices/${hub.id}");
+
+    if(response.statusCode != 200) {
+      return "${response.statusCode} - failed to get shocker";
+    }
+    // replace name of response
+    var responseBody = jsonDecode(response.body)["data"];
+    print(response.body);
+    responseBody["name"] = text;
+    String body = jsonEncode(responseBody);
+
+    response = await PatchRequest(t, "/1/devices/${hub.id}", body);
+    if(response.statusCode == 200) {
+      hub.name = text;
       manager.saveTokens();
       return null;
     }
@@ -498,13 +529,42 @@ class OpenShockUser {
   String? customName;
 }
 
+class Hub {
+  String name = "";
+  String id = "";
+  bool isOwn = false;
+  int apiTokenId = 0;
+
+  Hub.fromOpenShockDevice(OpenShockDevice device) {
+    name = device.name;
+    id = device.id;
+  }
+
+  Hub.fromJson(Map<String, dynamic> json) {
+    name = json["name"];
+    id = json["id"];
+    isOwn = json["isOwn"];
+    if(json["apiTokenId"] != null)
+      apiTokenId = json["apiTokenId"];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "name": name,
+      "id": id,
+      "isOwn": isOwn,
+      "apiTokenId": apiTokenId
+    };
+  }
+}
+
 class Shocker {
   Shocker() {}
   
   String id = "";
   String name = "";
-  String hub = "";
   String hubId = "";
+  Hub? hubReference;
   int apiTokenId = 0;
   bool paused = false;
   bool shockAllowed = true;
@@ -513,6 +573,7 @@ class Shocker {
   int durationLimit = 30000;
   int intensityLimit = 100;
   bool isOwn = false;
+  
 
   Shocker.fromOpenShockShocker(OpenShockShocker shocker) {
     id = shocker.id;
@@ -533,8 +594,8 @@ class Shocker {
     return {
       "id": id,
       "name": name,
-      "hub": hub,
       "hubId": hubId,
+      "hubReference": hubReference?.toJson(),
       "apiTokenId": apiTokenId,
       "paused": paused,
       "shockAllowed": shockAllowed,
@@ -550,8 +611,6 @@ class Shocker {
     Shocker s = Shocker();
     s.id = shocker["id"];
     s.name = shocker["name"];
-    if(shocker["hub"] != null)
-      s.hub = shocker["hub"];
     if(shocker["hubId"] != null)
       s.hubId = shocker["hubId"];
     s.apiTokenId = shocker["apiTokenId"];
@@ -633,6 +692,13 @@ class OpenShockDevice
             shockers.add(OpenShockShocker.fromJson(v));
         });
       }
+    }
+    
+    Map<String, dynamic> toJson() {
+      return {
+        "name": name,
+        "id": id
+      };
     }
 }
 

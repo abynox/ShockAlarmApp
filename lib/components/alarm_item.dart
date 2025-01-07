@@ -170,7 +170,7 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                               alarmShocker.shockerReference?.name ?? "Unknown",
                               style: t.textTheme.headlineSmall,
                             ),
-                            Chip(label: Text(alarmShocker.shockerReference?.hub ?? "Unknown")),
+                            Chip(label: Text(alarmShocker.shockerReference?.hubReference?.name ?? "Unknown")),
                           ],
                         ),
                         Row(children: [

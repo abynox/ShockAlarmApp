@@ -40,6 +40,13 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
   RangeValues rangeValues = RangeValues(0, 0);
 
   @override
+  void initState() {
+    super.initState();
+    currentIntensity = min(shocker.intensityLimit, currentIntensity);
+    currentDuration = min(shocker.durationLimit, currentDuration);
+  }
+
+  @override
   void dispose() {
     progressCircularController?.dispose();
     super.dispose();
