@@ -387,7 +387,7 @@ class LoadingDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(title: Text(title), content: Row(children: [CircularProgressIndicator()]), actions: []);
+    return AlertDialog(title: Text(title), content: Row(mainAxisAlignment: MainAxisAlignment.center, children: [CircularProgressIndicator()]), actions: []);
   }
 }
 
@@ -413,51 +413,54 @@ class ShockerShareEntryEditorState extends State<ShockerShareEntryEditor> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    return Column(
+    return 
+    SingleChildScrollView(child: 
+      Column(
+        children: [
+          Column(
+            spacing: 10,
             children: [
-              Column(
-                spacing: 10,
-                children: [
-                  Text("Limits", style: t.textTheme.headlineMedium),
-                  IntensityDurationSelector(duration: limits.limits.duration ?? 30000, intensity: limits.limits.intensity ?? 100, onSet: (intensity, duration) {
-                    setState(() {
-                      limits.limits.duration = duration;
-                      limits.limits.intensity = intensity;
-                    });
-                  }, maxDuration: 30000, maxIntensity: 100),
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                  ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.sound, value: limits.permissions.sound, onSet: (value) {
-                    setState(() {
-                      limits.permissions.sound = value;
-                    });
-                  },),
-                  ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.vibrate, value: limits.permissions.vibrate, onSet: (value) {
-                    setState(() {
-                      limits.permissions.vibrate = value;
-                    });
-                  },),
-                ],),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                  ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.shock, value: limits.permissions.shock, onSet: (value) {
-                    setState(() {
-                      limits.permissions.shock = value;
-                    });
-                  },),
-                  ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.live, value: limits.permissions.live, onSet: (value) {
-                    setState(() {
-                      limits.permissions.live = value;
-                    });
-                  },),
-                ],)
-              ]
-            ),
-            ],
-          );
+              Text("Limits", style: t.textTheme.headlineMedium),
+              IntensityDurationSelector(duration: limits.limits.duration ?? 30000, intensity: limits.limits.intensity ?? 100, onSet: (intensity, duration) {
+                setState(() {
+                  limits.limits.duration = duration;
+                  limits.limits.intensity = intensity;
+                });
+              }, maxDuration: 30000, maxIntensity: 100),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+              ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.sound, value: limits.permissions.sound, onSet: (value) {
+                setState(() {
+                  limits.permissions.sound = value;
+                });
+              },),
+              ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.vibrate, value: limits.permissions.vibrate, onSet: (value) {
+                setState(() {
+                  limits.permissions.vibrate = value;
+                });
+              },),
+            ],),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+              ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.shock, value: limits.permissions.shock, onSet: (value) {
+                setState(() {
+                  limits.permissions.shock = value;
+                });
+              },),
+              ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.live, value: limits.permissions.live, onSet: (value) {
+                setState(() {
+                  limits.permissions.live = value;
+                });
+              },),
+            ],)
+          ]
+        ),
+        ],
+      )
+    ,);
   }
 }
 

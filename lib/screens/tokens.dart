@@ -48,30 +48,32 @@ class TokenScreenState extends State<TokenScreen> {
     builder: (BuildContext context) {
       return AlertDialog(
         title: Text("Login to OpenShock"),
-        content: Column(
-          children: <Widget>[
-            TextField(
-              decoration: InputDecoration(
-                labelText: "Server"
-              ),
-              controller: serverController,
+        content: SingleChildScrollView(child: 
+          Column(
+            children: <Widget>[
+              TextField(
+                decoration: InputDecoration(
+                  labelText: "Server"
+                ),
+                controller: serverController,
 
-            ),
-            TextField(
-              decoration: InputDecoration(
-                labelText: "Email"
               ),
-              controller: usernameController,
-            ),
-            TextField(
-              decoration: InputDecoration(
-                labelText: "Password"
+              TextField(
+                decoration: InputDecoration(
+                  labelText: "Email"
+                ),
+                controller: usernameController,
               ),
-              obscureText: true,
-              obscuringCharacter: "*",
-              controller: passwordController,
-            )
-          ],
+              TextField(
+                decoration: InputDecoration(
+                  labelText: "Password"
+                ),
+                obscureText: true,
+                obscuringCharacter: "*",
+                controller: passwordController,
+              )
+            ],
+          ),
         ),
         actions: <Widget>[
           TextButton(

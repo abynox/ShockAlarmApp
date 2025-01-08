@@ -12,7 +12,7 @@ Based partly on https://github.com/mvarendorff/random-alarm/
 - [x] Create share codes
 - [x] Redeem share codes (untested)
 - [x] Adding of shockers
-- [ ] Creation, editing and pairing of hubs
+- [x] Creation, editing and pairing of hubs
 - [ ] Add option to repeat default shock/vibration... option for one minute (perhaps adjustable in settings). Needs reworking of the alarm stop feature
 - [ ] Alarm tones
 - [ ] Grouping of shockers

@@ -30,12 +30,20 @@ class HubItem extends StatefulWidget {
             return;
           }
           Navigator.of(context).pop();
-          showDialog(context: context, builder: (context) => AlertDialog(title: Text("Pair code"), content: Column(spacing: 10,children: [
-            Text("Your pair code is"),
-            Text(pairCode.code!, style: Theme.of(context).textTheme.headlineLarge,),
-            Text("To pair your hub with your account enter the pair code in the ui of your hub. Connect to your hub's wifi. Then connect it with your wifi and enter the code.")]), actions: [TextButton(onPressed: () {
-            Navigator.of(context).pop();
-          }, child: Text("Ok"))],));
+          showDialog(context: context, builder: (context) => AlertDialog(title: Text("Pair code"), content:
+            SingleChildScrollView(child:
+              Column(spacing: 10,children: [
+                  Text("Your pair code is"),
+                  Text(pairCode.code!, style: Theme.of(context).textTheme.headlineLarge,),
+                  Text("To pair your hub with your account enter the pair code in the ui of your hub. Connect to your hub's wifi. Then connect it with your wifi and enter the code.")
+                  ]
+                )
+              ),
+              actions: [TextButton(onPressed: () {
+                Navigator.of(context).pop();
+              }, child: Text("Ok"))],
+            )
+          );
         
         }, child: Text("Get pair code"))
       ],

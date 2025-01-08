@@ -20,15 +20,18 @@ class ShockerScreen extends StatefulWidget {
       TextEditingController codeController = TextEditingController();
       return AlertDialog(
         title: Text("Redeem share code"),
-        content: Column(
-          children: <Widget>[
-            TextField(
-              controller: codeController,
-              decoration: InputDecoration(
-                labelText: "Share code"
-              ),
-            )
-          ],
+        content: 
+          SingleChildScrollView(child: 
+            Column(
+              children: <Widget>[
+                TextField(
+                  controller: codeController,
+                  decoration: InputDecoration(
+                    labelText: "Share code"
+                  ),
+                )
+              ],
+            ),
         ),
         actions: <Widget>[
           TextButton(onPressed: () {
@@ -79,15 +82,13 @@ class ShockerScreen extends StatefulWidget {
       TextEditingController nameController = TextEditingController();
       return AlertDialog(
         title: Text("Add new hub"),
-        content: Column(
-          children: <Widget>[
+        content: (
             TextField(
               decoration: InputDecoration(
                 labelText: "Hub name"
               ),
               controller: nameController,
             )
-          ],
         ),
         actions: [
           TextButton(onPressed: () {
@@ -141,14 +142,7 @@ class ShockerScreen extends StatefulWidget {
 
   static startPairShocker(AlarmListManager manager, BuildContext context, Function reloadState) async {
     showDialog(context: context, builder: (context) {
-      return AlertDialog(
-        title: Text("Loading devices"),
-        content: Row(
-          children: <Widget>[
-            CircularProgressIndicator()
-          ],
-        )
-      );
+      return LoadingDialog(title: "Loading devices");
     });
     List<OpenShockDevice> devices = await manager.getDevices();
     Navigator.of(context).pop();
@@ -161,41 +155,43 @@ class ShockerScreen extends StatefulWidget {
       OpenShockDevice? device;
       return AlertDialog(
         title: Text("Add new shocker"),
-        content: Column(
-          spacing: 10,
-          children: <Widget>[
-            DropdownMenu<OpenShockDevice>(
-              label: Text("Device"),
-              onSelected: (value) {
-                device = value;
+        content: SingleChildScrollView(child: 
+          Column(
+            spacing: 10,
+            children: <Widget>[
+              DropdownMenu<OpenShockDevice>(
+                label: Text("Device"),
+                onSelected: (value) {
+                  device = value;
+                },
+                dropdownMenuEntries: [
+                for(OpenShockDevice device in devices)
+                  DropdownMenuEntry(label: device.name, value: device),
+              ]),
+              DropdownMenu<String>(dropdownMenuEntries: [
+                DropdownMenuEntry(label: "CaiXianlin", value: "CaiXianlin"),
+                DropdownMenuEntry(label: "PetTrainer", value: "PetTrainer"),
+                DropdownMenuEntry(label: "Petrainer998DR", value: "Petrainer 998DR"),
+              ], onSelected: (value) {
+                shockerType = value ?? "CaiXianlin";
               },
-              dropdownMenuEntries: [
-              for(OpenShockDevice device in devices)
-                DropdownMenuEntry(label: device.name, value: device),
-            ]),
-            DropdownMenu<String>(dropdownMenuEntries: [
-              DropdownMenuEntry(label: "CaiXianlin", value: "CaiXianlin"),
-              DropdownMenuEntry(label: "PetTrainer", value: "PetTrainer"),
-              DropdownMenuEntry(label: "Petrainer998DR", value: "Petrainer 998DR"),
-            ], onSelected: (value) {
-              shockerType = value ?? "CaiXianlin";
-            },
-            label: Text("Shocker type"),
-            ),
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: "Shocker Name"
+              label: Text("Shocker type"),
               ),
-            ),
-            TextField(
-              controller: rfIdController,
-              decoration: InputDecoration(
-                labelText: "RF ID"
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: "Shocker Name"
+                ),
               ),
-              keyboardType: TextInputType.number,
-            )
-          ],
+              TextField(
+                controller: rfIdController,
+                decoration: InputDecoration(
+                  labelText: "RF ID"
+                ),
+                keyboardType: TextInputType.number,
+              )
+            ],
+          ),
         ),
         actions: <Widget>[
           TextButton(onPressed: () {
@@ -233,14 +229,7 @@ class ShockerScreen extends StatefulWidget {
               return;
             }
             showDialog(context: context, builder: (context) {
-              return AlertDialog(
-                title: Text("Adding shocker"),
-                content: Row(
-                  children: <Widget>[
-                    CircularProgressIndicator()
-                  ],
-                )
-              );
+              return LoadingDialog(title: "Adding shocker");
             });
 
             String? error = await manager.addShocker(name, rfId, shockerType, device);
