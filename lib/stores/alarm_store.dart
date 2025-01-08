@@ -1,12 +1,11 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:mobx/mobx.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../main.dart';
 
-class Token with Store {
+class Token {
   Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name="", this.isSession = false, this.userId = ""});
 
   int id;
@@ -58,7 +57,7 @@ class AlarmShocker {
   }
 }
 
-class ObservableAlarmBase with Store {
+class ObservableAlarmBase {
   int id;
   String name;
   int hour;

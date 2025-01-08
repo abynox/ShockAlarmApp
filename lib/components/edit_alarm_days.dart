@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import '../stores/alarm_store.dart';
 
 class EditAlarmDays extends StatefulWidget {
@@ -21,8 +20,7 @@ class EditAlarmDaysState extends State<EditAlarmDays> {
 
   @override
   Widget build(BuildContext context) {
-    return Observer(
-      builder: (context) => Row(
+    return Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           WeekDayToggle(
@@ -61,8 +59,7 @@ class EditAlarmDaysState extends State<EditAlarmDays> {
             onToggle: (sunday) => setState(()=> {alarm.sunday = sunday,onRebuild()}),
           ),
         ],
-      ),
-    );
+      );
   }
 }
 

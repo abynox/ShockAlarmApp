@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -7,7 +5,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shock_alarm_app/stores/alarm_store.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'screens/home.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import 'services/alarm_list_manager.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
