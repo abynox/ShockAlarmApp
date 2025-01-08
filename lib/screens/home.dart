@@ -77,7 +77,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       bottomNavigationBar: BottomNavigationBar(items: 
          [
           BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
-          BottomNavigationBarItem(icon: OpenShockClient.getIconForControlType(ControlType.shock), label: 'Shockers'),
+          BottomNavigationBarItem(icon: OpenShockClient.getIconForControlType(ControlType.shock), label: 'Devices'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
         currentIndex: _selectedIndex,

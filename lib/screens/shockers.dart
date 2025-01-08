@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/screens/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../components/hub_item.dart';
@@ -67,6 +68,72 @@ class ShockerScreen extends StatefulWidget {
             Navigator.of(context).pop();
             reloadState();
           }, child: Text("Redeem"))
+        ],
+      );
+    });
+  }
+
+  static startAddHub(AlarmListManager manager, BuildContext context, Function reloadState) async {
+    Navigator.of(context).pop();
+    showDialog(context: context, builder: (context) {
+      TextEditingController nameController = TextEditingController();
+      return AlertDialog(
+        title: Text("Add new hub"),
+        content: Column(
+          children: <Widget>[
+            TextField(
+              decoration: InputDecoration(
+                labelText: "Hub name"
+              ),
+              controller: nameController,
+            )
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () {
+            Navigator.of(context).pop();
+          }, child: Text("Cancel")),
+          TextButton(onPressed: () async {
+            String name = nameController.text;
+            if(name.isEmpty) {
+              showDialog(context: context, builder: (context) {
+                return AlertDialog(
+                  title: Text("Invalid name"),
+                  content: Text("The name cannot be empty"),
+                  actions: <Widget>[
+                    TextButton(onPressed: () {
+                      Navigator.of(context).pop();
+                    }, child: Text("Ok"))
+                  ],
+                );
+              });
+              return;
+            }
+            showDialog(context: context, builder: (context) {
+              return LoadingDialog(title: "Creating hub");
+            });
+            CreatedHub? hub = await manager.addHub(name);
+            if(hub.error != null || hub.hubId == null) {
+              showDialog(context: context, builder: (context) {
+                return AlertDialog(
+                  title: Text("Error"),
+                  content: Text(hub.error ?? "Unknown error"),
+                  actions: <Widget>[
+                    TextButton(onPressed: () {
+                      Navigator.of(context).pop();
+                    }, child: Text("Ok"))
+                  ],
+                );
+              });
+              return;
+            }
+            await manager.updateShockerStore();
+            reloadState();
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            // ToDo add pair code thingy
+            await HubItem.pairHub(context, manager, hub.hubId!);
+          }, child: Text("Add"))
         ],
       );
     });
@@ -226,7 +293,7 @@ class ShockerScreen extends StatefulWidget {
             );
           }
           return AlertDialog(
-            title: Text("Add shocker"),
+            title: Text("Add device"),
             content: Text("What do you want to do?"),
             actions: <Widget>[
               TextButton(onPressed: () {
@@ -236,6 +303,9 @@ class ShockerScreen extends StatefulWidget {
               TextButton(onPressed: () async {
                 await startPairShocker(manager, context, reloadState);
               }, child: Text("Add new shocker")),
+              TextButton(onPressed: () async {
+                startAddHub(manager, context, reloadState);
+              }, child: Text("Add new hub")),
               TextButton(onPressed: () {
                 Navigator.of(context).pop();
               }, child: Text("Cancel")),
@@ -268,16 +338,25 @@ class ShockerScreenState extends State<ShockerScreen> {
       }
       groupedShockers[shocker.hubReference]!.add(shocker);
     }
+    // now add all missing hubs
+    for(Hub hub in manager.hubs) {
+      if(manager.enabledHubs[hub.id] == false) {
+        continue;
+      }
+      if(!groupedShockers.containsKey(hub)) {
+        groupedShockers[hub] = [];
+      }
+    }
     List<Widget> shockers = [];
     for(var shocker in groupedShockers.entries) {
-      shockers.add(HubItem(hub: shocker.value[0].hubReference!, manager: manager, key: ValueKey(shocker.key),));
+      shockers.add(HubItem(hub: shocker.key!, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.key),));
       for(var s in shocker.value) {
-        shockers.add(ShockerItem(shocker: s, manager: manager, onRebuild: rebuild, key: ValueKey(s.id + s.paused.toString())));
+        shockers.add(ShockerItem(shocker: s, manager: manager, onRebuild: rebuild, key: ValueKey(s.getIdentifier())));
       }
     }
     return Column(children: [
       Text(
-        'All shockers',
+        'All devices',
         style: t.textTheme.headlineMedium,
       ),
       Wrap(spacing: 5,runAlignment: WrapAlignment.start,children: manager.enabledHubs.keys.map<FilterChip>((hub) {

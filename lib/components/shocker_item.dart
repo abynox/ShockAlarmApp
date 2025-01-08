@@ -135,10 +135,7 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
           Navigator.of(context).pop();
         }, child: Text("Cancel")),
         TextButton(onPressed: () async {
-          showDialog(context: context, builder: (context) => AlertDialog(
-            title: Text("Renaming shocker"),
-            content: Row(children: [CircularProgressIndicator()]),
-          ));
+          showDialog(context: context, builder: (context) => LoadingDialog(title: "Renaming shocker"));
           String? errorMessage = await manager.renameShocker(shocker, controller.text);
           Navigator.of(context).pop();
           if(errorMessage != null) {
@@ -422,6 +419,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
   }
 
   double reverseMapDuration(double value) {
+    if(maxDuration <= 300) return 0;
     return linearToCubic((value - 300) / (maxDuration - 300));
   }
 

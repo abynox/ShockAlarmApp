@@ -58,7 +58,7 @@ class SharesScreenState extends State<SharesScreen> {
           Navigator.of(context).pop();
         }, child: Text("Cancel")),
         TextButton(onPressed: () async {
-          showDialog(context: context, builder: (context) => AlertDialog(title: Text("Creating share"), content: Row(children: [CircularProgressIndicator()]), actions: []));
+          showDialog(context: context, builder: (context) => LoadingDialog(title: "Creating share"));
 
           String? error = await OpenShockClient().addShare(shocker, limits, manager);
           Navigator.of(context).pop();
@@ -102,7 +102,11 @@ class SharesScreenState extends State<SharesScreen> {
             RefreshIndicator(child: 
                   ListView(children: [
                   for(OpenShockShare share in shares)
-                    ShockerShareEntry(share: share, manager: manager, key: ValueKey(share.sharedWith.id),),
+                    ShockerShareEntry(share: share, manager: manager, key: ValueKey(share.sharedWith.id), onRebuild: () {
+                      setState(() {
+                        loadShares();
+                      });
+                    },),
                   for(OpenShockShareCode code in shareCodes)
                     ShockerShareCodeEntry(shareCode: code, manager: manager, key: ValueKey(code.id), onDeleted: () {
                       setState(() {
@@ -132,20 +136,23 @@ class SharesScreenState extends State<SharesScreen> {
 class ShockerShareEntry extends StatefulWidget {
   final OpenShockShare share;
   final AlarmListManager manager;
+  Function() onRebuild;
 
-  const ShockerShareEntry({Key? key, required this.share, required this.manager}) : super(key: key);
+  ShockerShareEntry({Key? key, required this.share, required this.manager, required this.onRebuild}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => ShockerShareEntryState(share, manager);
+  State<StatefulWidget> createState() => ShockerShareEntryState(share, manager, onRebuild);
 }
 
 class ShockerShareEntryState extends State<ShockerShareEntry> {
   final OpenShockShare share;
   final AlarmListManager manager;
   OpenShockShareLimits limits = OpenShockShareLimits();
+  Function() onRebuild;
   bool editing = false;
+  bool deleting = false;
 
-  ShockerShareEntryState(this.share, this.manager);
+  ShockerShareEntryState(this.share, this.manager, this.onRebuild);
 
   void setPausedState(bool paused) async {
     String? error = await OpenShockClient().setPauseStateOfShare(share, manager, paused);
@@ -161,6 +168,27 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
     setState(() {
       editing = true;
     });
+  }
+
+  void deleteShare() async {
+    showDialog(context: context, builder: (context) => AlertDialog(title: Text("Delete share"), content: Text("Are you sure you want to delete the share with ${share.sharedWith.name}?\n\n(You can add it again later)"), actions: [
+      TextButton(onPressed: () {
+        Navigator.of(context).pop();
+      }, child: Text("Cancel")),
+      TextButton(onPressed: () async {
+        deleting = true;
+        String? errorMessage = await manager.deleteShare(share);
+        if(errorMessage != null) {
+          deleting = false;
+          showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to delete share"), content: Text(errorMessage), actions: [TextButton(onPressed: () {
+            Navigator.of(context).pop();
+          }, child: Text("Ok"))],));
+          return;
+        }
+        Navigator.of(context).pop();
+        onRebuild();
+      }, child: Text("Delete"))
+    ],));
   }
 
   @override
@@ -201,6 +229,10 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
                           editing = false;
                         });
                     }, icon: Icon(Icons.save)),
+                  if(!editing) 
+                    (deleting ? CircularProgressIndicator() : IconButton(onPressed: () {
+                      deleteShare();
+                    }, icon: Icon(Icons.delete))),
                   if(!editing)
                     IconButton(onPressed: () {
                       openEditLimitsDialog();
@@ -315,23 +347,26 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
               Row(
                 spacing: 10,
                 children: [
-                  IconButton(onPressed: () async {
-                    Share.share("Claim my shocker with this share code: ${shareCode.id}");
-                  }, icon: Icon(Icons.share)),
                   if(deleting)
                     CircularProgressIndicator()
                   else
                     IconButton(onPressed: () async {
-                      deleting = true;
+                      setState(() {
+                        deleting = true;
+                      });
                       String? error = await manager.deleteShareCode(shareCode);
                       if(error != null) {
+                        deleting = false;
                         showDialog(context: context, builder: (context) => AlertDialog(title: Text("Error"), content: Text(error), actions: [TextButton(onPressed: () {
                           Navigator.of(context).pop();
                         }, child: Text("Ok"))],));
                         return;
                       }
                       onDeleted();
-                    }, icon: Icon(Icons.delete))
+                    }, icon: Icon(Icons.delete)),
+                  IconButton(onPressed: () async {
+                    Share.share("Claim my shocker with this share code: ${shareCode.id}");
+                  }, icon: Icon(Icons.share)),
                 ],
               )
             ],
@@ -340,6 +375,19 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
       ),
       ) 
     );
+  }
+}
+
+class LoadingDialog extends StatelessWidget {
+  final String title;
+  const LoadingDialog({
+    required this.title,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(title: Text(title), content: Row(children: [CircularProgressIndicator()]), actions: []);
   }
 }
 

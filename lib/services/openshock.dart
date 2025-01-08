@@ -4,11 +4,18 @@ import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import '../stores/alarm_store.dart';
 import 'dart:convert';
 
+class DeviceContainer {
+  List<Hub> hubs;
+  List<Shocker> shockers;
+
+  DeviceContainer(this.hubs, this.shockers);
+}
+
 class OpenShockClient {
-  Future<List<Shocker>> GetShockersForToken(Token t) async {
-    print("Doing get request ig");
+  Future<DeviceContainer> GetShockersForToken(Token t) async {
     var response = await GetRequest(t, "/1/shockers/own");
     List<Shocker> shockers = [];
+    List<Hub> hubs = [];
 
     if (response.statusCode == 200) {
       OpenShockDevicesData deviceData = OpenShockDevicesData.fromJson(jsonDecode(response.body));
@@ -16,6 +23,7 @@ class OpenShockClient {
         Hub h = Hub.fromOpenShockDevice(element);
         h.isOwn = true;
         h.apiTokenId = t.id;
+        hubs.add(h);
         for (var shocker in element.shockers) {
           Shocker s = Shocker.fromOpenShockShocker(shocker);
           s.hubReference = h;
@@ -34,6 +42,7 @@ class OpenShockClient {
         for(var device in element.devices) {
           Hub h = Hub.fromOpenShockDevice(device);
           h.apiTokenId = t.id;
+          hubs.add(h);
           for (var shocker in device.shockers) {
             Shocker s = Shocker.fromOpenShockShocker(shocker);
             s.hubReference = h;
@@ -45,7 +54,7 @@ class OpenShockClient {
       }
     }
 
-    return shockers;
+    return DeviceContainer(hubs, shockers);
   }
 
   static getIconForControlType(ControlType type, {Color? color}) {
@@ -159,13 +168,7 @@ class OpenShockClient {
     });
     Token? token;
     if(response.statusCode == 200) {
-      print("Getting token");
-      print(response.body);
-      response.headers.keys.forEach((element) {
-        print(element);
-      });
       response.headers["set-cookie"]?.split(";").forEach((element) {
-        print(element);
         if(element.startsWith("openShockSession=")) {
           var sessionId = element.substring("openShockSession=".length);
           token = Token(DateTime.now().millisecondsSinceEpoch, sessionId, server: serverAddress, isSession: true);
@@ -187,7 +190,6 @@ class OpenShockClient {
     }
     // replace name of response
     var responseBody = jsonDecode(response.body)["data"];
-    print(response.body);
     responseBody["name"] = text;
     String body = jsonEncode(responseBody);
 
@@ -209,11 +211,10 @@ class OpenShockClient {
     var response = await GetRequest(t, "/1/devices/${hub.id}");
 
     if(response.statusCode != 200) {
-      return "${response.statusCode} - failed to get shocker";
+      return "${response.statusCode} - failed to get hub";
     }
     // replace name of response
     var responseBody = jsonDecode(response.body)["data"];
-    print(response.body);
     responseBody["name"] = text;
     String body = jsonEncode(responseBody);
 
@@ -396,6 +397,66 @@ class OpenShockClient {
     }
     return getErrorCode(response, "Failed to delete shocker");
   }
+
+  Future<String?> deleteShare(OpenShockShare share, AlarmListManager alarmListManager) async {
+    if(share.shockerReference == null) return "Shocker not found";
+    Shocker s = share.shockerReference!;
+    Token? t = alarmListManager.getToken(s.apiTokenId);
+    if(t == null) return "Token not found";
+    return getErrorCode(await DeleteRequest(t, "/1/shockers/${s.id}/shares/${share.sharedWith.id}", ""), "Failed to delete share");
+  }
+
+  Future<String?> deleteHub(Hub hub, AlarmListManager alarmListManager) async {
+    Token? t = alarmListManager.getToken(hub.apiTokenId);
+    if(t == null) return Future.value("Token not found");
+    return getErrorCode(await DeleteRequest(t, "/1/devices/${hub.id}", ""), "Failed to delete hub");
+  }
+
+  Future<PairCode> getPairCode(Hub hub, AlarmListManager alarmListManager) async {
+    Token? t = alarmListManager.getToken(hub.apiTokenId);
+    if(t == null) return PairCode("Token not found", null);
+    var response = await GetRequest(t, "/1/devices/${hub.id}/pair");
+    if(response.statusCode == 200) {
+      return PairCode.fromJson(jsonDecode(response.body));
+    }
+    return PairCode(getErrorCode(response, "Failed to get pair code"), null);
+  }
+
+  Future<CreatedHub> addHub(String name, AlarmListManager manager) async {
+    Token? t = manager.getAnyUserToken();
+    if(t == null) return CreatedHub(null, "No valid token found");
+    var response = await PostRequest(t, "/1/devices", "");
+    if(response.statusCode != 201) {
+      return CreatedHub(null, getErrorCode(response, "Failed to create hub"));
+    }
+    CreatedHub hub = CreatedHub(response.body.replaceAll("\"", ""), null);
+    // now we need to rename it
+    Hub h = Hub()
+      ..name = name
+      ..id = hub.hubId!
+      ..isOwn = true
+      ..apiTokenId = t.id;
+    hub.error = await renameHub(h, name, manager);
+    return hub;
+  }
+}
+
+class CreatedHub {
+  String? hubId;
+  String? error;
+
+  CreatedHub(this.hubId, this.error);
+}
+
+class PairCode {
+  String? code;
+  String? error;
+
+  PairCode(this.error, this.code);
+
+  PairCode.fromJson(Map<String, dynamic> json) {
+    code = json["data"];
+  }
 }
 
 enum ControlType {
@@ -535,6 +596,8 @@ class Hub {
   bool isOwn = false;
   int apiTokenId = 0;
 
+  Hub();
+
   Hub.fromOpenShockDevice(OpenShockDevice device) {
     name = device.name;
     id = device.id;
@@ -623,6 +686,10 @@ class Shocker {
     if(shocker["isOwn"] != null)
       s.isOwn = shocker["isOwn"];
     return s;
+  }
+
+  String getIdentifier() {
+    return "$id-$apiTokenId-${paused}-${shockAllowed}-${vibrateAllowed}-${soundAllowed}-${durationLimit}-${intensityLimit}";
   }
 }
 

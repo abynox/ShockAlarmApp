@@ -114,14 +114,14 @@ class AlarmListManager {
     for(var token in tokensCopy) {
       OpenShockClient client = OpenShockClient();
       token.name = await client.getNameForToken(token);
-      List<Shocker> s = await client.GetShockersForToken(token);
+      DeviceContainer devices = await client.GetShockersForToken(token);
       // add shockers without duplicates
-      for(var shocker in s) {
-        if(shocker.hubReference != null) {
-          if(hubs.indexWhere((element) => element.id == shocker.hubReference!.id) == -1) {
-            hubs.add(shocker.hubReference!);
-          }
+      for(var hub in devices.hubs) {
+        if(hubs.indexWhere((element) => element.id == hub.id) == -1) {
+          hubs.add(hub);
         }
+      }
+      for(var shocker in devices.shockers) {
         if(shockers.indexWhere((element) => element.id == shocker.id) == -1) {
           shockers.add(shocker);
         }
@@ -183,6 +183,7 @@ class AlarmListManager {
   }
 
   void saveShockers() async {
+    updateHubList();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("shockers", jsonEncode(shockers));
     prefs.setString("hubs", jsonEncode(hubs));
@@ -256,8 +257,18 @@ class AlarmListManager {
     return OpenShockClient().deleteShareCode(shareCode, this);
   }
 
+
+
+  Token? getAnyUserToken() {
+    for(var token in getTokens()) {
+      if(token.isSession && token.name.isNotEmpty) {
+        return token;
+      }
+    }
+  }
+
   bool hasValidAccount() {
-    return getTokens().where((element) => element.isSession && element.name.isNotEmpty).isNotEmpty;
+    return getAnyUserToken() != null;
   }
 
   Future<String?> redeemShareCode(String code) {
@@ -280,11 +291,31 @@ class AlarmListManager {
     return OpenShockClient().deleteShocker(shocker, this);
   }
 
+  Future<String?> deleteShare(OpenShockShare share) {
+    return OpenShockClient().deleteShare(share, this);
+    }
+
   Hub? getHub(String hubId) {
     for(var hub in hubs) {
       if(hub.id == hubId) {
         return hub;
       }
     }
+  }
+
+  Future<String?> deleteHub(Hub hub) {
+    return OpenShockClient().deleteHub(hub, this);
+  }
+
+  Future<PairCode> getPairCode(String hubId) {
+    return getPairCodeViaHub(getHub(hubId)!);
+  }
+
+  Future<PairCode> getPairCodeViaHub(Hub hub) {
+    return OpenShockClient().getPairCode(hub, this);
+  }
+
+  Future<CreatedHub> addHub(String name) {
+    return OpenShockClient().addHub(name, this);
   }
 }

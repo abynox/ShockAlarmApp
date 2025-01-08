@@ -59,7 +59,6 @@ void onDidReceiveNotificationResponse(NotificationResponse notificationResponse)
     print("Alarm not found");
     return;
   }
-  print(notificationResponse.actionId);
   switch(notificationResponse.actionId) {
     case "stop":
       alarm?.onAlarmStopped(manager);
