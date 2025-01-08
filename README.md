@@ -13,16 +13,16 @@ Based partly on https://github.com/mvarendorff/random-alarm/
 - [x] Redeem share codes (untested)
 - [x] Adding of shockers
 - [x] Creation, editing and pairing of hubs
-- [ ] Add option to repeat default shock/vibration... option for one minute (perhaps adjustable in settings). Needs reworking of the alarm stop feature
+- [x] Add option to repeat default shock/vibration... option for one minute (perhaps adjustable in settings). Needs reworking of the alarm stop feature
 - [ ] Alarm tones
 - [ ] Grouping of shockers
-- [ ] Redo settings
+- [x] Redo settings
 - [ ] (Big controls mode)
 - [ ] Linux support
 
 # Planned settings
-- [ ] Hide/unhiding of the delay option
-- [ ] Slider instead of RangeSlider for delay
+- [x] Hide/unhiding of the delay option
+- [x] Slider instead of RangeSlider for delay
 
 
 ## Getting Started

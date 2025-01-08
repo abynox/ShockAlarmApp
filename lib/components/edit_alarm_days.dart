@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../stores/alarm_store.dart';
 
 class EditAlarmDays extends StatefulWidget {
-  final ObservableAlarmBase alarm;
+  final Alarm alarm;
   final Function onRebuild;
 
   const EditAlarmDays({Key? key, required this.alarm, required this.onRebuild}) : super(key: key);
@@ -12,7 +12,7 @@ class EditAlarmDays extends StatefulWidget {
 }
 class EditAlarmDaysState extends State<EditAlarmDays> {
 
-  final ObservableAlarmBase alarm;
+  final Alarm alarm;
   final Function onRebuild;
 
   EditAlarmDaysState(this.alarm, this.onRebuild);

@@ -1,6 +1,7 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../main.dart';
@@ -57,7 +58,7 @@ class AlarmShocker {
   }
 }
 
-class ObservableAlarmBase {
+class Alarm {
   int id;
   String name;
   int hour;
@@ -70,9 +71,10 @@ class ObservableAlarmBase {
   bool saturday;
   bool sunday;
   bool active;
+  bool repeatAlarmsTone = true;
   List<AlarmShocker> shockers = [];
 
-  ObservableAlarmBase(
+  Alarm(
       {required this.id,
       required this.name,
       required this.hour,
@@ -90,29 +92,39 @@ class ObservableAlarmBase {
     return [monday, tuesday, wednesday, thursday, friday, saturday, sunday];
   }
 
-  void trigger(AlarmListManager manager, bool disableIfApplicable) {
+  void trigger(AlarmListManager manager, bool disableIfApplicable) async {
     // ToDo: show notification
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool("alarm$id.active", true);
+
     FlutterLocalNotificationsPlugin().show(id, name,"Your alarm is firing", NotificationDetails(android: AndroidNotificationDetails("alarms", "Alarms", enableVibration: true, priority: Priority.high, importance: Importance.max, actions: [
       AndroidNotificationAction("stop", "Stop alarm", showsUserInterface: true),
       AndroidNotificationAction("detail", "Detail", showsUserInterface: true),
     ])), payload: id.toString());
-
+    DateTime startedAt = DateTime.now();
     var maxDuration = 0;
-
-    for (var shocker in shockers) {
-      if (shocker.enabled) {
-        if (shocker.duration > maxDuration) {
-          maxDuration = shocker.duration;
+    bool shouldContinue = repeatAlarmsTone;
+    while(shouldContinue) {
+      for (var shocker in shockers) {
+        if (shocker.enabled) {
+          if (shocker.duration > maxDuration) {
+            maxDuration = shocker.duration;
+          }
+          // If a shocker is paused the backend will return an error. So we don't need to check if it's paused. Especially as the saved state may not reflect the real paused state.
+          manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
         }
-        // If a shocker is paused the backend will return an error. So we don't need to check if it's paused. Especially as the saved state may not reflect the real paused state.
-        manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
       }
-    }
 
-    // Wait until all shockers have finished
-    Future.delayed(Duration(milliseconds: maxDuration), () {
-      onAlarmStopped(manager);
-    });
+      // Wait until all shockers have finished
+      await Future.delayed(Duration(milliseconds: maxDuration + manager.settings.alarmToneRepeatDelayMs));
+      print("checking alarm$id.active");
+      await prefs.reload();
+      shouldContinue = prefs.getBool("alarm$id.active") ?? false;
+      print("is $shouldContinue");
+      int secondsSinceAlarmStart = DateTime.now().difference(startedAt).inSeconds;
+      if(secondsSinceAlarmStart >= manager.settings.maxAlarmLengthSeconds) shouldContinue = false;
+    }
+    onAlarmStopped(manager);
 
     if (disableIfApplicable) {
       if(!shouldSchedulePerWeekday()) {
@@ -123,7 +135,9 @@ class ObservableAlarmBase {
 
   }
 
-  void onAlarmStopped(AlarmListManager manager, {bool needStop = true}) {
+  void onAlarmStopped(AlarmListManager manager, {bool needStop = true}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("alarm$id.active", false);
     if(needStop) {
       for (var shocker in shockers) {
         if (shocker.enabled) {
@@ -157,12 +171,13 @@ class ObservableAlarmBase {
       "saturday": saturday,
       "sunday": sunday,
       "active": active,
-      "shockers": shockers.map((e) => e.toJson()).toList()
+      "shockers": shockers.map((e) => e.toJson()).toList(),
+      "repeatAlarmsTone": repeatAlarmsTone
     };
   }
 
-  static ObservableAlarmBase fromJson(alarm) {
-    ObservableAlarmBase a = ObservableAlarmBase(
+  static Alarm fromJson(alarm) {
+    Alarm a = Alarm(
       id: alarm["id"],
       name: alarm["name"],
       hour: alarm["hour"],
@@ -175,9 +190,10 @@ class ObservableAlarmBase {
       saturday: alarm["saturday"],
       sunday: alarm["sunday"],
       active: alarm["active"]);
-    if(alarm["shockers"] != null) {
+    if(alarm["shockers"] != null)
       a.shockers = (alarm["shockers"] as List).map((e) => AlarmShocker.fromJson(e)).toList();
-    }
+    if(alarm["repeatAlarmsTone"] != null)
+      a.repeatAlarmsTone = alarm["repeatAlarmsTone"];
     return a;
   }
 
@@ -195,7 +211,11 @@ class ObservableAlarmBase {
       if (nextOccurrance.isBefore(now)) {
         nextOccurrance = nextOccurrance.add(Duration(days: 1));
       }
-      ScaffoldMessenger.of(manager.context!).showSnackBar(SnackBar(content: Text("Scheduled alarm for ${nextOccurrance.toString()}")));
+      try {
+        ScaffoldMessenger.of(manager.context!).showSnackBar(SnackBar(content: Text("Scheduled alarm for ${nextOccurrance.toString()}")));
+      } catch (e) {
+        print("Error: $e");
+      }
       AndroidAlarmManager.oneShotAt(nextOccurrance, id, alarmCallback, exact: true, wakeup: true);
     }
   }

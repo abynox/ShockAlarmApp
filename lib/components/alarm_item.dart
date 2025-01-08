@@ -9,7 +9,7 @@ import '../components/edit_alarm_time.dart';
 const dates = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
 class AlarmItem extends StatefulWidget {
-  final ObservableAlarmBase alarm;
+  final Alarm alarm;
   final AlarmListManager manager;
   final Function onRebuild;
 
@@ -21,7 +21,7 @@ class AlarmItem extends StatefulWidget {
 }
 
 class AlarmItemState extends State<AlarmItem> {
-  final ObservableAlarmBase alarm;
+  final Alarm alarm;
   final AlarmListManager manager;
   final Function onRebuild;
   bool expanded = false;
@@ -87,7 +87,20 @@ class AlarmItemState extends State<AlarmItem> {
                       children: [
 
                         EditAlarmDays(alarm: this.alarm, onRebuild: onRebuild,),
-                        Text(alarm.shockers.length.toString() + " shockers"),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                          Text("Repeat alarm tone"),
+                          Switch(value: alarm.repeatAlarmsTone, onChanged: (value) {
+                            setState(() {
+                              alarm.repeatAlarmsTone = value;
+                              _save();
+                            });
+                          },)
+                        ],),
+                        Text(alarm.shockers.where((x) {
+                          return x.enabled;
+                        }).length.toString() + " shockers active"),
                         Column(children: alarm.shockers.map((alarmShocker) {
                           return AlarmShockerWidget(alarmShocker: alarmShocker, manager: manager, onRebuild: onRebuild);
                         }).toList()),
@@ -244,7 +257,7 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
 }
 
 class DateRow extends StatelessWidget {
-  final ObservableAlarmBase alarm;
+  final Alarm alarm;
   final List<bool> dayEnabled;
 
   DateRow({

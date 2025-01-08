@@ -14,6 +14,10 @@ class Settings {
 
   bool allowTokenEditing = false;
 
+  int alarmToneRepeatDelayMs = 1500;
+
+  int maxAlarmLengthSeconds = 60;
+
   Settings();
 
   Settings.fromJson(Map<String, dynamic> json) {
@@ -38,7 +42,7 @@ class Settings {
 }
 
 class AlarmListManager {
-  final List<ObservableAlarmBase> _alarms = [];
+  final List<Alarm> _alarms = [];
   final List<Shocker> shockers = [];
   final List<Token> _tokens = [];
   final List<Hub> hubs = [];
@@ -65,7 +69,7 @@ class AlarmListManager {
     List<dynamic> hubsList = jsonDecode(hubs);
     this.settings = Settings.fromJson(jsonDecode(settings));
     for (var alarm in alarmsList) {
-      _alarms.add(ObservableAlarmBase.fromJson(alarm));
+      _alarms.add(Alarm.fromJson(alarm));
     }
     for (var token in tokensList) {
       _tokens.add(Token.fromJson(token));
@@ -131,7 +135,7 @@ class AlarmListManager {
     return id;
   }
 
-  saveAlarm(ObservableAlarmBase alarm) async {
+  saveAlarm(Alarm alarm) async {
     final index =
         _alarms.indexWhere((findAlarm) => alarm.id == findAlarm.id);
     if (index == -1) {
@@ -188,7 +192,7 @@ class AlarmListManager {
     //await _storage.writeList(_tokens.tokens);
   }
 
-  void deleteAlarm(ObservableAlarmBase alarm) {
+  void deleteAlarm(Alarm alarm) {
     _alarms.removeWhere((findAlarm) => alarm.id == findAlarm.id);
   }
 
@@ -212,7 +216,7 @@ class AlarmListManager {
     }
   }
 
-  List<ObservableAlarmBase> getAlarms() {
+  List<Alarm> getAlarms() {
     return _alarms;
   }
 

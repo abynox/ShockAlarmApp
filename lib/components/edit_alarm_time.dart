@@ -4,7 +4,7 @@ import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import '../stores/alarm_store.dart';
 
 class EditAlarmTime extends StatefulWidget {
-  final ObservableAlarmBase alarm;
+  final Alarm alarm;
   final AlarmListManager manager;
 
 
@@ -15,7 +15,7 @@ class EditAlarmTime extends StatefulWidget {
 }
 
 class EditAlarmTimeState extends State<EditAlarmTime> {
-  final ObservableAlarmBase alarm;
+  final Alarm alarm;
   final AlarmListManager manager;
   
   EditAlarmTimeState(this.alarm, this.manager);

@@ -46,7 +46,7 @@ void onDidReceiveNotificationResponse(NotificationResponse notificationResponse)
   if(notificationResponse.id != null) {
     print("Notification id owo: ${notificationResponse.id}");
   }
-  ObservableAlarmBase? alarm;
+  Alarm? alarm;
   manager.getAlarms().forEach((element) {
     if(element.id == notificationResponse.id) {
       alarm = element;
