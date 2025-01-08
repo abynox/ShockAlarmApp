@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -9,6 +11,9 @@ import 'services/alarm_list_manager.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 Future requestPermissions() async{
+  if(!Platform.isAndroid) {
+    return;
+  }
   final status = await Permission.scheduleExactAlarm.status;
   print('Schedule exact alarm permission: $status.');
   if (status.isDenied) {
@@ -36,6 +41,9 @@ void initNotification() async {
       linux: initializationSettingsLinux);
 await flutterLocalNotificationsPlugin.initialize(initializationSettings,
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
+    
+  flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
 }
 
 void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
@@ -69,12 +77,10 @@ void onDidReceiveNotificationResponse(NotificationResponse notificationResponse)
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initNotification();
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-    AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
-  await AndroidAlarmManager.initialize();
-  await requestPermissions();
+  if(Platform.isAndroid) {
+    await AndroidAlarmManager.initialize();
+    await requestPermissions();
+  }
 
   runApp(MyApp(null));
 }

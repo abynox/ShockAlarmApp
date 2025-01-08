@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -210,6 +212,11 @@ class Alarm {
       DateTime nextOccurrance = DateTime(now.year, now.month, now.day, hour, minute);
       if (nextOccurrance.isBefore(now)) {
         nextOccurrance = nextOccurrance.add(Duration(days: 1));
+      }
+
+      if(!Platform.isAndroid) {
+        ScaffoldMessenger.of(manager.context!).showSnackBar(SnackBar(content: Text("Cannot schedule alarm on linux atm")));
+        return;
       }
       try {
         ScaffoldMessenger.of(manager.context!).showSnackBar(SnackBar(content: Text("Scheduled alarm for ${nextOccurrance.toString()}")));
