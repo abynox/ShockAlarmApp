@@ -181,7 +181,16 @@ class TokenScreenState extends State<TokenScreen> {
               })
             ],
           ),
-          
+          IconButton(onPressed: () {
+            showDialog(context: context, builder: (context) => AlertDialog(
+              title: Text("About"),
+              content: Text("This app is made by ComputerElite. It is fully open source and can be found on GitHub. If you have any issues, please report them there. Thank you so much for using my app!"),
+              actions: [
+                TextButton(onPressed: () {
+                  Navigator.of(context).pop();
+                }, child: Text("Ok"))
+              ]));
+          }, icon: Icon(Icons.info))
         ],
       );
   }
