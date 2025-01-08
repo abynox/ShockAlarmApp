@@ -58,20 +58,29 @@ class TokenScreenState extends State<TokenScreen> {
                 controller: serverController,
 
               ),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: "Email"
-                ),
-                controller: usernameController,
-              ),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: "Password"
-                ),
-                obscureText: true,
-                obscuringCharacter: "*",
-                controller: passwordController,
+              AutofillGroup(child: 
+                Column(
+                  children: [
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: "Email"
+                      ),
+                      controller: usernameController,
+                      autofillHints: [AutofillHints.email],
+                    ),
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: "Password"
+                      ),
+                      obscureText: true,
+                      obscuringCharacter: "*",
+                      controller: passwordController,
+                      autofillHints: [AutofillHints.password],
+                    )
+                  ],
+                )
               )
+              
             ],
           ),
         ),
