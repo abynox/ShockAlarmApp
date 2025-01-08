@@ -44,7 +44,8 @@ jobs:
           echo "apkName=$apkName" >> $GITHUB_OUTPUT
 
           mkdir -p output
-          mv build/app/outputs/flutter-apk/app-release.apk output/$apkName
+          mkdir -p app/build/outputs/apk/release/
+          mv build/app/outputs/flutter-apk/app-release.apk app/build/outputs/apk/release/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -55,4 +56,4 @@ jobs:
         uses: sangatdesai/release-apk@main
         env:
             GITHUB_TOKEN: ${{ secrets.TOKEN }}
-            APP_FOLDER: output
+            APP_FOLDER: app
