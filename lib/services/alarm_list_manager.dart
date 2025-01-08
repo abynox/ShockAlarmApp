@@ -6,6 +6,36 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import '../stores/alarm_store.dart';
 import 'dart:convert';
 
+class Settings {
+  bool showRandomDelay = true;
+  bool useRangeSliderForRandomDelay = true;
+
+  bool disableHubFiltering = false;
+
+  bool allowTokenEditing = false;
+
+  Settings();
+
+  Settings.fromJson(Map<String, dynamic> json) {
+    if(json["showRandomDelay"] != null)
+      showRandomDelay = json["showRandomDelay"];
+    if(json["useRangeSliderForRandomDelay"] != null)
+      useRangeSliderForRandomDelay = json["useRangeSliderForRandomDelay"];
+    if(json["disableHubFiltering"] != null)
+      disableHubFiltering = json["disableHubFiltering"];
+    if(json["allowTokenEditing"] != null)
+      allowTokenEditing = json["allowTokenEditing"];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "showRandomDelay": showRandomDelay,
+      "useRangeSliderForRandomDelay": useRangeSliderForRandomDelay,
+      "disableHubFiltering": disableHubFiltering,
+      "allowTokenEditing": allowTokenEditing
+    };
+  }
+}
 
 class AlarmListManager {
   final List<ObservableAlarmBase> _alarms = [];
@@ -13,6 +43,7 @@ class AlarmListManager {
   final List<Token> _tokens = [];
   final List<Hub> hubs = [];
   final Map<String, bool> enabledHubs = {};
+  Settings settings = Settings();
 
   AlarmListManager();
 
@@ -27,10 +58,12 @@ class AlarmListManager {
     String tokens = prefs.getString("tokens") ?? "[]";
     String shockers = prefs.getString("shockers") ?? "[]";
     String hubs = prefs.getString("hubs") ?? "[]";
+    String settings = prefs.getString("settings") ?? "{}";
     List<dynamic> alarmsList = jsonDecode(alarms);
     List<dynamic> tokensList = jsonDecode(tokens);
     List<dynamic> shockersList = jsonDecode(shockers);
     List<dynamic> hubsList = jsonDecode(hubs);
+    this.settings = Settings.fromJson(jsonDecode(settings));
     for (var alarm in alarmsList) {
       _alarms.add(ObservableAlarmBase.fromJson(alarm));
     }
@@ -66,6 +99,11 @@ class AlarmListManager {
         enabledHubs.remove(hub);
       }
     }
+  }
+
+  void saveSettings() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("settings", jsonEncode(settings));
   }
 
   void rescheduleAlarms() async {
@@ -194,14 +232,14 @@ class AlarmListManager {
     prefs.setString("alarms", jsonEncode(_alarms));
   }
 
-  void saveTokens() async {
+  Future saveTokens() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("tokens", jsonEncode(_tokens));
   }
 
-  void deleteToken(Token token) {
+  Future deleteToken(Token token) async {
     _tokens.removeWhere((findToken) => token.id == findToken.id);
-    saveTokens();
+    await saveTokens();
   }
 
   Token? getToken(int id) {

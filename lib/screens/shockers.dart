@@ -317,7 +317,7 @@ class ShockerScreenState extends State<ShockerScreen> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     List<Shocker> filteredShockers = manager.shockers.where((shocker) {
-      return manager.enabledHubs[shocker.hubReference?.id] ?? false;
+      return (manager.enabledHubs[shocker.hubReference?.id] ?? false) || (manager.settings.disableHubFiltering);
     }).toList();
     // group by hub
     Map<Hub?, List<Shocker>> groupedShockers = {};
@@ -329,7 +329,7 @@ class ShockerScreenState extends State<ShockerScreen> {
     }
     // now add all missing hubs
     for(Hub hub in manager.hubs) {
-      if(manager.enabledHubs[hub.id] == false) {
+      if(!manager.settings.disableHubFiltering && manager.enabledHubs[hub.id] == false) {
         continue;
       }
       if(!groupedShockers.containsKey(hub)) {
@@ -348,13 +348,14 @@ class ShockerScreenState extends State<ShockerScreen> {
         'All devices',
         style: t.textTheme.headlineMedium,
       ),
-      Wrap(spacing: 5,runAlignment: WrapAlignment.start,children: manager.enabledHubs.keys.map<FilterChip>((hub) {
-        return FilterChip(label: Text(manager.getHub(hub)?.name ?? "Unknown hub"), onSelected: (bool value) {
-          manager.enabledHubs[hub] = value;
-          setState(() {
-          }
-        );}, selected: manager.enabledHubs[hub]!);
-      }).toList(),),
+      if(!manager.settings.disableHubFiltering)
+        Wrap(spacing: 5,runAlignment: WrapAlignment.start,children: manager.enabledHubs.keys.map<FilterChip>((hub) {
+          return FilterChip(label: Text(manager.getHub(hub)?.name ?? "Unknown hub"), onSelected: (bool value) {
+            manager.enabledHubs[hub] = value;
+            setState(() {
+            }
+          );}, selected: manager.enabledHubs[hub]!);
+        }).toList(),),
       Flexible(
         child: RefreshIndicator(child: ListView(children: [
             Column(

@@ -293,40 +293,53 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                         });
                       }),
                       // Delay options
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        spacing: 5,
-                        children: [
-                          Switch(value: delayVibrationEnabled, onChanged: (bool value) {
-                            setState(() {
-                              delayVibrationEnabled = value;
-                            });
-                          },),
-                          Expanded(child: RangeSlider(
-                          values: rangeValues,
-                          max: 10,
-                          min: 0,
-                          divisions: 10 * 3,
-                          labels: RangeLabels(
-                            "${(rangeValues.start * 10).round() / 10} s",
-                            "${(rangeValues.end * 10).round() / 10} s",
+                      if(manager.settings.showRandomDelay)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          spacing: 5,
+                          children: [
+                            Switch(value: delayVibrationEnabled, onChanged: (bool value) {
+                              setState(() {
+                                delayVibrationEnabled = value;
+                              });
+                            },),
+                            Expanded(child: manager.settings.useRangeSliderForRandomDelay ? RangeSlider(
+                              values: rangeValues,
+                              max: 10,
+                              min: 0,
+                              divisions: 10 * 3,
+                              labels: RangeLabels(
+                                "${(rangeValues.start * 10).round() / 10} s",
+                                "${(rangeValues.end * 10).round() / 10} s",
+                              ),
+                              onChanged: (RangeValues values) {
+                              setState(() {
+                                rangeValues = values;
+                              });
+                            }) : 
+                            Row(children: [
+                              Text("${(rangeValues.start * 10).round() / 10} s"),
+                              Expanded(child: 
+                                Slider(value: rangeValues.start, min: 0, max: 10, onChanged: (double value) {
+                                  setState(() {
+                                    rangeValues = RangeValues(value, rangeValues.end);
+                                  });
+                                }),
+                              )
+                              
+                            ],)
                           ),
-                          onChanged: (RangeValues values) {
-                          setState(() {
-                            rangeValues = values;
-                          });
-                        }),),
-                        
-                        GestureDetector(child: Icon(Icons.info,),
-                          onTap: () {
-                            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Delay options"), content: Text("Here you can add a random delay when pressing a button by selecting a range. If you enable the switch before the slider you can send a vibration before the actual action happens."),
-                            actions: [
-                              TextButton(onPressed: () {
-                                Navigator.of(context).pop();
-                            }, child: Text("Ok"))]
-                            ,));
-                          },),
-                      ],),
+                          
+                          GestureDetector(child: Icon(Icons.info,),
+                            onTap: () {
+                              showDialog(context: context, builder: (context) => AlertDialog(title: Text("Delay options"), content: Text("Here you can add a random delay when pressing a button by selecting a range. If you enable the switch before the slider you can send a vibration before the actual action happens."),
+                              actions: [
+                                TextButton(onPressed: () {
+                                  Navigator.of(context).pop();
+                              }, child: Text("Ok"))]
+                              ,));
+                            },),
+                        ],),
                       
                       if(progressCircularController == null && delayVibrationController == null)
                         Row(

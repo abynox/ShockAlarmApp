@@ -110,27 +110,72 @@ class TokenScreenState extends State<TokenScreen> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    return Column(
-      spacing: 10,
+    return ListView(
         children: <Widget>[
-          Text(
-            'Your accounts',
-            style: t.textTheme.headlineMedium,
-          ),
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                final token = manager.getTokens()[index];
+          Column(
+            spacing: 10,
+            children: [
+              Text(
+                'Settings',
+                style: t.textTheme.headlineMedium,
+              ),
 
-                return TokenItem(token: token, manager: manager, onRebuild: rebuild, key: ValueKey(token.id),);
-              },
-              itemCount: manager.getTokens().length,
-            ),
+              for(var token in manager.getTokens())
+                TokenItem(token: token, manager: manager, onRebuild: rebuild, key: ValueKey(token.id)),
+              if(manager.getTokens().isEmpty)
+                Card(
+                  color: t.colorScheme.onInverseSurface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: 
+                    Text("You are not logged in, please log in to access your devices", style: t.textTheme.headlineSmall),
+                  ),
+                ),
+              
+            ],
           ),
           FilledButton(onPressed: () {
             showLoginPopup();
-          }, child: Text("Log in to OpenShock", style: TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),)
+          }, child: Text("Log in to OpenShock", style: TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),),
+          
+          // Actual options
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Show option for random delay"),
+              Switch(value: manager.settings.showRandomDelay, onChanged: (value) {
+                setState(() {
+                  manager.settings.showRandomDelay = value;
+                  manager.saveSettings();
+                });
+              })
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Use range slider for random delay"),
+              Switch(value: manager.settings.useRangeSliderForRandomDelay, onChanged: (value) {
+                setState(() {
+                  manager.settings.useRangeSliderForRandomDelay = value;
+                  manager.saveSettings();
+                });
+              })
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Disable hub filtering"),
+              Switch(value: manager.settings.disableHubFiltering, onChanged: (value) {
+                setState(() {
+                  manager.settings.disableHubFiltering = value;
+                  manager.saveSettings();
+                });
+              })
+            ],
+          ),
+          
         ],
       );
   }
