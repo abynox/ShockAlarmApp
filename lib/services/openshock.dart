@@ -115,9 +115,9 @@ class OpenShockClient {
     }, body: body);
   }
 
-  Future setPauseStateOfShocker(Shocker s, AlarmListManager manager, bool paused) async {
+  Future<String?> setPauseStateOfShocker(Shocker s, AlarmListManager manager, bool paused) async {
     Token? t = manager.getToken(s.apiTokenId);
-    if(t == null) return;
+    if(t == null) return "Token not found";
     String body = jsonEncode({
       "pause": paused
     });
@@ -127,6 +127,7 @@ class OpenShockClient {
       manager.saveTokens();
       manager.reloadAllMethod!();
     }
+    return getErrorCode(response, "Failed to set pause state");
   }
 
   Future<bool> sendControls(Token t, List<Control> list, {String customName = "ShockAlarm"}) async {
@@ -370,6 +371,9 @@ class OpenShockClient {
     } catch (e) {
 
     }
+    if(response.statusCode == 401) {
+      return "${response.statusCode} - Your session expired. Please log in again.";
+    }
     return "${response.statusCode} - $defaultError";
   }
 
@@ -441,6 +445,11 @@ class OpenShockClient {
       ..apiTokenId = t.id;
     hub.error = await renameHub(h, name, manager);
     return hub;
+  }
+
+  Future<String?> logout(Token token) async {
+    var response = await PostRequest(token, "/1/account/logout", "");
+    return getErrorCode(response, "Failed to logout");
   }
 }
 

@@ -4,6 +4,7 @@ import 'package:shock_alarm_app/stores/alarm_store.dart';
 import '../components/bottom_add_button.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import '../components/token_item.dart';
+import 'shares.dart';
 
 class TokenScreen extends StatefulWidget {
   final AlarmListManager manager;
@@ -93,9 +94,14 @@ class TokenScreenState extends State<TokenScreen> {
           ),
           TextButton(
             onPressed: () async {
+              showDialog(context: context, builder: (context) => LoadingDialog(title: "Logging in"));
               bool worked  = await manager.login(serverController.text, usernameController.text, passwordController.text);
-              if(worked) Navigator.of(context).pop();
+              if(worked) {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              }
               else {
+                Navigator.of(context).pop();
                 showErrorDialog("Login failed", "Check server, email and password");
               }
             },

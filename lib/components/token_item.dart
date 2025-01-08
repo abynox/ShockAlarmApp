@@ -26,8 +26,20 @@ class TokenItemState extends State<TokenItem> {
 
   void _delete() async {
     deleting = true;
-    await manager.deleteToken(token);
+    String? error = await manager.deleteToken(token);
     await manager.updateShockerStore();
+    if(error != null) {
+      deleting = false;
+      showDialog(context: context, builder: (context) => AlertDialog(
+        title: Text("Failed to sign out"),
+        content: Text(error),
+        actions: [
+          TextButton(onPressed: () {
+            Navigator.of(context).pop();
+          }, child: Text("Ok"))
+        ],
+      ));
+    }
     onRebuild();
   }
 

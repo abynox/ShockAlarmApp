@@ -33,6 +33,7 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
   double delayDuration = 0;
   AnimationController? progressCircularController;
   AnimationController? delayVibrationController;
+  bool loadingPause = false;
 
 
   int currentIntensity = 25;
@@ -150,6 +151,22 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
         }, child: Text("Rename"))
       ],
     ));
+  }
+
+  void setPauseState(bool pause) async {
+    setState(() {
+      loadingPause = true;
+    });
+    String? error = await OpenShockClient().setPauseStateOfShocker(shocker, manager, pause);
+    setState(() {
+      loadingPause = false;
+    });
+    if(error != null) {
+      showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to pause shocker"), content: Text(error), actions: [TextButton(onPressed: () {
+        Navigator.of(context).pop();
+      }, child: Text("Ok"))],));
+      return;
+    }
   }
   
   ShockerItemState(this.shocker, this.manager, this.onRebuild);
@@ -294,15 +311,16 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                             ],));
                           }
                         },),
-
-                        if(shocker.isOwn && shocker.paused)
+                        if(loadingPause)
+                          CircularProgressIndicator(),
+                        if(shocker.isOwn && shocker.paused && !loadingPause)
                           IconButton(onPressed: () {
-                            OpenShockClient().setPauseStateOfShocker(shocker, manager, false);
+                            setPauseState(false);
                           }, icon: Icon(Icons.play_arrow)),
-                        if(shocker.isOwn && !shocker.paused)
+                        if(shocker.isOwn && !shocker.paused && !loadingPause)
                           IconButton(onPressed: () {
                             expanded = false;
-                            OpenShockClient().setPauseStateOfShocker(shocker, manager, true);
+                            setPauseState(true);
                           }, icon: Icon(Icons.pause)),
 
                         if (shocker.paused && !shocker.isOwn)

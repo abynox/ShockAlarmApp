@@ -237,9 +237,16 @@ class AlarmListManager {
     prefs.setString("tokens", jsonEncode(_tokens));
   }
 
-  Future deleteToken(Token token) async {
+  Future<String?> deleteToken(Token token) async {
+    String? error;
+    if(token.isSession) {
+      // Invalidate session
+      error = await OpenShockClient().logout(token);
+      if(error != null) return error;
+    }
     _tokens.removeWhere((findToken) => token.id == findToken.id);
     await saveTokens();
+    return error;
   }
 
   Token? getToken(int id) {
