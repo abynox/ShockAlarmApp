@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../components/bottom_add_button.dart';
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
 

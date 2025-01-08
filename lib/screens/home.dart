@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:shock_alarm_app/screens/shockers.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../components/alarm_item.dart';
-import '../components/bottom_add_button.dart';
 import '../services/alarm_list_manager.dart';
 import 'tokens.dart';
 import '../stores/alarm_store.dart';

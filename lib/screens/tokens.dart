@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
-import 'package:shock_alarm_app/stores/alarm_store.dart';
-import '../components/bottom_add_button.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import '../components/token_item.dart';
 import 'shares.dart';
 
