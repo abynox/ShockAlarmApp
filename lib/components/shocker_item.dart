@@ -251,6 +251,49 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                             ],));
                           }
                         },),
+                        if(!shocker.isOwn) PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
+                              return [
+                                PopupMenuItem(value: "unlink", child: Row(
+                                  spacing: 10,
+                                  children: [
+                                  Icon(Icons.delete, color: t.colorScheme.onSurfaceVariant,),
+                                  Text("Unlink")
+                                ],)),
+                            ];
+                        }, onSelected: (String value) {
+                          if(value == "unlink") {
+                            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Unlink shocker"), content: Text("Are you sure you want to unlink the shocker ${shocker.name} from your account? After that you cannot control the shocker anymore unless you redeem another share code."), actions: [
+                              TextButton(onPressed: () {
+                                Navigator.of(context).pop();
+                              }, child: Text("Cancel")),
+                              TextButton(onPressed: () async {
+                                showDialog(context: context, builder: (context) {
+                                  return LoadingDialog(title: "Unlinking shocker");
+                                });
+                                String? errorMessage;
+                                Token? token = manager.getToken(shocker.apiTokenId);
+                                if(token == null) errorMessage = "Token not found";
+                                else {
+                                  OpenShockShare share = OpenShockShare()
+                                                        ..sharedWith = (OpenShockUser()..id = token.userId)
+                                                        ..shockerReference = shocker;
+                                  errorMessage = await manager.deleteShare(share);
+                                }
+                                if(errorMessage != null) {
+                                  Navigator.of(context).pop();
+                                  showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to delete share"), content: Text(errorMessage ?? "Unknown error"), actions: [TextButton(onPressed: () {
+                                    Navigator.of(context).pop();
+                                  }, child: Text("Ok"))],));
+                                  return;
+                                }
+                                await manager.updateShockerStore();
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                                onRebuild();
+                              }, child: Text("Unlink"))
+                            ],));
+                          }
+                        },),
 
                         if(shocker.isOwn && shocker.paused)
                           IconButton(onPressed: () {

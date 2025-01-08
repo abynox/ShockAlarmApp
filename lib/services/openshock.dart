@@ -138,13 +138,15 @@ class OpenShockClient {
     return response.statusCode == 200;
   }
 
-  Future<String> getNameForToken(Token t) async {
+  Future setInfoOfToken(Token t) async {
     var request = GetRequest(t, "/1/users/self");
     var response = await request;
     String name = "Unknown";
+    String id = "";
     if(response.statusCode == 200) {
       var data = jsonDecode(response.body);
       name = data["data"]["name"];
+      id = data["data"]["id"];
     }
     request = GetRequest(t, "/1/tokens/self");
     response = await request;
@@ -153,7 +155,8 @@ class OpenShockClient {
       var data = jsonDecode(response.body);
       tokenName = data["name"];
     }
-    return t.isSession ? "$name" : "$name ($tokenName)";
+    t.name = t.isSession ? "$name" : "$name ($tokenName)";
+    t.userId = id;
   }
 
   Future<Token?> login(String serverAddress, String email, String password, AlarmListManager manager) async {

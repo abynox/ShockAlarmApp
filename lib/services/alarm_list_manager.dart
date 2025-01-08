@@ -151,7 +151,7 @@ class AlarmListManager {
     List<Token> tokensCopy = this._tokens.toList(); // create a copy
     for(var token in tokensCopy) {
       OpenShockClient client = OpenShockClient();
-      token.name = await client.getNameForToken(token);
+      await client.setInfoOfToken(token);
       DeviceContainer devices = await client.GetShockersForToken(token);
       // add shockers without duplicates
       for(var hub in devices.hubs) {

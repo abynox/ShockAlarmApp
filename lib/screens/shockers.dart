@@ -53,8 +53,12 @@ class ShockerScreen extends StatefulWidget {
               });
               return;
             }
+            showDialog(context: context, builder: (context) {
+              return LoadingDialog(title: "Redeeming code");
+            });
             String? error = await manager.redeemShareCode(code);
             if(error != null) {
+              Navigator.of(context).pop();
               showDialog(context: context, builder: (context) {
                 return AlertDialog(
                   title: Text("Error"),
@@ -68,6 +72,8 @@ class ShockerScreen extends StatefulWidget {
               });
               return;
             }
+            await manager.updateShockerStore();
+            Navigator.of(context).pop();
             Navigator.of(context).pop();
             reloadState();
           }, child: Text("Redeem"))

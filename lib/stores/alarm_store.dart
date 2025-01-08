@@ -7,7 +7,7 @@ import 'package:shock_alarm_app/services/openshock.dart';
 import '../main.dart';
 
 class Token with Store {
-  Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name="", this.isSession = false});
+  Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name="", this.isSession = false, this.userId = ""});
 
   int id;
 
@@ -15,13 +15,14 @@ class Token with Store {
   String server;
   bool isSession = false;
   String name = "";
+  String userId = "";
 
   static Token fromJson(token) {
-    return Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "", isSession: token["isSession"] ?? false);
+    return Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "", isSession: token["isSession"] ?? false, userId: token["userId"] ?? "");
   }
 
   Map<String, dynamic> toJson() {
-    return {"id": id, "token": token, "server": server, "name": name, "isSession": isSession};
+    return {"id": id, "token": token, "server": server, "name": name, "isSession": isSession, "userId": userId};
   }
 }
 
