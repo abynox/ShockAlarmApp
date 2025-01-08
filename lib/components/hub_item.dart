@@ -126,11 +126,7 @@ class HubItemState extends State<HubItem> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      child: Padding(padding: EdgeInsets.all(10), child: Column(
+    return Padding(padding: EdgeInsets.all(10), child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -173,7 +169,7 @@ class HubItemState extends State<HubItem> {
             ],
           ),
         ],
-      )), 
+      )
     );
   }
 }
