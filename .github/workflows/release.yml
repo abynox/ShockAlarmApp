@@ -10,50 +10,52 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Clone repository
-        uses: actions/checkout@v4
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-          # optional parameters follow
-          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-          pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-          pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-      - run: flutter --version
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - run: flutter doctor
-      - name: Setup keystore
-        run: |
-          echo "${{ secrets.SIGNING_KEY }}" | base64 -d > android/android.keystore
-          echo "storePassword=${{ secrets.KEY_STORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.ALIAS }}" >> android/key.properties
-          echo "storeFile=../android.keystore" >> android/key.properties
-      - run: flutter build apk
-      - name: Rename apk
-        id: rename_apk
-        run: |
-          apkName="ShockAlarm.apk"
-          echo "apkName=$apkName" >> $GITHUB_OUTPUT
-
-          mkdir -p output
-          mkdir -p app/build/outputs/apk/release/
-          mv build/app/outputs/flutter-apk/app-release.apk app/build/outputs/apk/release/
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ShockAlarm-Android
-          path: output/${{ steps.rename_apk.outputs.apkName }}
-      - name: Release apk
-        uses: sangatdesai/release-apk@main
-        env:
-            GITHUB_TOKEN: ${{ secrets.TOKEN }}
-            APP_FOLDER: app
+        - name: Clone repository
+          uses: actions/checkout@v4
+        - name: Set up Flutter
+          uses: subosito/flutter-action@v2
+          with:
+            channel: stable
+            cache: true
+            # optional parameters follow
+            cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
+            cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+            pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
+            pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+        - run: flutter --version
+        - name: Setup Java
+          uses: actions/setup-java@v3
+          with:
+            distribution: 'temurin'
+            java-version: '17'
+        - run: flutter doctor
+        - name: Setup keystore
+          run: |
+            echo "${{ secrets.SIGNING_KEY }}" | base64 -d > android/android.keystore
+            echo "storePassword=${{ secrets.KEY_STORE_PASSWORD }}" > android/key.properties
+            echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+            echo "keyAlias=${{ secrets.ALIAS }}" >> android/key.properties
+            echo "storeFile=../android.keystore" >> android/key.properties
+        - run: flutter build apk
+        - name: Rename apk
+          id: rename_apk
+          run: |
+            apkName="ShockAlarm.apk"
+            echo "apkName=$apkName" >> $GITHUB_OUTPUT
+  
+            mkdir -p output
+            mv build/app/outputs/flutter-apk/app-release.apk output/$apkName
+  
+        - name: Upload artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: ShockAlarm-Android
+            path: output/${{ steps.rename_apk.outputs.apkName }}
+        - name: Upload binaries to release
+          uses: svenstaro/upload-release-action@v2
+          with:
+            repo_token: ${{ secrets.TOKEN }}
+            file: output/${{ steps.rename_apk.outputs.apkName }}
+            asset_name: ShockAlarm_${{ github.ref }}.apk
+            tag: ${{ github.ref }}
+            overwrite: true
