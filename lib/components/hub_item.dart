@@ -135,7 +135,9 @@ class HubItemState extends State<HubItem> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(hub.name, style: TextStyle(fontSize: 20)),
+              Expanded(child: 
+              Text(hub.name,overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 20)),
+              ),
               if(hub.isOwn) PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
                 return [
                   PopupMenuItem(value: "rename", child: Row(
