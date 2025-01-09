@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/screens/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
@@ -313,6 +314,8 @@ class ShockerScreen extends StatefulWidget {
 
 class ShockerScreenState extends State<ShockerScreen> {
   final AlarmListManager manager;
+  final GlobalKey<RefreshIndicatorState> refreshKey = GlobalKey<RefreshIndicatorState>();
+  final FocusNode refreshFocusNode = FocusNode();
 
   void rebuild() {
     setState(() {});
@@ -349,33 +352,55 @@ class ShockerScreenState extends State<ShockerScreen> {
         shockers.add(ShockerItem(shocker: s, manager: manager, onRebuild: rebuild, key: ValueKey(s.getIdentifier())));
       }
     }
-    return Column(children: [
-      Text(
-        'All devices',
-        style: t.textTheme.headlineMedium,
-      ),
-      if(!manager.settings.disableHubFiltering)
-        Wrap(spacing: 5,runAlignment: WrapAlignment.start,children: manager.enabledHubs.keys.map<FilterChip>((hub) {
-          return FilterChip(label: Text(manager.getHub(hub)?.name ?? "Unknown hub"), onSelected: (bool value) {
-            manager.enabledHubs[hub] = value;
-            setState(() {
-            }
-          );}, selected: manager.enabledHubs[hub]!);
-        }).toList(),),
-      Flexible(
-        child: RefreshIndicator(child: ListView(children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children:
-              groupedShockers.isEmpty ? [Text('No shockers found', style: t.textTheme.headlineSmall)] : shockers
-            )
-          ],), onRefresh: () async {
-            await manager.updateShockerStore();
-            setState(() {});
+    return KeyboardListener(
+        focusNode: refreshFocusNode,
+        autofocus: true,
+        onKeyEvent: (KeyEvent event) {
+          if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.f5) {
+            refreshKey.currentState?.show();
           }
-        )
-      )
-    ],);
-    
+        },
+        child: Column(children: [
+          Text(
+            'All devices',
+            style: t.textTheme.headlineMedium,
+          ),
+          if(groupedShockers.isEmpty)
+            Text(
+                "No shockers found",
+                style: t.textTheme.headlineSmall
+            ),
+          if(!manager.settings.disableHubFiltering)
+            Wrap(spacing: 5,runAlignment: WrapAlignment.start,children: manager.enabledHubs.keys.map<FilterChip>((hub) {
+              return FilterChip(label: Text(manager.getHub(hub)?.name ?? "Unknown hub"), onSelected: (bool value) {
+                manager.enabledHubs[hub] = value;
+                setState(() {
+                }
+                );}, selected: manager.enabledHubs[hub]!);
+            }).toList(),),
+          Flexible(
+              child: RefreshIndicator(
+                  key: refreshKey,
+                  child: ListView(children: [
+                    Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children:
+                        groupedShockers.isNotEmpty ? shockers : []
+                    )
+                  ],),
+                  onRefresh: () async {
+                    await manager.updateShockerStore();
+                    setState(() {});
+                  }
+              )
+          )
+        ],)
+    );
+  }
+
+  @override
+  void dispose() {
+    refreshFocusNode.dispose();
+    super.dispose();
   }
 }
