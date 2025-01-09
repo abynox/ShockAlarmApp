@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import '../stores/alarm_store.dart';
 import 'dart:convert';
+import '../main.dart';
 
 class DeviceContainer {
   List<Hub> hubs;
@@ -85,6 +86,7 @@ class OpenShockClient {
     return http.get(url, headers: {
       if(t.isSession) "Cookie": "openShockSession=${t.token}"
       else "OpenShockToken": t.token,
+      'User-Agent': GetUserAgent(),
     });
   }
 
@@ -93,7 +95,8 @@ class OpenShockClient {
     return http.post(url, headers: {
       if(t.isSession) "Cookie": "openShockSession=${t.token}"
       else "OpenShockToken": t.token,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      'User-Agent': GetUserAgent(),
     }, body: body);
   }
 
@@ -102,7 +105,8 @@ class OpenShockClient {
     return http.patch(url, headers: {
       if(t.isSession) "Cookie": "openShockSession=${t.token}"
       else "OpenShockToken": t.token,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      'User-Agent': GetUserAgent(),
     }, body: body);
   }
 
@@ -111,7 +115,8 @@ class OpenShockClient {
     return http.delete(url, headers: {
       if(t.isSession) "Cookie": "openShockSession=${t.token}"
       else "OpenShockToken": t.token,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      'User-Agent': GetUserAgent(),
     }, body: body);
   }
 
@@ -130,7 +135,14 @@ class OpenShockClient {
     return getErrorCode(response, "Failed to set pause state");
   }
 
-  Future<bool> sendControls(Token t, List<Control> list, {String customName = "ShockAlarm"}) async {
+  Future<bool> sendControls(Token t, List<Control> list, AlarmListManager manager, {String customName = "ShockAlarm", bool useWs = true}) async {
+    if(useWs) {
+      if(manager.ws == null || manager.ws?.t.id != t.id) {
+        await manager.startWS(t);
+      }
+      return await manager.ws?.sendControls(list, customName) ?? false;
+    }
+    
     String body = jsonEncode({
       "shocks": list.map((e) => e.toJson()).toList(),
       "customName": customName
@@ -472,10 +484,10 @@ class PairCode {
 }
 
 enum ControlType {
-  stop,
-  shock,
-  vibrate,
-  sound,
+  stop, // 0
+  shock, // 1
+  vibrate, // 2
+  sound, // 3
   live 
 }
 
@@ -550,6 +562,33 @@ class Control {
     return {
       "id": id,
       "exclusive": exclusive,
+      "duration": duration,
+      "intensity": intensity,
+      "type": type
+    };
+  }
+
+  toJsonWS() {
+    int type = 0;
+    switch(this.type) {
+      case ControlType.stop:
+        type = 0;
+        break;
+      case ControlType.shock:
+        type = 1;
+        break;
+      case ControlType.vibrate:
+        type = 2;
+        break;
+      case ControlType.sound:
+        type = 3;
+        break;
+      case ControlType.live:
+        type = 4;
+        break;
+    } 
+    return {
+      "id": id,
       "duration": duration,
       "intensity": intensity,
       "type": type

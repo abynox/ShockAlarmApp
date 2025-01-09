@@ -10,6 +10,10 @@ import 'screens/home.dart';
 import 'services/alarm_list_manager.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
+String GetUserAgent() {
+  return "ShockAlarm/0.0.6";
+}
+
 Future requestPermissions() async{
   if(!Platform.isAndroid) {
     return;
@@ -67,9 +71,6 @@ void onDidReceiveNotificationResponse(NotificationResponse notificationResponse)
   switch(notificationResponse.actionId) {
     case "stop":
       alarm?.onAlarmStopped(manager);
-      break;
-    case "detail":
-      print("Dismiss");
       break;
   }
 }

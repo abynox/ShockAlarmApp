@@ -178,6 +178,18 @@ class TokenScreenState extends State<TokenScreen> {
               })
             ],
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Use http instead of ws for shocking"),
+              Switch(value: manager.settings.useHttpShocking, onChanged: (value) {
+                setState(() {
+                  manager.settings.useHttpShocking = value;
+                  manager.saveSettings();
+                });
+              })
+            ],
+          ),
           IconButton(onPressed: () {
             showDialog(context: context, builder: (context) => AlertDialog(
               title: Text("About"),

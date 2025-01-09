@@ -100,8 +100,7 @@ class Alarm {
     prefs.setBool("alarm$id.active", true);
 
     FlutterLocalNotificationsPlugin().show(id, name,"Your alarm is firing", NotificationDetails(android: AndroidNotificationDetails("alarms", "Alarms", enableVibration: true, priority: Priority.high, importance: Importance.max, actions: [
-      AndroidNotificationAction("stop", "Stop alarm", showsUserInterface: true),
-      AndroidNotificationAction("detail", "Detail", showsUserInterface: true),
+      AndroidNotificationAction("stop", "Stop alarm", showsUserInterface: true)
     ])), payload: id.toString());
     DateTime startedAt = DateTime.now();
     var maxDuration = 0;
@@ -113,7 +112,7 @@ class Alarm {
             maxDuration = shocker.duration;
           }
           // If a shocker is paused the backend will return an error. So we don't need to check if it's paused. Especially as the saved state may not reflect the real paused state.
-          manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
+          manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name, useWs: false);
         }
       }
 
@@ -144,7 +143,7 @@ class Alarm {
       for (var shocker in shockers) {
         if (shocker.enabled) {
           // Stop all shockers
-          manager.sendShock(ControlType.stop, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name);
+          manager.sendShock(ControlType.stop, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name, useWs: false);
         }
       }
     }

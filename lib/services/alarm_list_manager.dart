@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:shock_alarm_app/services/openshockws.dart';
 
 import '../stores/alarm_store.dart';
 import 'dart:convert';
@@ -13,6 +14,7 @@ class Settings {
   bool disableHubFiltering = false;
 
   bool allowTokenEditing = false;
+  bool useHttpShocking = false;
 
   int alarmToneRepeatDelayMs = 1500;
 
@@ -29,6 +31,8 @@ class Settings {
       disableHubFiltering = json["disableHubFiltering"];
     if(json["allowTokenEditing"] != null)
       allowTokenEditing = json["allowTokenEditing"];
+    if(json["useHttpShocking"] != null)
+      useHttpShocking = json["useHttpShocking"];
   }
 
   Map<String, dynamic> toJson() {
@@ -36,7 +40,8 @@ class Settings {
       "showRandomDelay": showRandomDelay,
       "useRangeSliderForRandomDelay": useRangeSliderForRandomDelay,
       "disableHubFiltering": disableHubFiltering,
-      "allowTokenEditing": allowTokenEditing
+      "allowTokenEditing": allowTokenEditing,
+      "useHttpShocking": useHttpShocking,
     };
   }
 }
@@ -48,6 +53,7 @@ class AlarmListManager {
   final List<Hub> hubs = [];
   final Map<String, bool> enabledHubs = {};
   Settings settings = Settings();
+  OpenShockWS? ws;
 
   AlarmListManager();
 
@@ -257,7 +263,7 @@ class AlarmListManager {
     return _tokens.firstWhere((findToken) => id == findToken.id);
   }
 
-  Future<String?> sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration, {String customName = "ShockAlarm"}) async {
+  Future<String?> sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration, {String customName = "ShockAlarm", bool useWs = true}) async {
     Control control = Control();
     control.intensity = currentIntensity;
     control.duration = currentDuration;
@@ -270,7 +276,7 @@ class AlarmListManager {
     }
     print("Sending ${type} to ${shocker.name} with intensity $currentIntensity and duration $currentDuration");
     OpenShockClient client = OpenShockClient();
-    return await client.sendControls(t, [control], customName: customName) ? null : "Failed to send shock, is your token still valid?";
+    return await client.sendControls(t, [control], this, customName: customName, useWs: !settings.useHttpShocking && useWs) ? null : "Failed to send shock, is your token still valid?";
   }
 
   Future<bool> login(String serverAddress, String email, String password) async {
@@ -366,5 +372,13 @@ class AlarmListManager {
 
   Future<CreatedHub> addHub(String name) {
     return OpenShockClient().addHub(name, this);
+  }
+
+  Future startWS(Token t) async {
+    if(ws != null) {
+      await ws!.stopConnection();
+    }
+    ws = OpenShockWS(t);
+    await ws!.startConnection();
   }
 }

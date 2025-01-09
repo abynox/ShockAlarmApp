@@ -52,21 +52,22 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
   }
 
   void realAction(ControlType type) {
-    setState(() {
-      actionDoneTime = DateTime.now().add(Duration(milliseconds: currentDuration));
-      progressCircularController = AnimationController(
-        vsync: this,
-        duration: Duration(milliseconds: currentDuration),
-      )..addListener(() {
-        setState(() {
-          if(progressCircularController!.status == AnimationStatus.completed) {
-            progressCircularController!.stop();
-            progressCircularController = null;
-          }
+    if(type != ControlType.stop)
+      setState(() {
+        actionDoneTime = DateTime.now().add(Duration(milliseconds: currentDuration));
+        progressCircularController = AnimationController(
+          vsync: this,
+          duration: Duration(milliseconds: currentDuration),
+        )..addListener(() {
+          setState(() {
+            if(progressCircularController!.status == AnimationStatus.completed) {
+              progressCircularController!.stop();
+              progressCircularController = null;
+            }
+          });
         });
+        progressCircularController!.forward();
       });
-      progressCircularController!.forward();
-    });
     manager.sendShock(type, shocker, currentIntensity, currentDuration).then((errorMessage) {
       if(errorMessage == null) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -84,6 +85,7 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
         delayVibrationController = null;
         progressCircularController = null;
       });
+      realAction(type);
       return;
     }
     // Get random delay based on range
