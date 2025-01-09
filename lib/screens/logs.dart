@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
@@ -15,8 +15,6 @@ class LogScreen extends StatefulWidget {
 }
 
 class LogScreenState extends State<LogScreen> {
-  final GlobalKey<RefreshIndicatorState> refreshKey = GlobalKey<RefreshIndicatorState>();
-  final FocusNode refreshFocusNode = FocusNode();
   AlarmListManager manager;
   Shocker shocker;
   List<ShockerLog> logs = [];
@@ -41,55 +39,39 @@ class LogScreenState extends State<LogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
-        focusNode: refreshFocusNode,
-        autofocus: true,
-        onKeyEvent: (KeyEvent event) {
-          if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.f5) {
-            refreshKey.currentState?.show();
-          }
-        },
-        child: Scaffold(
-            appBar: AppBar(
-              title: Row(
-                spacing: 10,
-                children: [
-                  Text('Logs for ${shocker.name}')
-                ],
-              ),
-            ),
-            body:
-            Padding(
-                padding: const EdgeInsets.only(
-                  bottom: 15,
-                  left: 15,
-                  right: 15,
-                  top: 50,
-                ),
-                child:
-                initialLoading ? Center(child: CircularProgressIndicator()) :
-                RefreshIndicator(
-                    key: refreshKey,
-                    child: ListView.builder(
-                      itemCount: logs.length,
-                      itemBuilder: (context, index) {
-                        final log = logs[index];
-                        return ShockerLogEntry(log: log);
-                      },
-                    ),
-                    onRefresh: () async{
-                      return loadLogs();
-                    }
-                )
-            )
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          spacing: 10,
+          children: [
+            Text('Logs for ${shocker.name}')
+          ],
+        ),
+      ),
+      body:
+      Padding(
+        padding: const EdgeInsets.only(
+          bottom: 15,
+          left: 15,
+          right: 15,
+          top: 50,
+        ),
+        child:
+        initialLoading ? Center(child: CircularProgressIndicator()) :
+        DesktopMobileRefreshIndicator(
+          onRefresh: () async {
+            return loadLogs();
+          },
+          child: ListView.builder(
+            itemCount: logs.length,
+            itemBuilder: (context, index) {
+              final log = logs[index];
+              return ShockerLogEntry(log: log);
+            }
+          )
         )
+      )
     );
-  }
-
-  @override
-  void dispose() {
-    refreshFocusNode.dispose();
-    super.dispose();
   }
 }
 

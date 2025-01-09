@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -17,8 +18,6 @@ class SharesScreen extends StatefulWidget {
 }
 
 class SharesScreenState extends State<SharesScreen> {
-  final GlobalKey<RefreshIndicatorState> refreshKey = GlobalKey<RefreshIndicatorState>();
-  final FocusNode refreshFocusNode = FocusNode();
   AlarmListManager manager;
   Shocker shocker;
   List<OpenShockShare> shares = [];
@@ -98,35 +97,24 @@ class SharesScreenState extends State<SharesScreen> {
         ),
         child:
           initialLoading ? Center(child: CircularProgressIndicator()) :
-            KeyboardListener(
-                focusNode: refreshFocusNode,
-                autofocus: true,
-                onKeyEvent: (KeyEvent event) {
-                  if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.f5) {
-                    refreshKey.currentState?.show();
-                  }
-                },
-                child: RefreshIndicator(
-                    key: refreshKey,
-                    child: ListView(children: [
-                      for(OpenShockShare share in shares)
-                        ShockerShareEntry(share: share, manager: manager, key: ValueKey(share.sharedWith.id), onRebuild: () {
-                          setState(() {
-                            loadShares();
-                          });
-                        },),
-                      for(OpenShockShareCode code in shareCodes)
-                        ShockerShareCodeEntry(shareCode: code, manager: manager, key: ValueKey(code.id), onDeleted: () {
-                          setState(() {
-                            loadShares();
-                          });
-                        },),
-                    ]),
-                    onRefresh: () async {
-                      return loadShares();
-                    }
-                )
-            )
+            DesktopMobileRefreshIndicator(
+              onRefresh: () async {
+                return loadShares();
+              },
+              child: ListView(children: [
+                for(OpenShockShare share in shares)
+                  ShockerShareEntry(share: share, manager: manager, key: ValueKey(share.sharedWith.id), onRebuild: () {
+                    setState(() {
+                      loadShares();
+                    });
+                  },),
+                for(OpenShockShareCode code in shareCodes)
+                  ShockerShareCodeEntry(shareCode: code, manager: manager, key: ValueKey(code.id), onDeleted: () {
+                    setState(() {
+                      loadShares();
+                    });
+                  },),
+              ]))
         ),
         floatingActionButton: FloatingActionButton(onPressed: () {
           addShare();
@@ -137,12 +125,6 @@ class SharesScreenState extends State<SharesScreen> {
       return Scaffold(body: Center(child: Text("An error occurred while loading the shares. Please try again later.")));
     }
 
-  }
-
-  @override
-  void dispose() {
-    refreshFocusNode.dispose();
-    super.dispose();
   }
 }
 
