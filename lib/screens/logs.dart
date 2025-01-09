@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
@@ -47,7 +48,7 @@ class LogScreenState extends State<LogScreen> {
           ],
         ),
       ),
-      body: 
+      body:
       Padding(
         padding: const EdgeInsets.only(
           bottom: 15,
@@ -55,17 +56,19 @@ class LogScreenState extends State<LogScreen> {
           right: 15,
           top: 50,
         ),
-        child: 
-          initialLoading ? Center(child: CircularProgressIndicator()) :
-            RefreshIndicator(child: ListView.builder(
+        child:
+        initialLoading ? Center(child: CircularProgressIndicator()) :
+        DesktopMobileRefreshIndicator(
+          onRefresh: () async {
+            return loadLogs();
+          },
+          child: ListView.builder(
             itemCount: logs.length,
             itemBuilder: (context, index) {
               final log = logs[index];
               return ShockerLogEntry(log: log);
-            },
-          ),onRefresh: () async{
-            return loadLogs();
-          }
+            }
+          )
         )
       )
     );
