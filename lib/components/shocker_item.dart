@@ -51,75 +51,6 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
     super.dispose();
   }
 
-  void realAction(ControlType type) {
-    if(type != ControlType.stop)
-      setState(() {
-        actionDoneTime = DateTime.now().add(Duration(milliseconds: currentDuration));
-        progressCircularController = AnimationController(
-          vsync: this,
-          duration: Duration(milliseconds: currentDuration),
-        )..addListener(() {
-          setState(() {
-            if(progressCircularController!.status == AnimationStatus.completed) {
-              progressCircularController!.stop();
-              progressCircularController = null;
-            }
-          });
-        });
-        progressCircularController!.forward();
-      });
-    manager.sendShock(type, shocker, currentIntensity, currentDuration).then((errorMessage) {
-      if(errorMessage == null) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(errorMessage),
-        duration: Duration(seconds: 3),
-      ));
-    });
-  }
-
-  void action(ControlType type) {
-    if(type == ControlType.stop) {
-      delayVibrationController?.stop();
-      progressCircularController?.stop();
-      setState(() {
-        delayVibrationController = null;
-        progressCircularController = null;
-      });
-      realAction(type);
-      return;
-    }
-    // Get random delay based on range
-    if(delayVibrationEnabled) {
-      // ToDo: make this duration adjustable
-      manager.sendShock(ControlType.vibrate, shocker, currentIntensity, 500).then((errorMessage) {
-        if(errorMessage == null) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(errorMessage),
-          duration: Duration(seconds: 3),
-        ));
-      });
-    }
-    delayDuration = rangeValues.start + Random().nextDouble() * (rangeValues.end - rangeValues.start);
-    if(delayDuration == 0) {
-      realAction(type);
-      return;
-    }
-    delayDoneTime = DateTime.now().add(Duration(milliseconds: (delayDuration * 1000).toInt()));
-    delayVibrationController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: (delayDuration * 1000).toInt()),
-    )..addListener(() {
-      setState(() {
-        if(delayVibrationController!.status == AnimationStatus.completed) {
-          delayVibrationController!.stop();
-          delayVibrationController = null;
-          realAction(type);
-        }
-      });
-    });
-    delayVibrationController!.forward();
-  }
-
   void startRenameShocker() {
     TextEditingController controller = TextEditingController();
     controller.text = shocker.name;
@@ -345,109 +276,30 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                       ],)
                     ],
                   ),
-                  if (expanded) Column(
-                    children: [
-                      IntensityDurationSelector(duration: currentDuration, intensity: currentIntensity, maxDuration: shocker.durationLimit, maxIntensity: shocker.intensityLimit, onSet: (intensity, duration) {
-                        setState(() {
-                          currentDuration = duration;
-                          currentIntensity = intensity;
-                        });
-                      }),
-                      // Delay options
-                      if(manager.settings.showRandomDelay)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          spacing: 5,
-                          children: [
-                            Switch(value: delayVibrationEnabled, onChanged: (bool value) {
-                              setState(() {
-                                delayVibrationEnabled = value;
-                              });
-                            },),
-                            Expanded(child: manager.settings.useRangeSliderForRandomDelay ? RangeSlider(
-                              values: rangeValues,
-                              max: 10,
-                              min: 0,
-                              divisions: 10 * 3,
-                              labels: RangeLabels(
-                                "${(rangeValues.start * 10).round() / 10} s",
-                                "${(rangeValues.end * 10).round() / 10} s",
-                              ),
-                              onChanged: (RangeValues values) {
-                              setState(() {
-                                rangeValues = values;
-                              });
-                            }) : 
-                            Row(children: [
-                              Text("${(rangeValues.start * 10).round() / 10} s"),
-                              Expanded(child: 
-                                Slider(value: rangeValues.start, min: 0, max: 10, onChanged: (double value) {
-                                  setState(() {
-                                    rangeValues = RangeValues(value, rangeValues.end);
-                                  });
-                                }),
-                              )
-                              
-                            ],)
-                          ),
-                          
-                          GestureDetector(child: Icon(Icons.info,),
-                            onTap: () {
-                              showDialog(context: context, builder: (context) => AlertDialog(title: Text("Delay options"), content: Text("Here you can add a random delay when pressing a button by selecting a range. If you enable the switch before the slider you can send a vibration before the actual action happens."),
-                              actions: [
-                                TextButton(onPressed: () {
-                                  Navigator.of(context).pop();
-                              }, child: Text("Ok"))]
-                              ,));
-                            },),
-                        ],),
-                      
-                      if(progressCircularController == null && delayVibrationController == null)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            if(shocker.soundAllowed)
-                              IconButton(
-                                icon: OpenShockClient.getIconForControlType(ControlType.sound),
-                                onPressed: () {action(ControlType.sound);},
-                              ),
-                            if(shocker.vibrateAllowed)
-                              IconButton(
-                                icon: OpenShockClient.getIconForControlType(ControlType.vibrate),
-                                onPressed: () {action(ControlType.vibrate);},
-                              ),
-                            if(shocker.shockAllowed)
-                              IconButton(
-                                icon: OpenShockClient.getIconForControlType(ControlType.shock),
-                                onPressed: () {action(ControlType.shock);},
-                              ),
-                          ],
-                        ),
-                      if(delayVibrationController != null)
-                      Row(spacing: 10, mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                        Text("Delaying action... ${(delayDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
-                        CircularProgressIndicator(
-                            value: delayVibrationController == null ? 0 : (delayDoneTime.difference(DateTime.now()).inMilliseconds / (delayDuration*1000))
-                          ),
-                      ],),
-                      if(progressCircularController != null)
-                        Row(
-                          spacing: 10,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("Executing... ${(actionDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
-                            CircularProgressIndicator(
-                              value: progressCircularController == null ? 0 : 1 - (actionDoneTime.difference(DateTime.now()).inMilliseconds / currentDuration),
-                            )
-                          ]
-                        ),
-                      SizedBox.fromSize(size: Size.fromHeight(50),child: 
-                      IconButton(onPressed: () {action(ControlType.stop);}, icon: Icon(Icons.stop),)
-                      ,)
-                      
-                    ],
-                  ),
+                  if(expanded)
+                  ShockingControls(manager: manager, currentDuration: currentDuration, currentIntensity: currentIntensity,
+                    durationLimit: shocker.durationLimit, intensityLimit: shocker.intensityLimit,
+                    shockAllowed: shocker.shockAllowed, vibrateAllowed: shocker.vibrateAllowed, soundAllowed: shocker.soundAllowed,
+                    onDelayAction: (type, intensity, duration) {
+                      manager.sendShock(type, shocker, intensity, duration).then((errorMessage) {
+                        if(errorMessage == null) return;
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(errorMessage),
+                          duration: Duration(seconds: 3),
+                        ));
+                      });
+                    },
+                    onProcessAction: (type, intensity, duration) {
+
+                      manager.sendShock(type, shocker, intensity, duration).then((errorMessage) {
+                        if(errorMessage == null) return;
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(errorMessage),
+                          duration: Duration(seconds: 3),
+                        ));
+                      });
+                    },
+                  )
                 ],
               )
             ),
@@ -534,4 +386,214 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
     );
   }
 
+}
+
+class ShockingControls extends StatefulWidget {
+  final AlarmListManager manager;
+  int currentDuration = 1000;
+  int currentIntensity = 25;
+  int durationLimit = 30000;
+  int intensityLimit = 300000;
+  bool soundAllowed = true;
+  bool vibrateAllowed = true;
+  bool shockAllowed = true;
+  Function(ControlType type, int intensity, int duration) onDelayAction;
+  Function(ControlType type, int intensity, int duration) onProcessAction;
+
+  ShockingControls({Key? key, required this.manager, required this.currentDuration, required this.currentIntensity, required this.durationLimit, required this.intensityLimit, required this.soundAllowed, required this.vibrateAllowed, required this.shockAllowed, required this.onDelayAction, required this.onProcessAction}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => ShockingControlsState(manager, currentDuration, currentIntensity, durationLimit, intensityLimit, soundAllowed, vibrateAllowed, shockAllowed, onDelayAction, onProcessAction);
+}
+
+class ShockingControlsState extends State<ShockingControls> with TickerProviderStateMixin {
+  final AlarmListManager manager;
+  int currentDuration = 1000;
+  int currentIntensity = 25;
+  int durationLimit = 30000;
+  int intensityLimit = 100;
+  bool soundAllowed = true;
+  bool vibrateAllowed = true;
+  bool shockAllowed = true;
+  Function(ControlType type, int intensity, int duration) onDelayAction;
+  Function(ControlType type, int intensity, int duration) onProcessAction;
+
+
+  bool delayVibrationEnabled = false;
+  DateTime actionDoneTime = DateTime.now();
+  DateTime delayDoneTime = DateTime.now();
+  double delayDuration = 0;
+  AnimationController? progressCircularController;
+  AnimationController? delayVibrationController;
+  bool loadingPause = false;
+  RangeValues rangeValues = RangeValues(0, 0);
+
+
+  ShockingControlsState(this.manager, this.currentDuration, this.currentIntensity, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed,this.shockAllowed, this.onDelayAction, this.onProcessAction);
+
+
+  void realAction(ControlType type) {
+    if(type != ControlType.stop) {
+      setState(() {
+        actionDoneTime = DateTime.now().add(Duration(milliseconds: currentDuration));
+        progressCircularController = AnimationController(
+          vsync: this,
+          duration: Duration(milliseconds: currentDuration),
+        )..addListener(() {
+          setState(() {
+            if(progressCircularController!.status == AnimationStatus.completed) {
+              progressCircularController!.stop();
+              progressCircularController = null;
+            }
+          });
+        });
+        progressCircularController!.forward();
+      });
+    }
+    onProcessAction(type, currentIntensity, currentDuration);
+  }
+
+  void action(ControlType type) {
+    if(type == ControlType.stop) {
+      delayVibrationController?.stop();
+      progressCircularController?.stop();
+      setState(() {
+        delayVibrationController = null;
+        progressCircularController = null;
+      });
+      realAction(type);
+      return;
+    }
+    // Get random delay based on range
+    if(delayVibrationEnabled) {
+      // ToDo: make this duration adjustable
+      onDelayAction(type, currentIntensity, 500);
+    }
+    delayDuration = rangeValues.start + Random().nextDouble() * (rangeValues.end - rangeValues.start);
+    if(delayDuration == 0) {
+      realAction(type);
+      return;
+    }
+    delayDoneTime = DateTime.now().add(Duration(milliseconds: (delayDuration * 1000).toInt()));
+    delayVibrationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: (delayDuration * 1000).toInt()),
+    )..addListener(() {
+      setState(() {
+        if(delayVibrationController!.status == AnimationStatus.completed) {
+          delayVibrationController!.stop();
+          delayVibrationController = null;
+          realAction(type);
+        }
+      });
+    });
+    delayVibrationController!.forward();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        IntensityDurationSelector(duration: currentDuration, intensity: currentIntensity, maxDuration: durationLimit, maxIntensity: intensityLimit, onSet: (intensity, duration) {
+          setState(() {
+            currentDuration = duration;
+            currentIntensity = intensity;
+          });
+        }),
+        // Delay options
+        if(manager.settings.showRandomDelay)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: 5,
+            children: [
+              Switch(value: delayVibrationEnabled, onChanged: (bool value) {
+                setState(() {
+                  delayVibrationEnabled = value;
+                });
+              },),
+              Expanded(child: manager.settings.useRangeSliderForRandomDelay ? RangeSlider(
+                values: rangeValues,
+                max: 10,
+                min: 0,
+                divisions: 10 * 3,
+                labels: RangeLabels(
+                  "${(rangeValues.start * 10).round() / 10} s",
+                  "${(rangeValues.end * 10).round() / 10} s",
+                ),
+                onChanged: (RangeValues values) {
+                setState(() {
+                  rangeValues = values;
+                });
+              }) : 
+              Row(children: [
+                Text("${(rangeValues.start * 10).round() / 10} s"),
+                Expanded(child: 
+                  Slider(value: rangeValues.start, min: 0, max: 10, onChanged: (double value) {
+                    setState(() {
+                      rangeValues = RangeValues(value, rangeValues.end);
+                    });
+                  }),
+                )
+                
+              ],)
+            ),
+            
+            GestureDetector(child: Icon(Icons.info,),
+              onTap: () {
+                showDialog(context: context, builder: (context) => AlertDialog(title: Text("Delay options"), content: Text("Here you can add a random delay when pressing a button by selecting a range. If you enable the switch before the slider you can send a vibration before the actual action happens."),
+                actions: [
+                  TextButton(onPressed: () {
+                    Navigator.of(context).pop();
+                }, child: Text("Ok"))]
+                ,));
+              },),
+          ],),
+        
+        if(progressCircularController == null && delayVibrationController == null)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              if(soundAllowed)
+                IconButton(
+                  icon: OpenShockClient.getIconForControlType(ControlType.sound),
+                  onPressed: () {action(ControlType.sound);},
+                ),
+              if(vibrateAllowed)
+                IconButton(
+                  icon: OpenShockClient.getIconForControlType(ControlType.vibrate),
+                  onPressed: () {action(ControlType.vibrate);},
+                ),
+              if(shockAllowed)
+                IconButton(
+                  icon: OpenShockClient.getIconForControlType(ControlType.shock),
+                  onPressed: () {action(ControlType.shock);},
+                ),
+            ],
+          ),
+        if(delayVibrationController != null)
+        Row(spacing: 10, mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+          Text("Delaying action... ${(delayDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
+          CircularProgressIndicator(
+              value: delayVibrationController == null ? 0 : (delayDoneTime.difference(DateTime.now()).inMilliseconds / (delayDuration*1000))
+            ),
+        ],),
+        if(progressCircularController != null)
+          Row(
+            spacing: 10,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Executing... ${(actionDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
+              CircularProgressIndicator(
+                value: progressCircularController == null ? 0 : 1 - (actionDoneTime.difference(DateTime.now()).inMilliseconds / currentDuration),
+              )
+            ]
+          ),
+        SizedBox.fromSize(size: Size.fromHeight(50),child: 
+        IconButton(onPressed: () {action(ControlType.stop);}, icon: Icon(Icons.stop),)
+        ,)
+        
+      ],
+    );
+  }
 }

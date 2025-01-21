@@ -539,6 +539,9 @@ class Control {
   int duration = 0;
   int intensity = 0;
   ControlType type = ControlType.stop;
+  int apiTokenId = 0;
+
+  Control();
 
   toJson() {
     String type = "";

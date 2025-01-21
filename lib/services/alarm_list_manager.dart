@@ -61,6 +61,8 @@ class AlarmListManager {
 
   BuildContext? context;
 
+  List<String> selectedShockers = [];
+
 
   Future loadAllFromStorage() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -380,5 +382,21 @@ class AlarmListManager {
     }
     ws = OpenShockWS(t);
     await ws!.startConnection();
+  }
+
+  Future<String?> sendControls(List<Control> controls, {String customName = "ShockAlarm", bool useWs = true}) async {
+    Map<int, List<Control>> controlsByToken = {};
+    for(var control in controls) {
+      controlsByToken.putIfAbsent(control.apiTokenId, () => []).add(control);
+    }
+    OpenShockClient client = OpenShockClient();
+    for(var token in getTokens()) {
+      if(controlsByToken.containsKey(token.id)) {
+        if(!await client.sendControls(token, controlsByToken[token.id]!, this, customName: customName, useWs: !settings.useHttpShocking && useWs)) {
+          return "Failed to send shock to at least 1 shocker, is your token still valid?";
+        }
+      }
+    }
+    return null;
   }
 }

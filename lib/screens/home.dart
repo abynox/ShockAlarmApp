@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/screens/grouped_shockers.dart';
 import 'package:shock_alarm_app/screens/shockers.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../components/alarm_item.dart';
@@ -17,7 +18,7 @@ class ScreenSelector extends StatefulWidget {
 
 class ScreenSelectorState extends State<ScreenSelector> {
   final AlarmListManager manager;
-  int _selectedIndex = 1;
+  int _selectedIndex = 3;
 
   ScreenSelectorState({required this.manager});
 
@@ -35,7 +36,8 @@ class ScreenSelectorState extends State<ScreenSelector> {
     final screens = <Widget>[
       HomeScreen(manager: manager),
       ShockerScreen(manager: manager),
-      TokenScreen(manager: manager)
+      TokenScreen(manager: manager),
+      GroupedShockerScreen(manager: manager)
     ];
     final floatingActionButtons = <Widget?>[
       FloatingActionButton(onPressed: () {
@@ -58,6 +60,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       ShockerScreen.getFloatingActionButton(manager, context, () {
         setState(() {});
       }),
+      null,
       null
     ];
     return Scaffold(
@@ -77,6 +80,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
           BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
           BottomNavigationBarItem(icon: OpenShockClient.getIconForControlType(ControlType.shock), label: 'Devices'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Grouped'),
         ],
         currentIndex: _selectedIndex,
         onTap: _tap,
