@@ -276,7 +276,6 @@ class ShockerChipState extends State<ShockerChip> {
           List<Widget> actions = [];
           for(ShockerAction a in ShockerItem.ownShockerActions) {
             actions.add(GestureDetector(onTap: () {
-
                 Navigator.of(context).pop();
                 a.onClick(manager, shocker, context, manager.reloadAllMethod!);
               }, child: Row(children: [

@@ -82,6 +82,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Grouped'),
         ],
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: _tap,
     ));

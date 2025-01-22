@@ -16,6 +16,8 @@ class Settings {
   bool allowTokenEditing = false;
   bool useHttpShocking = false;
 
+  bool useGroupedShockerSelection = false;
+
   int alarmToneRepeatDelayMs = 1500;
 
   int maxAlarmLengthSeconds = 60;
@@ -33,6 +35,8 @@ class Settings {
       allowTokenEditing = json["allowTokenEditing"];
     if(json["useHttpShocking"] != null)
       useHttpShocking = json["useHttpShocking"];
+    if(json["useGroupedShockerSelection"] != null)
+      useGroupedShockerSelection = json["useGroupedShockerSelection"];
   }
 
   Map<String, dynamic> toJson() {
@@ -42,6 +46,7 @@ class Settings {
       "disableHubFiltering": disableHubFiltering,
       "allowTokenEditing": allowTokenEditing,
       "useHttpShocking": useHttpShocking,
+      "useGroupedShockerSelection": useGroupedShockerSelection
     };
   }
 }
