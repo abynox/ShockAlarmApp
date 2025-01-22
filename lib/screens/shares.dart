@@ -78,6 +78,28 @@ class SharesScreenState extends State<SharesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData t = Theme.of(context);
+    List<Widget> shareEntries = [];
+    for(OpenShockShare share in shares) {
+      shareEntries.add(
+      ShockerShareEntry(share: share, manager: manager, key: ValueKey(share.sharedWith.id), onRebuild: () {
+        setState(() {
+          loadShares();
+        });
+      }));
+    }
+    for(OpenShockShareCode code in shareCodes) {
+      shareEntries.add(
+      ShockerShareCodeEntry(shareCode: code, manager: manager, key: ValueKey(code.id), onDeleted: () {
+        setState(() {
+          loadShares();
+        });
+      },));
+    }
+    if(shareEntries.isEmpty) {
+      shareEntries.add(Center(child: Text("You have no shares yet. You can add a share by pressing the add button below."
+            ,style: t.textTheme.headlineSmall)));
+    }
     try {
       return Scaffold(
       appBar: AppBar(
@@ -101,20 +123,7 @@ class SharesScreenState extends State<SharesScreen> {
               onRefresh: () async {
                 return loadShares();
               },
-              child: ListView(children: [
-                for(OpenShockShare share in shares)
-                  ShockerShareEntry(share: share, manager: manager, key: ValueKey(share.sharedWith.id), onRebuild: () {
-                    setState(() {
-                      loadShares();
-                    });
-                  },),
-                for(OpenShockShareCode code in shareCodes)
-                  ShockerShareCodeEntry(shareCode: code, manager: manager, key: ValueKey(code.id), onDeleted: () {
-                    setState(() {
-                      loadShares();
-                    });
-                  },),
-              ]))
+              child: ListView(children: shareEntries))
         ),
         floatingActionButton: FloatingActionButton(onPressed: () {
           addShare();

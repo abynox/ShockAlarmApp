@@ -63,6 +63,10 @@ class AlarmListManager {
 
   List<String> selectedShockers = [];
 
+  RangeValues rangeValues = RangeValues(0, 0);
+
+  bool delayVibrationEnabled = false;
+
 
   Future loadAllFromStorage() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();

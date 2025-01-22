@@ -7,10 +7,79 @@ import '../stores/alarm_store.dart';
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
 
+class ShockerAction {
+  String name;
+  Function(AlarmListManager, Shocker, BuildContext, Function) onClick;
+  Icon icon;
+
+  ShockerAction({this.name = "Action", required this.onClick, required this.icon});
+}
+
 class ShockerItem extends StatefulWidget {
   final Shocker shocker;
   final AlarmListManager manager;
   final Function onRebuild;
+  static List<ShockerAction> ownShockerActions = [
+    ShockerAction(name: "Rename", icon: Icon(Icons.edit), onClick: (AlarmListManager manager, Shocker shocker, BuildContext context, Function onRebuild) {
+      TextEditingController controller = TextEditingController();
+      controller.text = shocker.name;
+      showDialog(context: context, builder: (context) => AlertDialog(
+        title: Text("Rename shocker"),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: "Name"
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () {
+            Navigator.of(context).pop();
+          }, child: Text("Cancel")),
+          TextButton(onPressed: () async {
+            showDialog(context: context, builder: (context) => LoadingDialog(title: "Renaming shocker"));
+            String? errorMessage = await manager.renameShocker(shocker, controller.text);
+            Navigator.of(context).pop();
+            if(errorMessage != null) {
+              showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to rename shocker"), content: Text(errorMessage), actions: [TextButton(onPressed: () {
+                Navigator.of(context).pop();
+              }, child: Text("Ok"))],));
+              return;
+            }
+            Navigator.of(context).pop();
+            onRebuild();
+          
+          }, child: Text("Rename"))
+        ],
+      ));
+    }),
+
+    ShockerAction(name: "Logs", icon: Icon(Icons.list), onClick: (AlarmListManager manager, Shocker shocker, BuildContext context, Function onRebuild) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LogScreen(shocker: shocker, manager: manager)));
+    }),
+
+    ShockerAction(name: "Shares", icon: Icon(Icons.share), onClick: (AlarmListManager manager, Shocker shocker, BuildContext context, Function onRebuild) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => SharesScreen(shocker: shocker, manager: manager)));
+    }),
+
+    ShockerAction(name: "Delete", icon: Icon(Icons.delete), onClick: (AlarmListManager manager, Shocker shocker, BuildContext context, Function onRebuild) {
+      showDialog(context: context, builder: (context) => AlertDialog(title: Text("Delete shocker"), content: Text("Are you sure you want to delete the shocker ${shocker.name}?\n\n(You can add it again later)"), actions: [
+        TextButton(onPressed: () {
+          Navigator.of(context).pop();
+        }, child: Text("Cancel")),
+        TextButton(onPressed: () async {
+          String? errorMessage = await manager.deleteShocker(shocker);
+          if(errorMessage != null) {
+            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to delete shocker"), content: Text(errorMessage), actions: [TextButton(onPressed: () {
+              Navigator.of(context).pop();
+            }, child: Text("Ok"))],));
+            return;
+          }
+          Navigator.of(context).pop();
+          onRebuild();
+        }, child: Text("Delete"))
+      ],));   
+    }),
+  ];
 
   const ShockerItem({Key? key, required this.shocker, required this.manager, required this.onRebuild})
       : super(key: key);
@@ -49,39 +118,6 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
   void dispose() {
     progressCircularController?.dispose();
     super.dispose();
-  }
-
-  void startRenameShocker() {
-    TextEditingController controller = TextEditingController();
-    controller.text = shocker.name;
-    showDialog(context: context, builder: (context) => AlertDialog(
-      title: Text("Rename shocker"),
-      content: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: "Name"
-        ),
-      ),
-      actions: [
-        TextButton(onPressed: () {
-          Navigator.of(context).pop();
-        }, child: Text("Cancel")),
-        TextButton(onPressed: () async {
-          showDialog(context: context, builder: (context) => LoadingDialog(title: "Renaming shocker"));
-          String? errorMessage = await manager.renameShocker(shocker, controller.text);
-          Navigator.of(context).pop();
-          if(errorMessage != null) {
-            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to rename shocker"), content: Text(errorMessage), actions: [TextButton(onPressed: () {
-              Navigator.of(context).pop();
-            }, child: Text("Ok"))],));
-            return;
-          }
-          Navigator.of(context).pop();
-          onRebuild();
-        
-        }, child: Text("Rename"))
-      ],
-    ));
   }
 
   void setPauseState(bool pause) async {
@@ -145,58 +181,19 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                           if(shocker.isOwn)
                             PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
                               return [
-                                PopupMenuItem(value: "rename", child: Row(
+                                for(ShockerAction a in ShockerItem.ownShockerActions) PopupMenuItem(value: a.name, child: Row(
                                   spacing: 10,
                                   children: [
-                                  Icon(Icons.edit, color: t.colorScheme.onSurfaceVariant,),
-                                  Text("Rename")
+                                  a.icon,
+                                  Text(a.name)
                                 ],)),
-                                PopupMenuItem(value: "logs", child: Row(
-                                  spacing: 10,
-                                  children: [
-                                    Icon(Icons.list, color: t.colorScheme.onSurfaceVariant,),
-                                  Text("Logs")
-                                ],)),
-                                PopupMenuItem(value: "shares", child: Row(
-                                  spacing: 10,
-                                  children: [
-                                    Icon(Icons.share, color: t.colorScheme.onSurfaceVariant,),
-                                  Text("Shares")
-                                ],)),
-                                PopupMenuItem(value: "delete", child: Row(
-                                  spacing: 10,
-                                  children: [
-                                    Icon(Icons.delete, color: t.colorScheme.onSurfaceVariant,),
-                                  Text("Delete")
-                                ],))
                             ];
                         }, onSelected: (String value) {
-                          if(value == "rename") {
-                            startRenameShocker();
-                          }
-                          if(value == "logs") {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => LogScreen(shocker: shocker, manager: manager)));
-                          }
-                          if(value == "shares") {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => SharesScreen(shocker: shocker, manager: manager)));
-                          }
-                          if(value == "delete") {
-                            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Delete shocker"), content: Text("Are you sure you want to delete the shocker ${shocker.name}?\n\n(You can add it again later)"), actions: [
-                              TextButton(onPressed: () {
-                                Navigator.of(context).pop();
-                              }, child: Text("Cancel")),
-                              TextButton(onPressed: () async {
-                                String? errorMessage = await manager.deleteShocker(shocker);
-                                if(errorMessage != null) {
-                                  showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to delete shocker"), content: Text(errorMessage), actions: [TextButton(onPressed: () {
-                                    Navigator.of(context).pop();
-                                  }, child: Text("Ok"))],));
-                                  return;
-                                }
-                                Navigator.of(context).pop();
-                                onRebuild();
-                              }, child: Text("Delete"))
-                            ],));
+                          for(ShockerAction a in ShockerItem.ownShockerActions) {
+                            if(a.name == value) {
+                              a.onClick(manager, shocker, context, onRebuild);
+                              return;
+                            }
                           }
                         },),
                         if(!shocker.isOwn) PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
@@ -355,6 +352,8 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
 
   @override
   Widget build(BuildContext context) {
+    intensity = min(intensity, maxIntensity);
+    duration = min(duration, maxDuration);
     ThemeData t = Theme.of(context);
     return Column(
       children: [
@@ -390,31 +389,31 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
 
 class ShockingControls extends StatefulWidget {
   final AlarmListManager manager;
-  int currentDuration = 1000;
-  int currentIntensity = 25;
-  int durationLimit = 30000;
-  int intensityLimit = 300000;
-  bool soundAllowed = true;
-  bool vibrateAllowed = true;
-  bool shockAllowed = true;
+  int currentDuration;
+  int currentIntensity;
+  int durationLimit;
+  int intensityLimit;
+  bool soundAllowed;
+  bool vibrateAllowed;
+  bool shockAllowed;
   Function(ControlType type, int intensity, int duration) onDelayAction;
   Function(ControlType type, int intensity, int duration) onProcessAction;
 
   ShockingControls({Key? key, required this.manager, required this.currentDuration, required this.currentIntensity, required this.durationLimit, required this.intensityLimit, required this.soundAllowed, required this.vibrateAllowed, required this.shockAllowed, required this.onDelayAction, required this.onProcessAction}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => ShockingControlsState(manager, currentDuration, currentIntensity, durationLimit, intensityLimit, soundAllowed, vibrateAllowed, shockAllowed, onDelayAction, onProcessAction);
+  State<StatefulWidget> createState() => ShockingControlsState(this.manager, this.currentDuration, this.currentIntensity, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed, this.shockAllowed, this.onDelayAction, this.onProcessAction);
 }
 
 class ShockingControlsState extends State<ShockingControls> with TickerProviderStateMixin {
-  final AlarmListManager manager;
-  int currentDuration = 1000;
-  int currentIntensity = 25;
-  int durationLimit = 30000;
-  int intensityLimit = 100;
-  bool soundAllowed = true;
-  bool vibrateAllowed = true;
-  bool shockAllowed = true;
+  AlarmListManager manager;
+  int currentDuration;
+  int currentIntensity;
+  int durationLimit;
+  int intensityLimit;
+  bool soundAllowed;
+  bool vibrateAllowed;
+  bool shockAllowed;
   Function(ControlType type, int intensity, int duration) onDelayAction;
   Function(ControlType type, int intensity, int duration) onProcessAction;
 
@@ -426,7 +425,6 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
   AnimationController? progressCircularController;
   AnimationController? delayVibrationController;
   bool loadingPause = false;
-  RangeValues rangeValues = RangeValues(0, 0);
 
 
   ShockingControlsState(this.manager, this.currentDuration, this.currentIntensity, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed,this.shockAllowed, this.onDelayAction, this.onProcessAction);
@@ -469,7 +467,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
       // ToDo: make this duration adjustable
       onDelayAction(type, currentIntensity, 500);
     }
-    delayDuration = rangeValues.start + Random().nextDouble() * (rangeValues.end - rangeValues.start);
+    delayDuration = manager.rangeValues.start + Random().nextDouble() * (manager.rangeValues.end - manager.rangeValues.start);
     if(delayDuration == 0) {
       realAction(type);
       return;
@@ -492,6 +490,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
 
   @override
   Widget build(BuildContext context) {
+    intensityLimit = widget.intensityLimit;
     return Column(
       children: [
         IntensityDurationSelector(duration: currentDuration, intensity: currentIntensity, maxDuration: durationLimit, maxIntensity: intensityLimit, onSet: (intensity, duration) {
@@ -506,31 +505,31 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             spacing: 5,
             children: [
-              Switch(value: delayVibrationEnabled, onChanged: (bool value) {
+              Switch(value: manager.delayVibrationEnabled, onChanged: (bool value) {
                 setState(() {
-                  delayVibrationEnabled = value;
+                  manager.delayVibrationEnabled = value;
                 });
               },),
               Expanded(child: manager.settings.useRangeSliderForRandomDelay ? RangeSlider(
-                values: rangeValues,
+                values: manager.rangeValues,
                 max: 10,
                 min: 0,
                 divisions: 10 * 3,
                 labels: RangeLabels(
-                  "${(rangeValues.start * 10).round() / 10} s",
-                  "${(rangeValues.end * 10).round() / 10} s",
+                  "${(manager.rangeValues.start * 10).round() / 10} s",
+                  "${(manager.rangeValues.end * 10).round() / 10} s",
                 ),
                 onChanged: (RangeValues values) {
                 setState(() {
-                  rangeValues = values;
+                  manager.rangeValues = values;
                 });
               }) : 
               Row(children: [
-                Text("${(rangeValues.start * 10).round() / 10} s"),
+                Text("${(manager.rangeValues.start * 10).round() / 10} s"),
                 Expanded(child: 
-                  Slider(value: rangeValues.start, min: 0, max: 10, onChanged: (double value) {
+                  Slider(value: manager.rangeValues.start, min: 0, max: 10, onChanged: (double value) {
                     setState(() {
-                      rangeValues = RangeValues(value, rangeValues.end);
+                      manager.rangeValues = RangeValues(value, manager.rangeValues.end);
                     });
                   }),
                 )

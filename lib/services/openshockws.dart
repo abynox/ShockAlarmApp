@@ -93,7 +93,7 @@ class OpenShockWS {
     }
     try {
       // Wrap the Map in a List
-      await connection!.invoke( 'ControlV2', args: [
+      await connection!.invoke('ControlV2', args: [
         controls.map((e) => e.toJsonWS()).toList(),
         customName
       ]);

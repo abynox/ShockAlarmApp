@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
@@ -744,6 +746,25 @@ class Shocker {
 
   String getIdentifier() {
     return "$id-$apiTokenId-${paused}-${shockAllowed}-${vibrateAllowed}-${soundAllowed}-${durationLimit}-${intensityLimit}";
+  }
+
+  Control getLimitedControls(ControlType type, int intensity, int duration) {
+      Control c = Control();
+      c.id = this.id;
+      c.type = type;
+      c.intensity = min(this.intensityLimit, intensity);
+      c.duration = min(this.durationLimit, duration);
+      c.apiTokenId = this.apiTokenId;
+      if(!this.shockAllowed && type == ControlType.shock) {
+        c.type = ControlType.vibrate;
+      }
+      if(!this.vibrateAllowed && type == ControlType.vibrate) {
+        c.type = ControlType.stop;
+      }
+      if(!this.soundAllowed && type == ControlType.sound) {
+        c.type = ControlType.stop;
+      }
+      return c;
   }
 }
 
