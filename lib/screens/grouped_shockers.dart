@@ -164,7 +164,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
           child: ListView(children: [
             for (MapEntry<Hub?, List<Shocker>> hubContainer in groupedShockers.entries)
               Column(children: [
-                HubItem(hub: hubContainer.key!, manager: manager, onRebuild: onRebuild),
+                HubItem(hub: hubContainer.key!, manager: manager, onRebuild: onRebuild, key: ValueKey(hubContainer.key?.getIdentifier(manager)),),
                 Wrap(spacing: 5,children: [
                   for (Shocker s in hubContainer.value)
                     ShockerChip(shocker: s, manager: manager, onSelected: (bool b) {

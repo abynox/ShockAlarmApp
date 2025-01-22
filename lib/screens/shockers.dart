@@ -346,7 +346,7 @@ class ShockerScreenState extends State<ShockerScreen> {
     }
     List<Widget> shockers = [];
     for(var shocker in groupedShockers.entries) {
-      shockers.add(HubItem(hub: shocker.key!, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.key),));
+      shockers.add(HubItem(hub: shocker.key!, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.key?.getIdentifier(manager)),));
       for(var s in shocker.value) {
         shockers.add(ShockerItem(shocker: s, manager: manager, onRebuild: rebuild, key: ValueKey(s.getIdentifier())));
       }

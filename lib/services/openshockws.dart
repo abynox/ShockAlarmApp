@@ -64,7 +64,7 @@ class OpenShockWS {
   }
 
     // Add a message handler for a specific event
-  void addMessageHandler(String methodName, MethodInvocationFunc handler) {
+  void addMessageHandler(String methodName, void Function(List<dynamic>? arguments) handler) {
     if (connection != null) {
       connection!.on(methodName, handler);
       print('Handler added for $methodName');

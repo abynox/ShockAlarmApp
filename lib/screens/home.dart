@@ -30,6 +30,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
 
   @override
   Widget build(BuildContext context) {
+    manager.startAnyWS();
     manager.reloadAllMethod = () {
       setState(() {});
     };

@@ -650,6 +650,7 @@ class Hub {
   String name = "";
   String id = "";
   bool isOwn = false;
+  bool online = false;
   int apiTokenId = 0;
 
   Hub();
@@ -665,6 +666,8 @@ class Hub {
     isOwn = json["isOwn"];
     if(json["apiTokenId"] != null)
       apiTokenId = json["apiTokenId"];
+    if(json["online"] != null)
+      online = json["online"];
   }
 
   Map<String, dynamic> toJson() {
@@ -672,8 +675,14 @@ class Hub {
       "name": name,
       "id": id,
       "isOwn": isOwn,
-      "apiTokenId": apiTokenId
+      "apiTokenId": apiTokenId,
+      "online": online
     };
+  }
+
+  getIdentifier(AlarmListManager manager) {
+    online = manager.onlineHubs.contains(this.id);
+    return "$id-$apiTokenId-$isOwn-$online";
   }
 }
 
@@ -820,14 +829,25 @@ class OpenShockDevice
 {
     String name = "";
     String id = "";
+    String device = "";
+    bool online = false;
+    String firmwareVersion = "";
     List<OpenShockShocker> shockers = [];
     
     Token? apiTokenReference;
 
     OpenShockDevice.fromJson(Map<String, dynamic> json)
     {
-      name = json['name'];
-      id = json['id'];
+      if(json['name'] != null)
+        name = json['name'];
+      if(json['id'] != null)
+        id = json['id'];
+      if(json['online'] != null)
+        online = json['online'];
+      if(json['firmwareVersion'] != null)
+        firmwareVersion = json['firmwareVersion'];
+      if(json['device'] != null)
+        device = json['device'];
       if (json['shockers'] != null)
       {
         json['shockers'].forEach((v) {

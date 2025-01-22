@@ -429,6 +429,12 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
 
   ShockingControlsState(this.manager, this.currentDuration, this.currentIntensity, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed,this.shockAllowed, this.onDelayAction, this.onProcessAction);
 
+  @override
+  void dispose() {
+    progressCircularController?.dispose();
+    delayVibrationController?.dispose();
+    super.dispose();
+  }
 
   void realAction(ControlType type) {
     if(type != ControlType.stop) {

@@ -131,8 +131,12 @@ class HubItemState extends State<HubItem> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              
               Expanded(child: 
-              Text(hub.name,overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 20)),
+              Row(spacing: 5, children: [
+                Icon(Icons.circle, color: manager.onlineHubs.contains(hub.id) ? Color(0xFF14F014) : Color(0xFFF01414), size: 10,),
+                Text(hub.name,overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 20))
+              ],),
               ),
               if(hub.isOwn) PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
                 return [

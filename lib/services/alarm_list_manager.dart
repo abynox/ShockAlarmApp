@@ -3,6 +3,7 @@ import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
+import 'package:signalr_core/signalr_core.dart';
 
 import '../stores/alarm_store.dart';
 import 'dart:convert';
@@ -56,6 +57,7 @@ class AlarmListManager {
   final List<Shocker> shockers = [];
   final List<Token> _tokens = [];
   final List<Hub> hubs = [];
+  final List<String> onlineHubs = [];
   final Map<String, bool> enabledHubs = {};
   Settings settings = Settings();
   OpenShockWS? ws;
@@ -385,12 +387,30 @@ class AlarmListManager {
     return OpenShockClient().addHub(name, this);
   }
 
-  Future startWS(Token t) async {
+  Future startWS(Token t, {bool stopExisting = true}) async {
     if(ws != null) {
+      if(!stopExisting) return;
       await ws!.stopConnection();
     }
     ws = OpenShockWS(t);
     await ws!.startConnection();
+    ws?.addMessageHandler("DeviceStatus", (List<dynamic>? list) {
+      if(list == null) return;
+      deviceStatusHandler(list);
+    });
+  }
+
+  void deviceStatusHandler(List<dynamic> args) {
+    for(var arg in args[0]) {
+      OpenShockDevice d = OpenShockDevice.fromJson(arg);
+      if(d.online && !onlineHubs.contains(d.device)) {
+        onlineHubs.add(d.device);
+      } else {
+        onlineHubs.remove(d.device);
+      }
+    }
+    print(onlineHubs);
+    reloadAllMethod!();
   }
 
   Future<String?> sendControls(List<Control> controls, {String customName = "ShockAlarm", bool useWs = true}) async {
@@ -407,5 +427,13 @@ class AlarmListManager {
       }
     }
     return null;
+  }
+
+  Future<dynamic> startAnyWS() async {
+    for(var token in getTokens()) {
+      if(token.isSession) {
+        return await startWS(token, stopExisting: false);
+      }
+    }
   }
 }
