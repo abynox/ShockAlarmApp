@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_sliding_up_panel/flutter_sliding_up_panel.dart';
 import 'package:shock_alarm_app/components/hub_item.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 
@@ -191,13 +190,13 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                 children: [
                   if (loadingPause)
                     CircularProgressIndicator(),
-                  if (!loadingPause)
+                  if (!loadingPause && canPause())
                     ElevatedButton(onPressed: () {
                       pauseAll(true);
                     }, child: Text("Pause selected"),),
                   if(loadingResume)
                     CircularProgressIndicator(),
-                  if(!loadingResume)
+                  if(!loadingResume && canResume())
                   ElevatedButton(onPressed: () {
                     pauseAll(false);
                   }, child: Text("Resume selected"),),
@@ -239,8 +238,6 @@ class ShockerChipState extends State<ShockerChip> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    SlidingUpPanelController panelController = SlidingUpPanelController();
-    panelController.hide();
     return 
       GestureDetector(
           child:
@@ -276,24 +273,26 @@ class ShockerChipState extends State<ShockerChip> {
               
           ),
         onLongPress: () {
+          List<Widget> actions = [];
+          for(ShockerAction a in ShockerItem.ownShockerActions) {
+            actions.add(GestureDetector(onTap: () {
+
+                Navigator.of(context).pop();
+                a.onClick(manager, shocker, context, manager.reloadAllMethod!);
+              }, child: Row(children: [
+                a.icon,
+                Text(a.name, style: t.textTheme.titleLarge,)
+              ],spacing: 5, mainAxisSize: MainAxisSize.min,)
+            ,));
+          }
           showDialog(context: context, builder: (context) {
             return AlertDialog(
               title: Text(shocker.name),
               content: Column(
                 spacing: 20,
-                children: [
-                  for(ShockerAction a in ShockerItem.ownShockerActions)
-                    GestureDetector(onTap: () {
-
-                        Navigator.of(context).pop();
-                        a.onClick(manager, shocker, context, manager.reloadAllMethod!);
-                      }, child: Row(children: [
-                        a.icon,
-                        Text(a.name, style: t.textTheme.titleLarge,)
-                      ],spacing: 5, mainAxisSize: MainAxisSize.min,)
-                    ,)
-
-                  ],),
+                children: actions,
+                mainAxisSize: MainAxisSize.min
+                ,),
               actions: [
                 TextButton(onPressed: () {
                   Navigator.of(context).pop();
