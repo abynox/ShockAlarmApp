@@ -81,6 +81,41 @@ class ShockerItem extends StatefulWidget {
     }),
   ];
 
+  static List<ShockerAction> foreignShockerActions = [
+    ShockerAction(onClick: (AlarmListManager manager, Shocker shocker, BuildContext context, Function onRebuild) {
+      showDialog(context: context, builder: (context) => AlertDialog(title: Text("Unlink shocker"), content: Text("Are you sure you want to unlink the shocker ${shocker.name} from your account? After that you cannot control the shocker anymore unless you redeem another share code."), actions: [
+        TextButton(onPressed: () {
+          Navigator.of(context).pop();
+        }, child: Text("Cancel")),
+        TextButton(onPressed: () async {
+          showDialog(context: context, builder: (context) {
+            return LoadingDialog(title: "Unlinking shocker");
+          });
+          String? errorMessage;
+          Token? token = manager.getToken(shocker.apiTokenId);
+          if(token == null) errorMessage = "Token not found";
+          else {
+            OpenShockShare share = OpenShockShare()
+                                  ..sharedWith = (OpenShockUser()..id = token.userId)
+                                  ..shockerReference = shocker;
+            errorMessage = await manager.deleteShare(share);
+          }
+          if(errorMessage != null) {
+            Navigator.of(context).pop();
+            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to delete share"), content: Text(errorMessage ?? "Unknown error"), actions: [TextButton(onPressed: () {
+              Navigator.of(context).pop();
+            }, child: Text("Ok"))],));
+            return;
+          }
+          await manager.updateShockerStore();
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+          onRebuild();
+        }, child: Text("Unlink"))
+      ],));
+    }, icon: Icon(Icons.delete), name: "Unlink"),
+  ];
+
   const ShockerItem({Key? key, required this.shocker, required this.manager, required this.onRebuild})
       : super(key: key);
 
@@ -140,6 +175,7 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
+    List<ShockerAction> actions = shocker.isOwn ? ShockerItem.ownShockerActions : ShockerItem.foreignShockerActions;
     return GestureDetector(
       /*
       onTap: () => Navigator.push(
@@ -178,65 +214,21 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                       Row(
                         spacing: 5,
                         children: [
-                          if(shocker.isOwn)
-                            PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
-                              return [
-                                for(ShockerAction a in ShockerItem.ownShockerActions) PopupMenuItem(value: a.name, child: Row(
-                                  spacing: 10,
-                                  children: [
-                                  a.icon,
-                                  Text(a.name)
-                                ],)),
-                            ];
+                          PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
+                            return [
+                              for(ShockerAction a in actions) PopupMenuItem(value: a.name, child: Row(
+                                spacing: 10,
+                                children: [
+                                a.icon,
+                                Text(a.name)
+                              ],)),
+                          ];
                         }, onSelected: (String value) {
-                          for(ShockerAction a in ShockerItem.ownShockerActions) {
+                          for(ShockerAction a in actions) {
                             if(a.name == value) {
                               a.onClick(manager, shocker, context, onRebuild);
                               return;
                             }
-                          }
-                        },),
-                        if(!shocker.isOwn) PopupMenuButton(iconColor: t.colorScheme.onSurfaceVariant, itemBuilder: (context) {
-                              return [
-                                PopupMenuItem(value: "unlink", child: Row(
-                                  spacing: 10,
-                                  children: [
-                                  Icon(Icons.delete, color: t.colorScheme.onSurfaceVariant,),
-                                  Text("Unlink")
-                                ],)),
-                            ];
-                        }, onSelected: (String value) {
-                          if(value == "unlink") {
-                            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Unlink shocker"), content: Text("Are you sure you want to unlink the shocker ${shocker.name} from your account? After that you cannot control the shocker anymore unless you redeem another share code."), actions: [
-                              TextButton(onPressed: () {
-                                Navigator.of(context).pop();
-                              }, child: Text("Cancel")),
-                              TextButton(onPressed: () async {
-                                showDialog(context: context, builder: (context) {
-                                  return LoadingDialog(title: "Unlinking shocker");
-                                });
-                                String? errorMessage;
-                                Token? token = manager.getToken(shocker.apiTokenId);
-                                if(token == null) errorMessage = "Token not found";
-                                else {
-                                  OpenShockShare share = OpenShockShare()
-                                                        ..sharedWith = (OpenShockUser()..id = token.userId)
-                                                        ..shockerReference = shocker;
-                                  errorMessage = await manager.deleteShare(share);
-                                }
-                                if(errorMessage != null) {
-                                  Navigator.of(context).pop();
-                                  showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to delete share"), content: Text(errorMessage ?? "Unknown error"), actions: [TextButton(onPressed: () {
-                                    Navigator.of(context).pop();
-                                  }, child: Text("Ok"))],));
-                                  return;
-                                }
-                                await manager.updateShockerStore();
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pop();
-                                onRebuild();
-                              }, child: Text("Unlink"))
-                            ],));
                           }
                         },),
                         if(loadingPause)

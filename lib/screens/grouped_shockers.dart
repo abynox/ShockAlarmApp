@@ -238,6 +238,7 @@ class ShockerChipState extends State<ShockerChip> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
+    List<ShockerAction> shockerActions = shocker.isOwn ? ShockerItem.ownShockerActions : ShockerItem.foreignShockerActions;
     return 
       GestureDetector(
           child:
@@ -246,35 +247,34 @@ class ShockerChipState extends State<ShockerChip> {
                 Row(mainAxisSize: MainAxisSize.min,
                 spacing: 5,children: [
                   Text(shocker.name + (shocker.paused ? " (paused)" : "")),
-                  
                 ],
                 )
               , onSelected: onSelected, selected: manager.selectedShockers.contains(shocker.id),
               backgroundColor: shocker.paused ? t.colorScheme.errorContainer : null,
               selectedColor: shocker.paused ? t.colorScheme.errorContainer : null,),
               if(shocker.paused)
-                    GestureDetector(child: Icon(Icons.info, color: t.colorScheme.error,), onTap: () {
-                      showDialog(context: context, builder: (context) {
-                        return AlertDialog(
-                          title: Text("Shocker is paused"),
-                          content: 
-                              Text(shocker.isOwn ?
-                            "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by selecting the shocker and pressing unpause selected." 
-                            : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
-                          actions: [
-                            TextButton(onPressed: () {
-                              Navigator.of(context).pop();
-                            }, child: Text("Close"))
-                          ],
-                        );
-                      });
-                    },)
+                GestureDetector(child: Icon(Icons.info, color: t.colorScheme.error,), onTap: () {
+                  showDialog(context: context, builder: (context) {
+                    return AlertDialog(
+                      title: Text("Shocker is paused"),
+                      content: 
+                          Text(shocker.isOwn ?
+                        "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by selecting the shocker and pressing unpause selected." 
+                        : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
+                      actions: [
+                        TextButton(onPressed: () {
+                          Navigator.of(context).pop();
+                        }, child: Text("Close"))
+                      ],
+                    );
+                  });
+                },)
             ],
               
           ),
         onLongPress: () {
           List<Widget> actions = [];
-          for(ShockerAction a in ShockerItem.ownShockerActions) {
+          for(ShockerAction a in shockerActions) {
             actions.add(GestureDetector(onTap: () {
                 Navigator.of(context).pop();
                 a.onClick(manager, shocker, context, manager.reloadAllMethod!);
