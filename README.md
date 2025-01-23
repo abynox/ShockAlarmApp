@@ -19,22 +19,8 @@ Based partly on https://github.com/mvarendorff/random-alarm/
 - [x] Grouping of shockers
 - [x] Redo settings
 - [ ] (Big controls mode)
-- [ ] Linux support
+- [ ] Linux support (kinda already there but not fully)
 
 # Planned settings
 - [x] Hide/unhiding of the delay option
 - [x] Slider instead of RangeSlider for delay
-
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.

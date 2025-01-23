@@ -469,7 +469,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
     // Get random delay based on range
     if(manager.delayVibrationEnabled) {
       // ToDo: make this duration adjustable
-      onDelayAction(type, currentIntensity, 500);
+      onDelayAction(ControlType.vibrate, currentIntensity, 500);
     }
     delayDuration = manager.rangeValues.start + Random().nextDouble() * (manager.rangeValues.end - manager.rangeValues.start);
     if(delayDuration == 0) {
