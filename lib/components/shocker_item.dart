@@ -266,29 +266,35 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                     ],
                   ),
                   if(expanded)
-                  ShockingControls(manager: manager, currentDuration: currentDuration, currentIntensity: currentIntensity,
-                    durationLimit: shocker.durationLimit, intensityLimit: shocker.intensityLimit,
-                    shockAllowed: shocker.shockAllowed, vibrateAllowed: shocker.vibrateAllowed, soundAllowed: shocker.soundAllowed,
-                    onDelayAction: (type, intensity, duration) {
-                      manager.sendShock(type, shocker, intensity, duration).then((errorMessage) {
-                        if(errorMessage == null) return;
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(errorMessage),
-                          duration: Duration(seconds: 3),
-                        ));
-                      });
-                    },
-                    onProcessAction: (type, intensity, duration) {
+                    ShockingControls(manager: manager, currentDuration: currentDuration, currentIntensity: currentIntensity,
+                      durationLimit: shocker.durationLimit, intensityLimit: shocker.intensityLimit,
+                      shockAllowed: shocker.shockAllowed, vibrateAllowed: shocker.vibrateAllowed, soundAllowed: shocker.soundAllowed,
+                      onDelayAction: (type, intensity, duration) {
+                        manager.sendShock(type, shocker, intensity, duration).then((errorMessage) {
+                          if(errorMessage == null) return;
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(errorMessage),
+                            duration: Duration(seconds: 3),
+                          ));
+                        });
+                      },
+                      onProcessAction: (type, intensity, duration) {
 
-                      manager.sendShock(type, shocker, intensity, duration).then((errorMessage) {
-                        if(errorMessage == null) return;
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(errorMessage),
-                          duration: Duration(seconds: 3),
-                        ));
-                      });
-                    },
-                  )
+                        manager.sendShock(type, shocker, intensity, duration).then((errorMessage) {
+                          if(errorMessage == null) return;
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(errorMessage),
+                            duration: Duration(seconds: 3),
+                          ));
+                        });
+                      },
+                      onSet: (intensity, duration) {
+                          setState(() {
+                            currentDuration = duration;
+                            currentIntensity = intensity;
+                          });
+                        },
+                    )
                 ],
               )
             ),
@@ -390,11 +396,12 @@ class ShockingControls extends StatefulWidget {
   bool shockAllowed;
   Function(ControlType type, int intensity, int duration) onDelayAction;
   Function(ControlType type, int intensity, int duration) onProcessAction;
+  Function(int intensity, int duration) onSet;
 
-  ShockingControls({Key? key, required this.manager, required this.currentDuration, required this.currentIntensity, required this.durationLimit, required this.intensityLimit, required this.soundAllowed, required this.vibrateAllowed, required this.shockAllowed, required this.onDelayAction, required this.onProcessAction}) : super(key: key);
+  ShockingControls({Key? key, required this.manager, required this.currentDuration, required this.currentIntensity, required this.durationLimit, required this.intensityLimit, required this.soundAllowed, required this.vibrateAllowed, required this.shockAllowed, required this.onDelayAction, required this.onProcessAction, required this.onSet}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => ShockingControlsState(this.manager, this.currentDuration, this.currentIntensity, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed, this.shockAllowed, this.onDelayAction, this.onProcessAction);
+  State<StatefulWidget> createState() => ShockingControlsState(this.manager, this.currentDuration, this.currentIntensity, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed, this.shockAllowed, this.onDelayAction, this.onProcessAction, this.onSet);
 }
 
 class ShockingControlsState extends State<ShockingControls> with TickerProviderStateMixin {
@@ -408,9 +415,8 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
   bool shockAllowed;
   Function(ControlType type, int intensity, int duration) onDelayAction;
   Function(ControlType type, int intensity, int duration) onProcessAction;
+  Function(int intensity, int duration) onSet;
 
-
-  bool delayVibrationEnabled = false;
   DateTime actionDoneTime = DateTime.now();
   DateTime delayDoneTime = DateTime.now();
   double delayDuration = 0;
@@ -419,7 +425,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
   bool loadingPause = false;
 
 
-  ShockingControlsState(this.manager, this.currentDuration, this.currentIntensity, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed,this.shockAllowed, this.onDelayAction, this.onProcessAction);
+  ShockingControlsState(this.manager, this.currentDuration, this.currentIntensity, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed,this.shockAllowed, this.onDelayAction, this.onProcessAction, this.onSet);
 
   @override
   void dispose() {
@@ -461,7 +467,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
       return;
     }
     // Get random delay based on range
-    if(delayVibrationEnabled) {
+    if(manager.delayVibrationEnabled) {
       // ToDo: make this duration adjustable
       onDelayAction(type, currentIntensity, 500);
     }
@@ -491,12 +497,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
     intensityLimit = widget.intensityLimit;
     return Column(
       children: [
-        IntensityDurationSelector(duration: currentDuration, intensity: currentIntensity, maxDuration: durationLimit, maxIntensity: intensityLimit, onSet: (intensity, duration) {
-          setState(() {
-            currentDuration = duration;
-            currentIntensity = intensity;
-          });
-        }),
+        IntensityDurationSelector(duration: currentDuration, intensity: currentIntensity, maxDuration: durationLimit, maxIntensity: intensityLimit, onSet: onSet),
         // Delay options
         if(manager.settings.showRandomDelay)
           Row(

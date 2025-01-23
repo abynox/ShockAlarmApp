@@ -207,6 +207,12 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                 durationLimit: limitedShocker.durationLimit, intensityLimit: limitedShocker.intensityLimit,
                 soundAllowed: limitedShocker.soundAllowed, vibrateAllowed: limitedShocker.vibrateAllowed, shockAllowed: limitedShocker.shockAllowed,
                 onDelayAction: executeAll, onProcessAction: executeAll,
+                onSet: (intensity, duration) {
+                    setState(() {
+                      currentDuration = duration;
+                      currentIntensity = intensity;
+                    });
+                  },
                 key: ValueKey(DateTime.now().millisecondsSinceEpoch)
               ),
             ],

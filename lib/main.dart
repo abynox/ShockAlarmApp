@@ -11,7 +11,7 @@ import 'services/alarm_list_manager.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 String GetUserAgent() {
-  return "ShockAlarm/0.0.6";
+  return "ShockAlarm/0.0.7";
 }
 
 Future requestPermissions() async{

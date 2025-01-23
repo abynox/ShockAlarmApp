@@ -37,8 +37,8 @@ class ScreenSelectorState extends State<ScreenSelector> {
     final screens = <Widget>[
       HomeScreen(manager: manager),
       ShockerScreen(manager: manager),
+      GroupedShockerScreen(manager: manager),
       TokenScreen(manager: manager),
-      GroupedShockerScreen(manager: manager)
     ];
     final floatingActionButtons = <Widget?>[
       FloatingActionButton(onPressed: () {
@@ -61,7 +61,9 @@ class ScreenSelectorState extends State<ScreenSelector> {
       ShockerScreen.getFloatingActionButton(manager, context, () {
         setState(() {});
       }),
-      null,
+      ShockerScreen.getFloatingActionButton(manager, context, () {
+        setState(() {});
+      }),
       null
     ];
     return Scaffold(
@@ -80,8 +82,8 @@ class ScreenSelectorState extends State<ScreenSelector> {
          [
           BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
           BottomNavigationBarItem(icon: OpenShockClient.getIconForControlType(ControlType.shock), label: 'Devices'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Grouped'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
