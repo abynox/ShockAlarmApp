@@ -68,6 +68,13 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
     for(Shocker s in getSelectedShockers()) {
       controls.add(s.getLimitedControls(type, intensity, duration));
     }
+    if(type == ControlType.stop) {
+      // Temporary workaround until OpenShock fixed the issue with stop. So for now we send them individually
+      for(Control c in controls) {
+        manager.sendControls([c]);
+      }
+      return;
+    }
     manager.sendControls(controls);
   }
 
