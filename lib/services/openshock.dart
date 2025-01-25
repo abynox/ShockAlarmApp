@@ -686,6 +686,15 @@ class Hub {
   }
 }
 
+class ControlsContainer {
+
+  int currentDuration;
+  int currentIntensity;
+  RangeValues durationRange = RangeValues(0, 0);
+
+  ControlsContainer({this.currentDuration = 300, this.currentIntensity = 25});
+}
+
 class Shocker {
   Shocker() {}
   
@@ -701,6 +710,7 @@ class Shocker {
   int durationLimit = 30000;
   int intensityLimit = 100;
   bool isOwn = false;
+  ControlsContainer controls = ControlsContainer();
   
 
   Shocker.fromOpenShockShocker(OpenShockShocker shocker) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/screens/grouped_shockers.dart';
 import 'package:shock_alarm_app/screens/shockers.dart';
+import 'package:shock_alarm_app/screens/tones.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../components/alarm_item.dart';
 import '../services/alarm_list_manager.dart';
@@ -36,6 +37,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
     };
     final screens = <Widget>[
       HomeScreen(manager: manager),
+      AlarmToneScreen(manager),
       ShockerScreen(manager: manager),
       GroupedShockerScreen(manager: manager),
       TokenScreen(manager: manager),
@@ -55,6 +57,18 @@ class ScreenSelectorState extends State<ScreenSelector> {
         });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Alarm added'),
+          duration: Duration(seconds: 3),
+        ));
+      }, child: Icon(Icons.add)),
+      FloatingActionButton(onPressed: () {
+        final newTone = new AlarmTone(
+            id: manager.getNewToneId(),
+            name: 'New Tone');
+        setState(() {
+          manager.saveTone(newTone);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Tone added'),
           duration: Duration(seconds: 3),
         ));
       }, child: Icon(Icons.add)),
@@ -81,6 +95,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       bottomNavigationBar: BottomNavigationBar(items: 
          [
           BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
+          BottomNavigationBarItem(icon: Icon(Icons.volume_up), label: 'Tones'),
           BottomNavigationBarItem(icon: OpenShockClient.getIconForControlType(ControlType.shock), label: 'Devices'),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Grouped'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),

@@ -19,8 +19,7 @@ class GroupedShockerScreen extends StatefulWidget {
 
 class GroupedShockerScreenState extends State<GroupedShockerScreen> {
   AlarmListManager manager;
-  int currentDuration = 1000;
-  int currentIntensity = 25;
+  final ControlsContainer controls = ControlsContainer();
 
   GroupedShockerScreenState(this.manager);
 
@@ -203,15 +202,11 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                 ],
               ),
               ShockingControls(manager: manager,
-                currentDuration: currentDuration, currentIntensity: currentIntensity,
+                controlsContainer: this.controls,
                 durationLimit: limitedShocker.durationLimit, intensityLimit: limitedShocker.intensityLimit,
                 soundAllowed: limitedShocker.soundAllowed, vibrateAllowed: limitedShocker.vibrateAllowed, shockAllowed: limitedShocker.shockAllowed,
                 onDelayAction: executeAll, onProcessAction: executeAll,
                 onSet: (intensity, duration) {
-                    setState(() {
-                      currentDuration = duration;
-                      currentIntensity = intensity;
-                    });
                   },
                 key: ValueKey(DateTime.now().millisecondsSinceEpoch)
               ),

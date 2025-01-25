@@ -28,9 +28,59 @@ class Token {
   }
 }
 
+class AlarmToneComponent {
+  int intensity = 25;
+  int duration = 1000;
+  ControlType? type = ControlType.vibrate;
+  int time = 0;
+
+  AlarmToneComponent({this.intensity = 25, this.duration = 1000, this.type = ControlType.vibrate, this.time = 0});
+
+  Map<String, dynamic> toJson() {
+    return {
+      "intensity": intensity,
+      "duration": duration,
+      "type": type?.index ?? -1,
+      "time": time
+    };
+  }
+
+  static AlarmToneComponent fromJson(component) {
+    return AlarmToneComponent(
+      intensity: component["intensity"],
+      duration: component["duration"],
+      type: component["type"] == -1 ? null : ControlType.values[component["type"]],
+      time: component["time"]
+    );
+  }
+}
+
+class AlarmTone {
+  int id;
+  String name = "";
+  List<AlarmToneComponent> components = [];
+
+  AlarmTone({required this.id, required this.name});
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "components": components.map((e) => e.toJson()).toList()
+    };
+  }
+
+  static AlarmTone fromJson(tone) {
+    AlarmTone t = AlarmTone(id: tone["id"], name: tone["name"]);
+    if(tone["components"] != null)
+      t.components = (tone["components"] as List).map((e) => AlarmToneComponent.fromJson(e)).toList();
+    return t;
+  }
+}
+
 class AlarmShocker {
   String shockerId = "";
-  String? toneId;
+  int? toneId;
   int intensity = 25;
   int duration = 1000;
   ControlType? type = ControlType.vibrate;

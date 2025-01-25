@@ -137,16 +137,11 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
   AnimationController? delayVibrationController;
   bool loadingPause = false;
 
-
-  int currentIntensity = 25;
-  int currentDuration = 1000;
-  RangeValues rangeValues = RangeValues(0, 0);
-
   @override
   void initState() {
     super.initState();
-    currentIntensity = min(shocker.intensityLimit, currentIntensity);
-    currentDuration = min(shocker.durationLimit, currentDuration);
+    shocker.controls.currentIntensity = min(shocker.intensityLimit, shocker.controls.currentIntensity);
+    shocker.controls.currentDuration = min(shocker.durationLimit, shocker.controls.currentDuration);
   }
 
   @override
@@ -266,7 +261,8 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                     ],
                   ),
                   if(expanded)
-                    ShockingControls(manager: manager, currentDuration: currentDuration, currentIntensity: currentIntensity,
+                    ShockingControls(manager: manager, controlsContainer: shocker.controls,
+                    key: ValueKey(shocker.getIdentifier() + "-shocking-controls"),
                       durationLimit: shocker.durationLimit, intensityLimit: shocker.intensityLimit,
                       shockAllowed: shocker.shockAllowed, vibrateAllowed: shocker.vibrateAllowed, soundAllowed: shocker.soundAllowed,
                       onDelayAction: (type, intensity, duration) {
@@ -279,7 +275,6 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                         });
                       },
                       onProcessAction: (type, intensity, duration) {
-
                         manager.sendShock(type, shocker, intensity, duration).then((errorMessage) {
                           if(errorMessage == null) return;
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -290,8 +285,6 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
                       },
                       onSet: (intensity, duration) {
                           setState(() {
-                            currentDuration = duration;
-                            currentIntensity = intensity;
                           });
                         },
                     )
@@ -305,31 +298,29 @@ class ShockerItemState extends State<ShockerItem> with TickerProviderStateMixin 
 }
 
 class IntensityDurationSelector extends StatefulWidget {
-  final int duration;
-  final int intensity;
+  ControlsContainer controlsContainer;
   int maxDuration;
   int maxIntensity;
   bool showIntensity = true;
   ControlType type = ControlType.shock;
   final Function(int, int) onSet;
 
-  IntensityDurationSelector({Key? key, this.showIntensity = true, this.type = ControlType.shock, required this.duration, required this.intensity, required this.onSet, required this.maxDuration, required this.maxIntensity}) : super(key: key);
+  IntensityDurationSelector({Key? key, this.showIntensity = true, this.type = ControlType.shock, required this.controlsContainer, required this.onSet, required this.maxDuration, required this.maxIntensity}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => IntensityDurationSelectorState(duration, intensity, onSet, this.maxDuration, this.maxIntensity, this.showIntensity, this.type);
+  State<StatefulWidget> createState() => IntensityDurationSelectorState(controlsContainer, onSet, this.maxDuration, this.maxIntensity, this.showIntensity, this.type);
 }
 
 class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
+  ControlsContainer controlsContainer;
   int maxDuration;
   int maxIntensity;
-  int duration;
-  int intensity;
   bool showIntensity;
   ControlType type = ControlType.shock;
   Function(int, int) onSet;
 
 
-  IntensityDurationSelectorState(this.duration, this.intensity, this.onSet, this.maxDuration, this.maxIntensity, this.showIntensity, this.type);
+  IntensityDurationSelectorState(this.controlsContainer, this.onSet, this.maxDuration, this.maxIntensity, this.showIntensity, this.type);
 
   double cubicToLinear(double value) {
     return pow(value, 6/3).toDouble();
@@ -350,33 +341,33 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
 
   @override
   Widget build(BuildContext context) {
-    intensity = min(intensity, maxIntensity);
-    duration = min(duration, maxDuration);
+    controlsContainer.currentIntensity = min(controlsContainer.currentIntensity, maxIntensity);
+    controlsContainer.currentDuration = min(controlsContainer.currentDuration, maxDuration);
     ThemeData t = Theme.of(context);
     return Column(
       children: [
         if(showIntensity)
           Row(mainAxisAlignment: MainAxisAlignment.center, spacing: 10,children: [
             OpenShockClient.getIconForControlType(type),
-            Text("Intensity: $intensity", style: t.textTheme.headlineSmall,),
+            Text("Intensity: " + controlsContainer.currentIntensity.toString(), style: t.textTheme.headlineSmall,),
           ],),
         if(showIntensity)
-          Slider(value: intensity.toDouble(), max: maxIntensity.toDouble(), onChanged: (double value) {
+          Slider(value: controlsContainer.currentIntensity.toDouble(), max: maxIntensity.toDouble(), onChanged: (double value) {
             setState(() {
-              intensity = value.toInt();
-              onSet(intensity, duration);
+              controlsContainer.currentIntensity = value.toInt();
+              onSet(controlsContainer.currentIntensity, controlsContainer.currentDuration);
             });
           }),
         Row(
           mainAxisAlignment: MainAxisAlignment.center, spacing: 10,
           children: [
             Icon(Icons.timer),
-            Text("Duration: ${duration / 1000.0}", style: t.textTheme.headlineSmall,),
+            Text("Duration: ${controlsContainer.currentDuration / 1000.0}", style: t.textTheme.headlineSmall,),
           ],),
-        Slider(value: reverseMapDuration(duration.toDouble()), max: 1, onChanged: (double value) {
+        Slider(value: reverseMapDuration(controlsContainer.currentDuration.toDouble()), max: 1, onChanged: (double value) {
           setState(() {
-            duration = mapDuration(value);
-            onSet(showIntensity ? intensity : 1, duration);
+            controlsContainer.currentDuration = mapDuration(value);
+            onSet(showIntensity ? controlsContainer.currentIntensity : 1, controlsContainer.currentDuration);
           });
         }),
       ],
@@ -387,8 +378,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
 
 class ShockingControls extends StatefulWidget {
   final AlarmListManager manager;
-  int currentDuration;
-  int currentIntensity;
+  ControlsContainer controlsContainer;
   int durationLimit;
   int intensityLimit;
   bool soundAllowed;
@@ -398,16 +388,15 @@ class ShockingControls extends StatefulWidget {
   Function(ControlType type, int intensity, int duration) onProcessAction;
   Function(int intensity, int duration) onSet;
 
-  ShockingControls({Key? key, required this.manager, required this.currentDuration, required this.currentIntensity, required this.durationLimit, required this.intensityLimit, required this.soundAllowed, required this.vibrateAllowed, required this.shockAllowed, required this.onDelayAction, required this.onProcessAction, required this.onSet}) : super(key: key);
+  ShockingControls({Key? key, required this.manager, required this.controlsContainer, required this.durationLimit, required this.intensityLimit, required this.soundAllowed, required this.vibrateAllowed, required this.shockAllowed, required this.onDelayAction, required this.onProcessAction, required this.onSet}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => ShockingControlsState(this.manager, this.currentDuration, this.currentIntensity, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed, this.shockAllowed, this.onDelayAction, this.onProcessAction, this.onSet);
+  State<StatefulWidget> createState() => ShockingControlsState(this.manager, this.controlsContainer, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed, this.shockAllowed, this.onDelayAction, this.onProcessAction, this.onSet);
 }
 
 class ShockingControlsState extends State<ShockingControls> with TickerProviderStateMixin {
   AlarmListManager manager;
-  int currentDuration;
-  int currentIntensity;
+  ControlsContainer controlsContainer;
   int durationLimit;
   int intensityLimit;
   bool soundAllowed;
@@ -425,7 +414,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
   bool loadingPause = false;
 
 
-  ShockingControlsState(this.manager, this.currentDuration, this.currentIntensity, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed,this.shockAllowed, this.onDelayAction, this.onProcessAction, this.onSet);
+  ShockingControlsState(this.manager, this.controlsContainer, this.durationLimit, this.intensityLimit, this.soundAllowed, this.vibrateAllowed,this.shockAllowed, this.onDelayAction, this.onProcessAction, this.onSet);
 
   @override
   void dispose() {
@@ -437,10 +426,10 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
   void realAction(ControlType type) {
     if(type != ControlType.stop) {
       setState(() {
-        actionDoneTime = DateTime.now().add(Duration(milliseconds: currentDuration));
+        actionDoneTime = DateTime.now().add(Duration(milliseconds: controlsContainer.currentDuration));
         progressCircularController = AnimationController(
           vsync: this,
-          duration: Duration(milliseconds: currentDuration),
+          duration: Duration(milliseconds: controlsContainer.currentDuration),
         )..addListener(() {
           setState(() {
             if(progressCircularController!.status == AnimationStatus.completed) {
@@ -452,7 +441,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
         progressCircularController!.forward();
       });
     }
-    onProcessAction(type, currentIntensity, currentDuration);
+    onProcessAction(type, controlsContainer.currentIntensity, controlsContainer.currentDuration);
   }
 
   void action(ControlType type) {
@@ -469,9 +458,9 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
     // Get random delay based on range
     if(manager.delayVibrationEnabled) {
       // ToDo: make this duration adjustable
-      onDelayAction(ControlType.vibrate, currentIntensity, 500);
+      onDelayAction(ControlType.vibrate, controlsContainer.currentIntensity, 500);
     }
-    delayDuration = manager.rangeValues.start + Random().nextDouble() * (manager.rangeValues.end - manager.rangeValues.start);
+    delayDuration = controlsContainer.durationRange.start + Random().nextDouble() * (controlsContainer.durationRange.end - controlsContainer.durationRange.start);
     if(delayDuration == 0) {
       realAction(type);
       return;
@@ -497,7 +486,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
     intensityLimit = widget.intensityLimit;
     return Column(
       children: [
-        IntensityDurationSelector(duration: currentDuration, intensity: currentIntensity, maxDuration: durationLimit, maxIntensity: intensityLimit, onSet: onSet),
+        IntensityDurationSelector(controlsContainer: controlsContainer, maxDuration: durationLimit, maxIntensity: intensityLimit, onSet: onSet),
         // Delay options
         if(manager.settings.showRandomDelay)
           Row(
@@ -510,25 +499,25 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
                 });
               },),
               Expanded(child: manager.settings.useRangeSliderForRandomDelay ? RangeSlider(
-                values: manager.rangeValues,
+                values: controlsContainer.durationRange,
                 max: 10,
                 min: 0,
                 divisions: 10 * 3,
                 labels: RangeLabels(
-                  "${(manager.rangeValues.start * 10).round() / 10} s",
-                  "${(manager.rangeValues.end * 10).round() / 10} s",
+                  "${(controlsContainer.durationRange.start * 10).round() / 10} s",
+                  "${(controlsContainer.durationRange.end * 10).round() / 10} s",
                 ),
                 onChanged: (RangeValues values) {
                 setState(() {
-                  manager.rangeValues = values;
+                  controlsContainer.durationRange = values;
                 });
               }) : 
               Row(children: [
-                Text("${(manager.rangeValues.start * 10).round() / 10} s"),
+                Text("${(controlsContainer.durationRange.start * 10).round() / 10} s"),
                 Expanded(child: 
-                  Slider(value: manager.rangeValues.start, min: 0, max: 10, onChanged: (double value) {
+                  Slider(value: controlsContainer.durationRange.start, min: 0, max: 10, onChanged: (double value) {
                     setState(() {
-                      manager.rangeValues = RangeValues(value, manager.rangeValues.end);
+                      controlsContainer.durationRange = RangeValues(value, controlsContainer.durationRange.end);
                     });
                   }),
                 )
@@ -583,7 +572,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
             children: [
               Text("Executing... ${(actionDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
               CircularProgressIndicator(
-                value: progressCircularController == null ? 0 : 1 - (actionDoneTime.difference(DateTime.now()).inMilliseconds / currentDuration),
+                value: progressCircularController == null ? 0 : 1 - (actionDoneTime.difference(DateTime.now()).inMilliseconds / controlsContainer.currentDuration),
               )
             ]
           ),

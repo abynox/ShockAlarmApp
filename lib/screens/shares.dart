@@ -431,7 +431,7 @@ class ShockerShareEntryEditorState extends State<ShockerShareEntryEditor> {
             spacing: 10,
             children: [
               Text("Limits", style: t.textTheme.headlineMedium),
-              IntensityDurationSelector(duration: limits.limits.duration ?? 30000, intensity: limits.limits.intensity ?? 100, onSet: (intensity, duration) {
+              IntensityDurationSelector(controlsContainer: ControlsContainer(currentDuration: limits.limits.duration ?? 30000, currentIntensity: limits.limits.intensity ?? 100), onSet: (intensity, duration) {
                 setState(() {
                   limits.limits.duration = duration;
                   limits.limits.intensity = intensity;

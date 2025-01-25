@@ -58,6 +58,7 @@ class AlarmListManager {
   final List<Token> _tokens = [];
   final List<Hub> hubs = [];
   final List<String> onlineHubs = [];
+  final List<AlarmTone> alarmTones = [];
   final Map<String, bool> enabledHubs = {};
   Settings settings = Settings();
   OpenShockWS? ws;
@@ -70,8 +71,6 @@ class AlarmListManager {
 
   List<String> selectedShockers = [];
 
-  RangeValues rangeValues = RangeValues(0, 0);
-
   bool delayVibrationEnabled = false;
 
 
@@ -82,10 +81,12 @@ class AlarmListManager {
     String shockers = prefs.getString("shockers") ?? "[]";
     String hubs = prefs.getString("hubs") ?? "[]";
     String settings = prefs.getString("settings") ?? "{}";
+    String alarmTones = prefs.getString("alarmTones") ?? "[]";
     List<dynamic> alarmsList = jsonDecode(alarms);
     List<dynamic> tokensList = jsonDecode(tokens);
     List<dynamic> shockersList = jsonDecode(shockers);
     List<dynamic> hubsList = jsonDecode(hubs);
+    List<dynamic> alarmTonesList = jsonDecode(alarmTones);
     this.settings = Settings.fromJson(jsonDecode(settings));
     for (var alarm in alarmsList) {
       _alarms.add(Alarm.fromJson(alarm));
@@ -105,6 +106,9 @@ class AlarmListManager {
         }
       }
       this.shockers.add(s);
+    }
+    for (var alarmTone in alarmTonesList) {
+      this.alarmTones.add(AlarmTone.fromJson(alarmTone));
     }
     updateHubList();
     rebuildAlarmShockers();
@@ -143,8 +147,22 @@ class AlarmListManager {
     while (!foundNew) {
       foundNew = true;
       for (var alarm in getAlarms()) {
-        print(alarm.id);
         if (alarm.id == id) {
+          id++;
+          foundNew = false;
+          break;
+        }
+      }
+    }
+    return id;
+  }
+  int getNewToneId() {
+    int id = 0;
+    bool foundNew = false;
+    while (!foundNew) {
+      foundNew = true;
+      for (var tone in alarmTones) {
+        if (tone.id == id) {
           id++;
           foundNew = false;
           break;
@@ -258,6 +276,11 @@ class AlarmListManager {
   Future saveTokens() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("tokens", jsonEncode(_tokens));
+  }
+
+  Future saveAlarmTones() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("alarmTones", jsonEncode(alarmTones));
   }
 
   Future<String?> deleteToken(Token token) async {
@@ -435,5 +458,22 @@ class AlarmListManager {
         return await startWS(token, stopExisting: false);
       }
     }
+  }
+
+  void saveTone(AlarmTone tone) {
+    // sort components by time
+    tone.components.sort((a, b) => a.time.compareTo(b.time));
+    final index = alarmTones.indexWhere((findTone) => tone.id == findTone.id);
+    if (index == -1) {
+      alarmTones.add(tone);
+    } else {
+      alarmTones[index] = tone;
+    }
+    saveAlarmTones();
+  }
+
+  void deleteTone(AlarmTone tone) {
+    alarmTones.removeWhere((findTone) => tone.id == findTone.id);
+    saveAlarmTones();
   }
 }
