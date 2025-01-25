@@ -409,6 +409,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
   DateTime actionDoneTime = DateTime.now();
   DateTime delayDoneTime = DateTime.now();
   double delayDuration = 0;
+  int actionDuration = 0;
   AnimationController? progressCircularController;
   AnimationController? delayVibrationController;
   bool loadingPause = false;
@@ -426,6 +427,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
   void realAction(ControlType type) {
     if(type != ControlType.stop) {
       setState(() {
+        actionDuration = controlsContainer.currentDuration;
         actionDoneTime = DateTime.now().add(Duration(milliseconds: controlsContainer.currentDuration));
         progressCircularController = AnimationController(
           vsync: this,
@@ -572,7 +574,7 @@ class ShockingControlsState extends State<ShockingControls> with TickerProviderS
             children: [
               Text("Executing... ${(actionDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
               CircularProgressIndicator(
-                value: progressCircularController == null ? 0 : 1 - (actionDoneTime.difference(DateTime.now()).inMilliseconds / controlsContainer.currentDuration),
+                value: progressCircularController == null ? 0 : 1 - (actionDoneTime.difference(DateTime.now()).inMilliseconds / actionDuration),
               )
             ]
           ),
