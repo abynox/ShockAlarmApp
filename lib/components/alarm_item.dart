@@ -112,6 +112,12 @@ class AlarmItemState extends State<AlarmItem> {
                               icon: Icon(Icons.delete),
                             ),
                             IconButton(
+                              onPressed: () {
+                                alarm.trigger(manager, false);
+                              },
+                              icon: Icon(Icons.play_arrow),
+                            ),
+                            IconButton(
                               onPressed: _save,
                               icon: Icon(Icons.save),
                             ),

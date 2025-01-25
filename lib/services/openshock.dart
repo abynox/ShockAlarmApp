@@ -602,6 +602,22 @@ class Control {
   }
 }
 
+class WSShockerLog {
+  OpenShockShocker? shocker;
+  ControlType type = ControlType.shock;
+  int intensity = 0;
+  int duration = 0;
+  DateTime executedAt = DateTime.now();
+
+  WSShockerLog.fromJson(Map<String, dynamic> json) {
+    type = ControlType.values[json["type"]];
+    shocker = OpenShockShocker.fromJson(json["shocker"]);
+    intensity = json["intensity"];
+    duration = json["duration"];
+    executedAt = DateTime.parse(json["executedAt"]);
+  }
+}
+
 class ShockerLog {
   String id = "";
   DateTime createdOn = DateTime.now();
@@ -609,6 +625,14 @@ class ShockerLog {
   OpenShockUser controlledBy = OpenShockUser();
   int intensity = 0;
   int duration = 0;
+
+  ShockerLog.fromWs(WSShockerLog log, OpenShockUser user) {
+    type = log.type;
+    controlledBy = user;
+    createdOn = log.executedAt;
+    intensity = log.intensity;
+    duration = log.duration;
+  }
 
   ShockerLog.fromJson(Map<String, dynamic> json) {
     id = json["id"];
@@ -644,7 +668,19 @@ class OpenShockUser {
   String id = "";
   String name = "";
   String image = "";
+  String? connectionId;
   String? customName;
+
+  OpenShockUser();
+
+  OpenShockUser.fromJson(Map<String, dynamic> json) {
+    id = json["id"];
+    name = json["name"];
+    image = json["image"];
+    if(json["connectionId"] != null)
+      connectionId = json["connectionId"];
+    customName = json["customName"];
+  }
 }
 
 class Hub {
@@ -888,8 +924,10 @@ class OpenShockShocker
     {
         name = json['name'];
         id = json['id'];
-        isPaused = json['isPaused'];
-        isDisabled = json['isDisabled'];
+        if(json["isPaused"] != null)
+          isPaused = json['isPaused'];
+        if(json["isDisabled"] != null)
+          isDisabled = json['isDisabled'];
         if (json['limits'] != null)
         {
             limits = OpenShockShockerLimits();

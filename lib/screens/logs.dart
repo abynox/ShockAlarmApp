@@ -26,6 +26,13 @@ class LogScreenState extends State<LogScreen> {
   void initState() {
     super.initState();
     initialLoading = true;
+    manager.reloadShockerLogs = () {
+      setState(() {
+        print(manager.availableShockerLogs[shocker.id]);
+        logs.addAll(manager.availableShockerLogs[shocker.id] ?? []);
+        logs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
+      });
+    };
     loadLogs();
   }
 
@@ -66,7 +73,7 @@ class LogScreenState extends State<LogScreen> {
             itemCount: logs.length,
             itemBuilder: (context, index) {
               final log = logs[index];
-              return ShockerLogEntry(log: log);
+              return ShockerLogEntry(log: log, key: ValueKey("${log.createdOn}-${log.type}"),);
             }
           )
         )

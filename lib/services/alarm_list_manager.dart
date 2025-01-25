@@ -410,6 +410,9 @@ class AlarmListManager {
     return OpenShockClient().addHub(name, this);
   }
 
+  Map<String?, List<ShockerLog>> availableShockerLogs = {};
+  Function? reloadShockerLogs;
+
   Future startWS(Token t, {bool stopExisting = true}) async {
     if(ws != null) {
       if(!stopExisting) return;
@@ -420,6 +423,17 @@ class AlarmListManager {
     ws?.addMessageHandler("DeviceStatus", (List<dynamic>? list) {
       if(list == null) return;
       deviceStatusHandler(list);
+    });
+    ws?.addMessageHandler("Log", (List<dynamic>? list) {
+      if(list == null) return;
+      OpenShockUser user = OpenShockUser.fromJson(list[0]);
+      for(Map<String, dynamic> shocker in list[1]){
+        WSShockerLog log = WSShockerLog.fromJson(shocker);
+        availableShockerLogs.putIfAbsent(log.shocker?.id, () => []).add(ShockerLog.fromWs(log, user));
+      }
+      if(reloadShockerLogs != null) {
+        reloadShockerLogs!();
+      }
     });
   }
 

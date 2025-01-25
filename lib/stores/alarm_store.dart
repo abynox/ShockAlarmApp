@@ -201,7 +201,7 @@ class Alarm {
         if(time - timeTillNow > 0) await Future.delayed(Duration(milliseconds: time - timeTillNow));
         timeTillNow = time;
 
-        await manager.sendControls(controlTimes[time]!, customName: name, useWs: true);
+        await manager.sendControls(controlTimes[time]??[], customName: name, useWs: false);
       }
 
 
