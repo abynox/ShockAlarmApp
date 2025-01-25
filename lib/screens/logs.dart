@@ -78,7 +78,7 @@ class LogScreenState extends State<LogScreen> {
             itemCount: logs.length,
             itemBuilder: (context, index) {
               final log = logs[index];
-              return ShockerLogEntry(log: log, key: ValueKey("${log.createdOn}-${log.type}"),);
+              return ShockerLogEntry(log: log, key: ValueKey("${log.createdOn}-${log.type}-${log.shockerReference?.id}"),);
             }
           )
         )
