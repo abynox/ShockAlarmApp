@@ -156,18 +156,57 @@ class Alarm {
     var maxDuration = 0;
     bool shouldContinue = repeatAlarmsTone;
     while(shouldContinue) {
+      Map<int, List<Control>> controlTimes = {0: []};
       for (var shocker in shockers) {
-        if (shocker.enabled) {
+        if (!shocker.enabled) continue;
+        if(shocker.toneId != null) {
+          var tone = manager.getTone(shocker.toneId!);
+          if(tone != null) {
+            for (var component in tone.components) {
+              int executionTime = component.time + component.duration;
+              if (executionTime > maxDuration) {
+                maxDuration = executionTime;
+              }
+              if(!controlTimes.containsKey(component.time)) {
+                controlTimes[component.time] = [];
+              }
+              Control control = Control();
+              control.type = component.type!;
+              control.intensity = component.intensity;
+              control.duration = component.duration;
+              control.id = shocker.shockerId;
+              control.apiTokenId = shocker.shockerReference!.apiTokenId;
+              controlTimes[component.time]!.add(control);
+            }
+          }
+        } else {
           if (shocker.duration > maxDuration) {
             maxDuration = shocker.duration;
           }
+          Control control = Control();
+          control.type = shocker.type!;
+          control.intensity = shocker.intensity;
+          control.duration = shocker.duration;
+          control.id = shocker.shockerId;
+          control.apiTokenId = shocker.shockerReference!.apiTokenId;
+          controlTimes[0]!.add(control);
           // If a shocker is paused the backend will return an error. So we don't need to check if it's paused. Especially as the saved state may not reflect the real paused state.
-          manager.sendShock(shocker.type!, shocker.shockerReference!, shocker.intensity, shocker.duration, customName: name, useWs: false);
         }
       }
 
+      int timeTillNow = 0;
+      for (var time in controlTimes.keys) {
+        print(time);
+        print(time- timeTillNow);
+        if(time - timeTillNow > 0) await Future.delayed(Duration(milliseconds: time - timeTillNow));
+        timeTillNow = time;
+
+        await manager.sendControls(controlTimes[time]!, customName: name, useWs: true);
+      }
+
+
       // Wait until all shockers have finished
-      await Future.delayed(Duration(milliseconds: maxDuration + manager.settings.alarmToneRepeatDelayMs));
+      await Future.delayed(Duration(milliseconds: maxDuration + manager.settings.alarmToneRepeatDelayMs - timeTillNow));
       print("checking alarm$id.active");
       await prefs.reload();
       shouldContinue = prefs.getBool("alarm$id.active") ?? false;

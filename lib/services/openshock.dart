@@ -542,6 +542,7 @@ class Control {
   int intensity = 0;
   ControlType type = ControlType.stop;
   int apiTokenId = 0;
+  Shocker? shockerReference;
 
   Control();
 

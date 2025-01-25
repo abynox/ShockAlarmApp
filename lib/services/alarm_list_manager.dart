@@ -476,4 +476,13 @@ class AlarmListManager {
     alarmTones.removeWhere((findTone) => tone.id == findTone.id);
     saveAlarmTones();
   }
+
+  AlarmTone? getTone(int id) {
+    for(var tone in alarmTones) {
+      if(tone.id == id) {
+        return tone;
+      }
+    }
+    return null;
+  }
 }
