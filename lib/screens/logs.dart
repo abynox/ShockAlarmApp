@@ -6,21 +6,21 @@ import '../services/openshock.dart';
 
 class LogScreen extends StatefulWidget {
   AlarmListManager manager;
-  Shocker shocker;
+  List<Shocker> shockers;
   
-  LogScreen({Key? key, required this.manager, required this.shocker}) : super(key: key);
+  LogScreen({Key? key, required this.manager, required this.shockers}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => LogScreenState(manager, shocker);
+  State<StatefulWidget> createState() => LogScreenState(manager, shockers);
 }
 
 class LogScreenState extends State<LogScreen> {
   AlarmListManager manager;
-  Shocker shocker;
+  List<Shocker> shockers;
   List<ShockerLog> logs = [];
   bool initialLoading = false;
 
-  LogScreenState(this.manager, this.shocker);
+  LogScreenState(this.manager, this.shockers);
 
   @override
   void initState() {
@@ -28,8 +28,8 @@ class LogScreenState extends State<LogScreen> {
     initialLoading = true;
     manager.reloadShockerLogs = () {
       setState(() {
-        print(manager.availableShockerLogs[shocker.id]);
-        logs.addAll(manager.availableShockerLogs[shocker.id] ?? []);
+        for (var shocker in shockers) 
+          logs.addAll(manager.availableShockerLogs[shocker.id] ?? []);
         logs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
       });
     };
@@ -37,7 +37,12 @@ class LogScreenState extends State<LogScreen> {
   }
 
   Future<void> loadLogs() async {
-    final newLogs = await manager.getShockerLogs(shocker);
+    List<ShockerLog> newLogs = [];
+    for (var shocker in shockers) {
+      final logs = await manager.getShockerLogs(shocker);
+      newLogs.addAll(logs);
+    }
+    newLogs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
     setState(() {
       logs = newLogs;
       initialLoading = false;
@@ -51,7 +56,7 @@ class LogScreenState extends State<LogScreen> {
         title: Row(
           spacing: 10,
           children: [
-            Text('Logs for ${shocker.name}')
+            Text('Logs for ${shockers.map((x) => x.name).join(", ")}'),
           ],
         ),
       ),
@@ -103,33 +108,37 @@ class ShockerLogEntry extends StatelessWidget {
     Column(
       children: [
         Row(
-          spacing: 10,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            OpenShockClient.getIconForControlType(log.type),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  spacing: 10,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      spacing: 10,
-                      children: [
-                        Text(log.getName(), style: t.textTheme.titleMedium,),
-                      ],
-                    ),
-                    Text(formatDateTime(log.createdOn.toLocal())),
-                ],),
-                Row(
-                  children: [
-                    Text("${(log.duration / 100).round() / 10} s"),
-                    Text(" @ "),
-                    Text("${log.intensity}"),
-                  ],
-                ),
-              ]
-            )
+            Row(
+              spacing: 10,
+              children: [OpenShockClient.getIconForControlType(log.type),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    spacing: 10,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        spacing: 10,
+                        children: [
+                          Text(log.getName(), style: t.textTheme.titleMedium,),
+                        ],
+                      ),
+                      Text(formatDateTime(log.createdOn.toLocal())),
+                  ],),
+                  Row(
+                    children: [
+                      Text("${(log.duration / 100).round() / 10} s"),
+                      Text(" @ "),
+                      Text("${log.intensity}"),
+                    ],
+                  ),
+                ]
+              ),],),
+
+            Chip(label: Text(log.shockerReference?.name ?? "Unknown")),
           ]),
           Divider()
       ],

@@ -54,7 +54,7 @@ class ShockerItem extends StatefulWidget {
     }),
 
     ShockerAction(name: "Logs", icon: Icon(Icons.list), onClick: (AlarmListManager manager, Shocker shocker, BuildContext context, Function onRebuild) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LogScreen(shocker: shocker, manager: manager)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LogScreen(shockers: [shocker], manager: manager)));
     }),
 
     ShockerAction(name: "Shares", icon: Icon(Icons.share), onClick: (AlarmListManager manager, Shocker shocker, BuildContext context, Function onRebuild) {

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/hub_item.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
+import 'package:shock_alarm_app/screens/logs.dart';
 
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
@@ -125,6 +126,15 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
     return false;
   }
 
+  bool canViewLogs() {
+    for(Shocker s in getSelectedShockers()) {
+      if(s.isOwn) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   bool canResume() {
     for(Shocker s in getSelectedShockers()) {
       if(s.isOwn && s.paused) {
@@ -199,6 +209,17 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                   ElevatedButton(onPressed: () {
                     pauseAll(false);
                   }, child: Text("Resume selected"),),
+
+                  if(canViewLogs())
+                    ElevatedButton(onPressed: () {
+                      List<Shocker> shockers = [];
+                      for(String shockerId in manager.selectedShockers) {
+                        Shocker s = manager.shockers.firstWhere((x) => x.id == shockerId);
+                        if(!s.isOwn) continue;
+                        shockers.add(s);
+                      }
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => LogScreen(shockers: shockers, manager: manager)));
+                    }, child: Text("View logs"),)
                 ],
               ),
               ShockingControls(manager: manager,

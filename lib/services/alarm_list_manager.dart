@@ -428,8 +428,10 @@ class AlarmListManager {
       if(list == null) return;
       OpenShockUser user = OpenShockUser.fromJson(list[0]);
       for(Map<String, dynamic> shocker in list[1]){
-        WSShockerLog log = WSShockerLog.fromJson(shocker);
-        availableShockerLogs.putIfAbsent(log.shocker?.id, () => []).add(ShockerLog.fromWs(log, user));
+        WSShockerLog wslog = WSShockerLog.fromJson(shocker);
+        ShockerLog log = ShockerLog.fromWs(wslog, user);
+        log.shockerReference = shockers.firstWhere((element) => element.id == wslog.shocker?.id);
+        availableShockerLogs.putIfAbsent(log.shockerReference?.id, () => []).add(log);
       }
       if(reloadShockerLogs != null) {
         reloadShockerLogs!();

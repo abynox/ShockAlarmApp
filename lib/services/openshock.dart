@@ -255,7 +255,9 @@ class OpenShockClient {
       List<ShockerLog> logs = [];
       var data = jsonDecode(response.body);
       for(var log in data["data"]) {
-        logs.add(ShockerLog.fromJson(log));
+        ShockerLog s = ShockerLog.fromJson(log);
+        s.shockerReference = shocker;
+        logs.add(s);
       }
       return logs;
     }
@@ -625,6 +627,8 @@ class ShockerLog {
   OpenShockUser controlledBy = OpenShockUser();
   int intensity = 0;
   int duration = 0;
+  
+  Shocker? shockerReference;
 
   ShockerLog.fromWs(WSShockerLog log, OpenShockUser user) {
     type = log.type;
