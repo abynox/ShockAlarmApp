@@ -302,8 +302,8 @@ class Alarm {
         nextOccurrance = nextOccurrance.add(Duration(days: 1));
       }
 
-      if(!Platform.isAndroid) {
-        ScaffoldMessenger.of(manager.context!).showSnackBar(SnackBar(content: Text("Cannot schedule alarm on linux atm")));
+      if(!isAndroid()) {
+        ScaffoldMessenger.of(manager.context!).showSnackBar(SnackBar(content: Text("Alarms are only supported on Android atm")));
         return;
       }
       try {

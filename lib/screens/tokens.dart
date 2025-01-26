@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import '../components/token_item.dart';
@@ -31,6 +32,69 @@ class TokenScreenState extends State<TokenScreen> {
               Navigator.of(context).pop();
             },
             child: Text("Ok")
+          )
+        ],
+      );
+    });
+  }
+
+  Future showTokenLoginPopup() async {
+    TextEditingController serverController = TextEditingController();
+    TextEditingController tokenController = TextEditingController();
+    serverController.text = "https://api.openshock.app";
+    return showDialog(context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Login to OpenShock"),
+        content: SingleChildScrollView(child: 
+          Column(
+            children: <Widget>[
+              TextField(
+                decoration: InputDecoration(
+                  labelText: "Server"
+                ),
+                controller: serverController,
+
+              ),
+              AutofillGroup(child: 
+                Column(
+                  children: [
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: "Token"
+                      ),
+                      obscureText: true,
+                      obscuringCharacter: "*",
+                      controller: tokenController
+                    )
+                  ],
+                )
+              )
+              
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel")
+          ),
+          TextButton(
+            onPressed: () async {
+              showDialog(context: context, builder: (context) => LoadingDialog(title: "Logging in"));
+              bool worked  = await manager.loginToken(serverController.text, tokenController.text);
+              if(worked) {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              }
+              else {
+                Navigator.of(context).pop();
+                showErrorDialog("Login failed", "Check server, email and password");
+              }
+            },
+            child: Text("Login")
           )
         ],
       );
@@ -138,7 +202,12 @@ class TokenScreenState extends State<TokenScreen> {
             ],
           ),
           FilledButton(onPressed: () {
-            showLoginPopup();
+            if(kIsWeb) {
+              showTokenLoginPopup();
+            }
+            else {
+              showLoginPopup();
+            }
           }, child: Text("Log in to OpenShock", style: TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),),
           
           // Actual options

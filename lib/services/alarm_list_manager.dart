@@ -352,7 +352,7 @@ class AlarmListManager {
 
   Token? getAnyUserToken() {
     for(var token in getTokens()) {
-      if(token.isSession && token.name.isNotEmpty) {
+      if(token.name.isNotEmpty) {
         return token;
       }
     }
@@ -470,9 +470,7 @@ class AlarmListManager {
 
   Future<dynamic> startAnyWS() async {
     for(var token in getTokens()) {
-      if(token.isSession) {
-        return await startWS(token, stopExisting: false);
-      }
+      return await startWS(token, stopExisting: false);
     }
   }
 
@@ -500,5 +498,15 @@ class AlarmListManager {
       }
     }
     return null;
+  }
+
+  Future<bool> loginToken(String serverAddress, String token) async {
+    Token tokentoken = Token(DateTime.now().millisecondsSinceEpoch, token, server: serverAddress, isSession: true);
+    OpenShockClient client = OpenShockClient();
+    bool worked = await client.setInfoOfToken(tokentoken);
+    if(worked) {
+      saveToken(tokentoken);
+    }
+    return worked;
   }
 }

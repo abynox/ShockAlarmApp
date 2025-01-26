@@ -153,7 +153,7 @@ class OpenShockClient {
     return response.statusCode == 200;
   }
 
-  Future setInfoOfToken(Token t) async {
+  Future<bool> setInfoOfToken(Token t) async {
     var request = GetRequest(t, "/1/users/self");
     var response = await request;
     String name = "Unknown";
@@ -162,6 +162,7 @@ class OpenShockClient {
       var data = jsonDecode(response.body);
       name = data["data"]["name"];
       id = data["data"]["id"];
+      return false;
     }
     request = GetRequest(t, "/1/tokens/self");
     response = await request;
@@ -172,6 +173,7 @@ class OpenShockClient {
     }
     t.name = t.isSession ? "$name" : "$name ($tokenName)";
     t.userId = id;
+    return true;
   }
 
   Future<Token?> login(String serverAddress, String email, String password, AlarmListManager manager) async {
@@ -186,7 +188,9 @@ class OpenShockClient {
     });
     Token? token;
     if(response.statusCode == 200) {
+      print("Login successful");
       response.headers["set-cookie"]?.split(";").forEach((element) {
+        print(element);
         if(element.startsWith("openShockSession=")) {
           var sessionId = element.substring("openShockSession=".length);
           token = Token(DateTime.now().millisecondsSinceEpoch, sessionId, server: serverAddress, isSession: true);

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -14,10 +15,12 @@ String GetUserAgent() {
   return "ShockAlarm/0.0.7";
 }
 
+bool isAndroid() {
+  return !kIsWeb && Platform.isAndroid;
+}
+
 Future requestPermissions() async{
-  if(!Platform.isAndroid) {
-    return;
-  }
+  if(!isAndroid()) return;
   final status = await Permission.scheduleExactAlarm.status;
   print('Schedule exact alarm permission: $status.');
   if (status.isDenied) {
@@ -78,7 +81,7 @@ void onDidReceiveNotificationResponse(NotificationResponse notificationResponse)
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initNotification();
-  if(Platform.isAndroid) {
+  if(isAndroid()) {
     await AndroidAlarmManager.initialize();
     await requestPermissions();
   }

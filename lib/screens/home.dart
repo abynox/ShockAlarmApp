@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/grouped_shockers.dart';
 import 'package:shock_alarm_app/screens/shockers.dart';
 import 'package:shock_alarm_app/screens/tones.dart';
@@ -20,6 +22,13 @@ class ScreenSelector extends StatefulWidget {
 class ScreenSelectorState extends State<ScreenSelector> {
   final AlarmListManager manager;
   int _selectedIndex = 3;
+  bool supportsAlarms = isAndroid();
+
+  @override void initState() {
+    // TODO: implement initState
+    if(manager.getAnyUserToken() == null) _selectedIndex = 4;
+    if(!supportsAlarms) _selectedIndex -= 2;
+  }
 
   ScreenSelectorState({required this.manager});
 
@@ -36,14 +45,14 @@ class ScreenSelectorState extends State<ScreenSelector> {
       setState(() {});
     };
     final screens = <Widget>[
-      HomeScreen(manager: manager),
-      AlarmToneScreen(manager),
+      if(supportsAlarms) HomeScreen(manager: manager),
+      if(supportsAlarms) AlarmToneScreen(manager),
       ShockerScreen(manager: manager),
       GroupedShockerScreen(manager: manager),
       TokenScreen(manager: manager),
     ];
     final floatingActionButtons = <Widget?>[
-      FloatingActionButton(onPressed: () {
+      if(supportsAlarms) FloatingActionButton(onPressed: () {
         TimeOfDay tod = TimeOfDay.fromDateTime(DateTime.now());
         print("alarms: ${manager.getAlarms().length}");
         final newAlarm = new Alarm(
@@ -60,7 +69,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
           duration: Duration(seconds: 3),
         ));
       }, child: Icon(Icons.add)),
-      FloatingActionButton(onPressed: () {
+      if(supportsAlarms) FloatingActionButton(onPressed: () {
         final newTone = new AlarmTone(
             id: manager.getNewToneId(),
             name: 'New Tone');
@@ -94,8 +103,8 @@ class ScreenSelectorState extends State<ScreenSelector> {
       floatingActionButton: floatingActionButtons.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(items: 
          [
-          BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
-          BottomNavigationBarItem(icon: Icon(Icons.volume_up), label: 'Tones'),
+          if(supportsAlarms) BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
+          if(supportsAlarms) BottomNavigationBarItem(icon: Icon(Icons.volume_up), label: 'Tones'),
           BottomNavigationBarItem(icon: OpenShockClient.getIconForControlType(ControlType.shock), label: 'Devices'),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Grouped'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),

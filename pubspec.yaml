@@ -42,6 +42,7 @@ dependencies:
   http: ^1.2.2
   signalr_core: ^1.1.2
   share_plus: ^10.0.0
+  js_interop: ^0.0.1
 
 dev_dependencies:
   flutter_test:
