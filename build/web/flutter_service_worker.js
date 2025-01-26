@@ -3,13 +3,13 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"flutter_bootstrap.js": "24d23ee3a3b0570562da882867d77b42",
+const RESOURCES = {"flutter_bootstrap.js": "b9094f2ada5c87c31d2bb7231a7523f2",
 "assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
 "assets/fonts/MaterialIcons-Regular.otf": "cf2b7ca5fb444e2eacfdc28a6285f7e4",
 "assets/AssetManifest.json": "d88d9a534eacb878f982d2a5926ac113",
 "assets/AssetManifest.bin.json": "ade2062cb7df04c501ccc6f26dcdc42d",
 "assets/AssetManifest.bin": "cc15dce2d2780f77d39bd76c19d776cd",
-"assets/NOTICES": "08b3c89c682ea4f9bd1ddcddce3d9cc8",
+"assets/NOTICES": "333f82183acaca4bbec4b0a3e0ffe2f0",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
 "assets/packages/wakelock_plus/assets/no_sleep.js": "7748a45cd593f33280669b29c2c8919a",
 "canvaskit/skwasm.js.symbols": "96263e00e3c9bd9cd878ead867c04f3c",
@@ -31,7 +31,7 @@ const RESOURCES = {"flutter_bootstrap.js": "24d23ee3a3b0570562da882867d77b42",
 "index.html": "efecbf0c4b62995860ca0280952230e2",
 "/": "efecbf0c4b62995860ca0280952230e2",
 "version.json": "638ddb6bb459f8de1dba2f8c536e8a56",
-"main.dart.js": "9ac3811fe76a05f785c8a953b3f61f67",
+"main.dart.js": "5d79aa26c7b84131e2059de4c6fd118c",
 "flutter.js": "4b2350e14c6650ba82871f60906437ea"};
 // The application shell files that are downloaded before a service worker can
 // start.

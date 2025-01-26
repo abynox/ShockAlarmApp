@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../components/token_item.dart';
 import 'shares.dart';
 
@@ -42,6 +44,9 @@ class TokenScreenState extends State<TokenScreen> {
     TextEditingController serverController = TextEditingController();
     TextEditingController tokenController = TextEditingController();
     serverController.text = "https://api.openshock.app";
+    GestureRecognizer recognizer = TapGestureRecognizer()..onTap = () {
+      launchUrl(Uri.parse("https://next.openshock.app/settings/api-tokens"));
+    };
     return showDialog(context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -49,6 +54,14 @@ class TokenScreenState extends State<TokenScreen> {
         content: SingleChildScrollView(child: 
           Column(
             children: <Widget>[
+              DefaultTextStyle(style: TextStyle(), child: SelectableText.rich(TextSpan(children: [
+                TextSpan(text: "As you are using a browser, you must use a token to sign in. To get one visit "),
+                TextSpan(text: "https://next.openshock.app/settings/api-tokens", recognizer: recognizer, style: TextStyle(decoration: TextDecoration.underline), mouseCursor: SystemMouseCursors.click),
+                TextSpan(text: " and generate a token with all permissions. Then paste it here.")
+
+              ]
+              
+              ))),
               TextField(
                 decoration: InputDecoration(
                   labelText: "Server"
