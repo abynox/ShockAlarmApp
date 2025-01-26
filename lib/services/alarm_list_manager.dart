@@ -94,6 +94,7 @@ class AlarmListManager {
       _alarms.add(Alarm.fromJson(alarm));
     }
     for (var token in tokensList) {
+      print("Adding token");
       _tokens.add(Token.fromJson(token));
     }
     for (var hub in hubsList) {
