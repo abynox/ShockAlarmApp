@@ -829,6 +829,9 @@ class Shocker {
       }
       if(!this.soundAllowed && type == ControlType.sound) {
         c.type = ControlType.stop;
+        if(this.vibrateAllowed) {
+          c.type = ControlType.vibrate;
+        }
       }
       return c;
   }

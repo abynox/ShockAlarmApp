@@ -243,20 +243,14 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                 children: [
                   if (loadingPause) CircularProgressIndicator(),
                   if (!loadingPause && canPause())
-                    ElevatedButton(
-                      onPressed: () {
-                        pauseAll(true);
-                      },
-                      child: Text("Pause selected"),
-                    ),
+                    IconButton(onPressed: () {
+                      pauseAll(true);
+                    }, icon: Icon(Icons.pause)),
                   if (loadingResume) CircularProgressIndicator(),
                   if (!loadingResume && canResume())
-                    ElevatedButton(
-                      onPressed: () {
-                        pauseAll(false);
-                      },
-                      child: Text("Resume selected"),
-                    ),
+                    IconButton(onPressed: () {
+                      pauseAll(false);
+                    }, icon: Icon(Icons.play_arrow)),
                   if (canViewLogs())
                     ElevatedButton(
                       onPressed: () {
