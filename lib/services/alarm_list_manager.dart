@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,6 +89,7 @@ class AlarmListManager {
     List<dynamic> hubsList = jsonDecode(hubs);
     List<dynamic> alarmTonesList = jsonDecode(alarmTones);
     this.settings = Settings.fromJson(jsonDecode(settings));
+    if(kIsWeb) this.settings.useHttpShocking = true;
     for (var alarm in alarmsList) {
       _alarms.add(Alarm.fromJson(alarm));
     }
@@ -501,7 +503,7 @@ class AlarmListManager {
   }
 
   Future<bool> loginToken(String serverAddress, String token) async {
-    Token tokentoken = Token(DateTime.now().millisecondsSinceEpoch, token, server: serverAddress, isSession: true);
+    Token tokentoken = Token(DateTime.now().millisecondsSinceEpoch, token, server: serverAddress, isSession: false);
     OpenShockClient client = OpenShockClient();
     bool worked = await client.setInfoOfToken(tokentoken);
     if(worked) {

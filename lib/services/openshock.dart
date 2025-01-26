@@ -162,7 +162,6 @@ class OpenShockClient {
       var data = jsonDecode(response.body);
       name = data["data"]["name"];
       id = data["data"]["id"];
-      return false;
     }
     request = GetRequest(t, "/1/tokens/self");
     response = await request;
