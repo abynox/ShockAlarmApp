@@ -188,6 +188,9 @@ class OpenShockClient {
     Token? token;
     if(response.statusCode == 200) {
       print("Login successful");
+      for(var header in response.headers.entries) {
+        print("${header.key}: ${header.value}");
+      }
       response.headers["set-cookie"]?.split(";").forEach((element) {
         print(element);
         if(element.startsWith("openShockSession=")) {

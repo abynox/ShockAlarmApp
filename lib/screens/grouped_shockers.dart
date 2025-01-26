@@ -192,7 +192,8 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                         }
                       });
                     }, key: ValueKey(s.getIdentifier()),)
-                ],)
+                ],),
+                Divider()
               ],
             )
           ],

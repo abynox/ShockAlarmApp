@@ -58,7 +58,6 @@ class TokenScreenState extends State<TokenScreen> {
                 TextSpan(text: "As you are using a browser, you must use a token to sign in. To get one visit "),
                 TextSpan(text: "https://next.openshock.app/settings/api-tokens", recognizer: recognizer, style: TextStyle(decoration: TextDecoration.underline), mouseCursor: SystemMouseCursors.click),
                 TextSpan(text: " and generate a token with all permissions. Then paste it here.")
-
               ]
               
               ))),

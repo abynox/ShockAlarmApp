@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -28,7 +29,14 @@ class DesktopMobileRefreshIndicatorState extends State<DesktopMobileRefreshIndic
       child: RefreshIndicator(
         key: refreshKey,
         onRefresh: widget.onRefresh,
-        child: widget.child
+        child: kIsWeb ? Column(
+          children: [
+            IconButton(onPressed: () {
+              refreshKey.currentState?.show();
+            }, icon: Icon(Icons.refresh)),
+            Expanded(child: widget.child)
+          ],
+        ) : widget.child
       )
     );
   }
