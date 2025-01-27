@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/shock_disclamer.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../components/token_item.dart';
+import '../main.dart';
 import 'shares.dart';
 
 class TokenScreen extends StatefulWidget {
@@ -213,7 +215,8 @@ class TokenScreenState extends State<TokenScreen> {
               
             ],
           ),
-          FilledButton(onPressed: () {
+          FilledButton(onPressed: () async {
+            await showDialog(context: context, builder: (context) => ShockDisclaimer());
             if(kIsWeb) {
               showTokenLoginPopup();
             }
@@ -295,16 +298,28 @@ class TokenScreenState extends State<TokenScreen> {
               })
             ],
           ),
-          IconButton(onPressed: () {
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+            TextButton(onPressed: () {
             showDialog(context: context, builder: (context) => AlertDialog(
               title: Text("About"),
-              content: Text("This app is made by ComputerElite. It is fully open source and can be found on GitHub. If you have any issues, please report them there. Thank you so much for using my app!"),
+              content: Text("This app is made by ComputerElite. It is fully open source and can be found on GitHub. If you have any issues, report them there. Thank you so much for using my app! See safety rules in the safety section for more information."),
               actions: [
+                TextButton(
+                    onPressed: () {
+                      launchUrl(Uri.parse(issues_url));
+                    },
+                    child: Text("Report issue")),
                 TextButton(onPressed: () {
                   Navigator.of(context).pop();
                 }, child: Text("Ok"))
               ]));
-          }, icon: Icon(Icons.info))
+          }, child: Text("About")),
+          TextButton(onPressed: () {
+            showDialog(context: context, builder: (context) => ShockDisclaimer());
+          }, child: Text("Safety")),
+          ],)
         ],
       );
   }

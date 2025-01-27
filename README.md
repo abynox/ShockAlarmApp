@@ -1,6 +1,9 @@
 # shock_alarm_app
-An app for controling [OpenShock](https://openshock.org/) shockers and even setting alarms with custom tones.
-Based partly on https://github.com/mvarendorff/random-alarm/
+An app for controling [OpenShock](https://openshock.org/) shockers and setting alarms with custom tones.
+
+A lite web version can be found [here](https://computerelite.github.io/ShockAlarmApp/build/web/)
+
+The latest Android build can be found [here](http://github.com/ComputerElite/ShockAlarmApp/releases/latest)
 
 # Planned features
 - [x] (Un)Pausing of shockers
@@ -19,6 +22,7 @@ Based partly on https://github.com/mvarendorff/random-alarm/
 - [x] Grouping of shockers
 - [x] Redo settings
 - [x] Random intensity and duration
+- [x] Safety warning
 - [ ] (Big controls mode)
 - [x] Web support (alarms not working)
 - [x] Linux support (alarms not working)
