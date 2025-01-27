@@ -45,17 +45,28 @@ jobs:
   
             mkdir -p output
             mv build/app/outputs/flutter-apk/app-release.apk output/$apkName
-  
-        - name: Upload artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: ShockAlarm-Android
-            path: output/${{ steps.rename_apk.outputs.apkName }}
-        - name: Upload binaries to release
+        - name: Upload apk to release
           uses: svenstaro/upload-release-action@v2
           with:
             repo_token: ${{ secrets.TOKEN }}
             file: output/${{ steps.rename_apk.outputs.apkName }}
-            asset_name: ShockAlarm_${{ github.ref }}.apk
+            asset_name: ShockAlarm_Android_${{ github.ref }}.apk
+            tag: ${{ github.ref }}
+            overwrite: true
+        
+        - run: sudo apt update && sudo apt install ninja-build libgtk-3-dev
+        - run: flutter build linux
+
+        - name: Compress binary
+          run: |
+            cd build/linux/x64/release/bundle
+            tar -czvf shock_alarm_linux_x64.tar.gz *
+            cd ../../../../../
+        - name: Upload linux binaries to release
+          uses: svenstaro/upload-release-action@v2
+          with:
+            repo_token: ${{ secrets.TOKEN }}
+            file:  build/linux/x64/release/bundle/shock_alarm_linux_x64.tar.gz
+            asset_name: shock_alarm_linux_x64_${{ github.ref }}.tar.gz
             tag: ${{ github.ref }}
             overwrite: true
