@@ -25,12 +25,10 @@ jobs:
           pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
       - run: flutter --version
       - run: flutter doctor
-      - run: flutter build web
+      - run: flutter build web --release --base-href /ShockAlarmApp/build/web/
       
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+      - name: Push changes
+        uses: ad-m/github-push-action@master
         with:
-          title: Update web
-          body: Updated mods via GitHub releases api
-          commit-message: Build flutter web
-          branch: build-web
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
