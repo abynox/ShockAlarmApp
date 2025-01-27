@@ -74,6 +74,8 @@ class AlarmListManager {
   OpenShockWS? ws;
   static AlarmListManager? instance;
 
+  ControlsContainer controls = ControlsContainer();
+
   AlarmListManager();
 
   Function? reloadAllMethod;

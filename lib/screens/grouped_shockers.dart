@@ -20,7 +20,6 @@ class GroupedShockerScreen extends StatefulWidget {
 
 class GroupedShockerScreenState extends State<GroupedShockerScreen> {
   AlarmListManager manager;
-  final ControlsContainer controls = ControlsContainer();
 
   GroupedShockerScreenState(this.manager);
 
@@ -165,11 +164,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     Shocker limitedShocker = getShockerLimits();
-    List<Shocker> filteredShockers = manager.shockers.where((shocker) {
-      return (manager.enabledHubs[shocker.hubReference?.id] ?? false) ||
-          true ||
-          (manager.settings.disableHubFiltering);
-    }).toList();
+    List<Shocker> filteredShockers = manager.shockers.toList();
     Map<Hub?, List<Shocker>> groupedShockers = {};
     for (Shocker shocker in filteredShockers) {
       if (!groupedShockers.containsKey(shocker.hubReference)) {
@@ -278,7 +273,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
               ),
               ShockingControls(
                   manager: manager,
-                  controlsContainer: this.controls,
+                  controlsContainer: manager.controls,
                   durationLimit: limitedShocker.durationLimit,
                   intensityLimit: limitedShocker.intensityLimit,
                   soundAllowed: limitedShocker.soundAllowed,
