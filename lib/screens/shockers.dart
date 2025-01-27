@@ -6,6 +6,7 @@ import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart
 import 'package:shock_alarm_app/screens/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
+import 'package:sticky_headers/sticky_headers.dart';
 import '../components/hub_item.dart';
 import '../components/shocker_item.dart';
 
@@ -346,10 +347,16 @@ class ShockerScreenState extends State<ShockerScreen> {
     }
     List<Widget> shockers = [];
     for(var shocker in groupedShockers.entries) {
-      shockers.add(HubItem(hub: shocker.key!, manager: manager, onRebuild: rebuild, key: ValueKey(shocker.key?.getIdentifier(manager)),));
+      List<Widget> shockerWidgets = [];
       for(var s in shocker.value) {
-        shockers.add(ShockerItem(shocker: s, manager: manager, onRebuild: rebuild, key: ValueKey(s.getIdentifier())));
+        shockerWidgets.add(ShockerItem(shocker: s, manager: manager, onRebuild: rebuild, key: ValueKey(s.getIdentifier())));
       }
+      shockers.add(StickyHeader(
+        header: HubItem(hub: shocker.key!, manager: manager, onRebuild: rebuild),
+        content: Column(
+          children: shockerWidgets,
+        ),
+      ));
     }
     return Column(children: [
       Text(

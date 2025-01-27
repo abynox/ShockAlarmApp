@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/hub_item.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:shock_alarm_app/screens/logs.dart';
+import 'package:sticky_headers/sticky_headers.dart';
 
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
@@ -193,47 +194,44 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
             children: [
               for (MapEntry<Hub?, List<Shocker>> hubContainer
                   in groupedShockers.entries)
-                Column(
-                  children: [
-                    HubItem(
-                      hub: hubContainer.key!,
-                      manager: manager,
-                      onRebuild: onRebuild,
-                      key: ValueKey(hubContainer.key?.getIdentifier(manager)),
-                    ),
-                    Card(
-                      color: t.colorScheme.onInverseSurface,
-                      child: Padding(
-                          padding: EdgeInsets.all(15),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                    child: Wrap(
-                                  spacing: 5,
-                                  children: [
-                                    for (Shocker s in hubContainer.value)
-                                      ShockerChip(
-                                        shocker: s,
-                                        manager: manager,
-                                        onSelected: (bool b) {
-                                          setState(() {
-                                            if (b) {
-                                              manager.selectedShockers
-                                                  .add(s.id);
-                                            } else {
-                                              manager.selectedShockers
-                                                  .remove(s.id);
-                                            }
-                                          });
-                                        },
-                                        key: ValueKey(s.getIdentifier()),
-                                      )
-                                  ],
-                                ))
-                              ])),
-                    ),
-                  ],
+                StickyHeader(
+                  header: HubItem(
+                    hub: hubContainer.key!,
+                    manager: manager,
+                    onRebuild: onRebuild,
+                    key: ValueKey(hubContainer.key?.getIdentifier(manager)),
+                  ),
+                  content: Card(
+                    color: t.colorScheme.onInverseSurface,
+                    child: Padding(
+                        padding: EdgeInsets.all(15),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                  child: Wrap(
+                                spacing: 5,
+                                children: [
+                                  for (Shocker s in hubContainer.value)
+                                    ShockerChip(
+                                      shocker: s,
+                                      manager: manager,
+                                      onSelected: (bool b) {
+                                        setState(() {
+                                          if (b) {
+                                            manager.selectedShockers.add(s.id);
+                                          } else {
+                                            manager.selectedShockers
+                                                .remove(s.id);
+                                          }
+                                        });
+                                      },
+                                      key: ValueKey(s.getIdentifier()),
+                                    )
+                                ],
+                              ))
+                            ])),
+                  ),
                 )
             ],
           ),

@@ -3,13 +3,13 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"flutter_bootstrap.js": "bf319a67b592b3385138c0da7428ab7a",
+const RESOURCES = {"flutter_bootstrap.js": "ceaae39cad68ff3d9e48c5b5908e5e56",
 "assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
 "assets/fonts/MaterialIcons-Regular.otf": "3ff10503c5b674dd6950702e44ff8903",
 "assets/AssetManifest.json": "d88d9a534eacb878f982d2a5926ac113",
 "assets/AssetManifest.bin.json": "ade2062cb7df04c501ccc6f26dcdc42d",
 "assets/AssetManifest.bin": "cc15dce2d2780f77d39bd76c19d776cd",
-"assets/NOTICES": "333f82183acaca4bbec4b0a3e0ffe2f0",
+"assets/NOTICES": "d3f7d69e51756017a23017ed0b5a359c",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
 "assets/packages/wakelock_plus/assets/no_sleep.js": "7748a45cd593f33280669b29c2c8919a",
 "canvaskit/skwasm.js.symbols": "96263e00e3c9bd9cd878ead867c04f3c",
@@ -30,8 +30,8 @@ const RESOURCES = {"flutter_bootstrap.js": "bf319a67b592b3385138c0da7428ab7a",
 "manifest.json": "9e96cd2ee6551cd25705afd5bb6d160a",
 "index.html": "efecbf0c4b62995860ca0280952230e2",
 "/": "efecbf0c4b62995860ca0280952230e2",
-"version.json": "9f1bae5c771601da06323942c7270b23",
-"main.dart.js": "608e678530fb9f451299482b675c48e4",
+"version.json": "7ac7d202bda644792fee1e646e27c0d9",
+"main.dart.js": "a02ea87133b067b9ed24b36ed0b72e20",
 "flutter.js": "4b2350e14c6650ba82871f60906437ea"};
 // The application shell files that are downloaded before a service worker can
 // start.
