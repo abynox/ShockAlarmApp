@@ -1,11 +1,11 @@
 {
-    "name": "shock_alarm_app",
-    "short_name": "shock_alarm_app",
+    "name": "ShockAlarmApp",
+    "short_name": "ShockApp",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Shockers go zap zappy zap",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
