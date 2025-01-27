@@ -26,6 +26,8 @@ class Settings {
 
   int maxAlarmLengthSeconds = 60;
 
+  ThemeMode theme = ThemeMode.system;
+
 
   Settings();
 
@@ -46,6 +48,8 @@ class Settings {
       useHttpShocking = json["useHttpShocking"];
     if(json["useGroupedShockerSelection"] != null)
       useGroupedShockerSelection = json["useGroupedShockerSelection"];
+    if(json["theme"] != null)
+      theme = ThemeMode.values[json["theme"]];
   }
 
   Map<String, dynamic> toJson() {
@@ -57,7 +61,8 @@ class Settings {
       "disableHubFiltering": disableHubFiltering,
       "allowTokenEditing": allowTokenEditing,
       "useHttpShocking": useHttpShocking,
-      "useGroupedShockerSelection": useGroupedShockerSelection
+      "useGroupedShockerSelection": useGroupedShockerSelection,
+      "theme": theme.index
     };
   }
 }
@@ -151,7 +156,7 @@ class AlarmListManager {
   void saveSettings() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("settings", jsonEncode(settings));
-    reloadAllMethod!();
+    reloadAllMethod?.call();
   }
 
   void rescheduleAlarms() async {
