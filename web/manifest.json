@@ -30,6 +30,10 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-any.svg",
+            "sizes": "any"
         }
     ]
 }
