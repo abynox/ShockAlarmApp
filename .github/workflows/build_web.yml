@@ -30,9 +30,9 @@ jobs:
         run: |
           git config --local user.email "ShockAlarms+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git fetch deploy
+          git fetch --all
           git checkout -b deploy
-          git merge main
+          git merge main  
           git add .
           git commit -a -m "Build web"
       - name: Push changes
