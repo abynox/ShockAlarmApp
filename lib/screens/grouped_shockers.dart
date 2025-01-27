@@ -206,29 +206,32 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                       child: Padding(
                           padding: EdgeInsets.all(15),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                            Wrap(
-                              spacing: 5,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                for (Shocker s in hubContainer.value)
-                                  ShockerChip(
-                                    shocker: s,
-                                    manager: manager,
-                                    onSelected: (bool b) {
-                                      setState(() {
-                                        if (b) {
-                                          manager.selectedShockers.add(s.id);
-                                        } else {
-                                          manager.selectedShockers.remove(s.id);
-                                        }
-                                      });
-                                    },
-                                    key: ValueKey(s.getIdentifier()),
-                                  )
-                              ],
-                            )
-                          ])),
+                                Expanded(
+                                    child: Wrap(
+                                  spacing: 5,
+                                  children: [
+                                    for (Shocker s in hubContainer.value)
+                                      ShockerChip(
+                                        shocker: s,
+                                        manager: manager,
+                                        onSelected: (bool b) {
+                                          setState(() {
+                                            if (b) {
+                                              manager.selectedShockers
+                                                  .add(s.id);
+                                            } else {
+                                              manager.selectedShockers
+                                                  .remove(s.id);
+                                            }
+                                          });
+                                        },
+                                        key: ValueKey(s.getIdentifier()),
+                                      )
+                                  ],
+                                ))
+                              ])),
                     ),
                   ],
                 )
@@ -243,14 +246,18 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                 children: [
                   if (loadingPause) CircularProgressIndicator(),
                   if (!loadingPause && canPause())
-                    IconButton(onPressed: () {
-                      pauseAll(true);
-                    }, icon: Icon(Icons.pause)),
+                    IconButton(
+                        onPressed: () {
+                          pauseAll(true);
+                        },
+                        icon: Icon(Icons.pause)),
                   if (loadingResume) CircularProgressIndicator(),
                   if (!loadingResume && canResume())
-                    IconButton(onPressed: () {
-                      pauseAll(false);
-                    }, icon: Icon(Icons.play_arrow)),
+                    IconButton(
+                        onPressed: () {
+                          pauseAll(false);
+                        },
+                        icon: Icon(Icons.play_arrow)),
                   if (canViewLogs())
                     ElevatedButton(
                       onPressed: () {

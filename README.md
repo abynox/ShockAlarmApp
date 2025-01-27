@@ -15,11 +15,13 @@ Based partly on https://github.com/mvarendorff/random-alarm/
 - [x] Creation, editing and pairing of hubs
 - [x] Add option to repeat default shock/vibration... option for one minute (perhaps adjustable in settings). Needs reworking of the alarm stop feature
 - [x] Websocket controlling
-- [ ] Alarm tones
+- [x] Alarm tones (ui implemented)
 - [x] Grouping of shockers
 - [x] Redo settings
+- [x] Random intensity and duration
 - [ ] (Big controls mode)
-- [ ] Linux support (kinda already there but not fully)
+- [x] Web support (alarms not working)
+- [x] Linux support (alarms not working)
 
 # Planned settings
 - [x] Hide/unhiding of the delay option

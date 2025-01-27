@@ -749,6 +749,12 @@ class ControlsContainer {
   void limitTo(int duration, int intensity) {
     durationRange = RangeValues(min(durationRange.start, duration.toDouble()), min(durationRange.end, duration.toDouble()));
     intensityRange = RangeValues(min(intensityRange.start, intensity.toDouble()), min(intensityRange.end, intensity.toDouble()));
+    if(!AlarmListManager.getInstance().settings.useRangeSliderForIntensity) {
+      intensityRange = RangeValues(intensityRange.start, intensityRange.start);
+    }
+    if(!AlarmListManager.getInstance().settings.useRangeSliderForDuration) {
+      durationRange = RangeValues(durationRange.start, durationRange.start);
+    }
   }
 
   ControlsContainer({this.durationRange = const RangeValues(300, 300), this.intensityRange = const RangeValues(25, 25)});
@@ -854,7 +860,7 @@ class Shocker {
   }
 
   String getIdentifier() {
-    return "$id-$apiTokenId-${paused}-${shockAllowed}-${vibrateAllowed}-${soundAllowed}-${durationLimit}-${intensityLimit}-${AlarmListManager.getInstance().settings.useRangeSliderForRandomDelay}";
+    return "$id-$apiTokenId-${paused}-${shockAllowed}-${vibrateAllowed}-${soundAllowed}-${durationLimit}-${intensityLimit}-${AlarmListManager.getInstance().settings.useRangeSliderForRandomDelay}-${AlarmListManager.getInstance().settings.useRangeSliderForDuration}-${AlarmListManager.getInstance().settings.useRangeSliderForIntensity}";
   }
 
   Control getLimitedControls(ControlType type, int intensity, int duration) {
