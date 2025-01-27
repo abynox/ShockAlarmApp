@@ -313,14 +313,13 @@ class ShockerChipState extends State<ShockerChip> {
   final Shocker shocker;
   final Function(bool) onSelected;
   ShockerChipState(this.manager, this.shocker, this.onSelected);
-
+  ThemeData? t;
   @override
   Widget build(BuildContext context) {
-    ThemeData t = Theme.of(context);
-    List<ShockerAction> shockerActions = shocker.isOwn
-        ? ShockerItem.ownShockerActions
-        : ShockerItem.foreignShockerActions;
+    t = Theme.of(context);
     return GestureDetector(
+        onLongPress: onLongPress,
+        onSecondaryTap: onLongPress,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           spacing: 5,
@@ -336,15 +335,15 @@ class ShockerChipState extends State<ShockerChip> {
               onSelected: onSelected,
               selected: manager.selectedShockers.contains(shocker.id),
               backgroundColor:
-                  shocker.paused ? t.colorScheme.errorContainer : null,
+                  shocker.paused ? t!.colorScheme.errorContainer : null,
               selectedColor:
-                  shocker.paused ? t.colorScheme.errorContainer : null,
+                  shocker.paused ? t!.colorScheme.errorContainer : null,
             ),
             if (shocker.paused)
               GestureDetector(
                 child: Icon(
                   Icons.info,
-                  color: t.colorScheme.error,
+                  color: t!.colorScheme.error,
                 ),
                 onTap: () {
                   showDialog(
@@ -367,47 +366,51 @@ class ShockerChipState extends State<ShockerChip> {
                 },
               )
           ],
+        ),);
+  }
+
+  void onLongPress() {
+    List<ShockerAction> shockerActions = shocker.isOwn
+        ? ShockerItem.ownShockerActions
+        : ShockerItem.foreignShockerActions;
+    List<Widget> actions = [];
+    for (ShockerAction a in shockerActions) {
+      actions.add(GestureDetector(
+        onTap: () {
+          Navigator.of(context).pop();
+          a.onClick(manager, shocker, context, manager.reloadAllMethod!);
+        },
+        child: Row(
+          children: [
+            a.icon,
+            Text(
+              a.name,
+              style: t!.textTheme.titleLarge,
+            )
+          ],
+          spacing: 5,
+          mainAxisSize: MainAxisSize.min,
         ),
-        onLongPress: () {
-          List<Widget> actions = [];
-          for (ShockerAction a in shockerActions) {
-            actions.add(GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-                a.onClick(manager, shocker, context, manager.reloadAllMethod!);
-              },
-              child: Row(
-                children: [
-                  a.icon,
-                  Text(
-                    a.name,
-                    style: t.textTheme.titleLarge,
-                  )
-                ],
-                spacing: 5,
-                mainAxisSize: MainAxisSize.min,
-              ),
-            ));
-          }
-          showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text(shocker.name),
-                  content: Column(
-                    spacing: 20,
-                    children: actions,
-                    mainAxisSize: MainAxisSize.min,
-                  ),
-                  actions: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text("Close"))
-                  ],
-                );
-              });
+      ));
+    }
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(shocker.name),
+            content: Column(
+              spacing: 20,
+              children: actions,
+              mainAxisSize: MainAxisSize.min,
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Close"))
+            ],
+          );
         });
   }
 }
