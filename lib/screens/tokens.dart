@@ -224,6 +224,7 @@ class TokenScreenState extends State<TokenScreen> {
               showLoginPopup();
             }
           }, child: Text("Log in to OpenShock", style: TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),),
+          Padding(padding: EdgeInsets.all(5)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
