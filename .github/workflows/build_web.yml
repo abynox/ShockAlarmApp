@@ -35,8 +35,4 @@ jobs:
           git merge main  
           git add .
           git commit -a -m "Build web"
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: "deploy"
+          git push --force origin deploy
