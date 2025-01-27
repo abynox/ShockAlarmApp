@@ -49,7 +49,7 @@ class Settings {
     if(json["useGroupedShockerSelection"] != null)
       useGroupedShockerSelection = json["useGroupedShockerSelection"];
     if(json["theme"] != null)
-      theme = json["theme"] == 0 ? ThemeMode.system : json["theme"] == 1 ? ThemeMode.light : ThemeMode.dark;
+      theme = ThemeMode.values[json["theme"]];
   }
 
   Map<String, dynamic> toJson() {
@@ -62,7 +62,7 @@ class Settings {
       "allowTokenEditing": allowTokenEditing,
       "useHttpShocking": useHttpShocking,
       "useGroupedShockerSelection": useGroupedShockerSelection,
-      "theme": theme == ThemeMode.system ? 0: theme == ThemeMode.light ? 1 : 2
+      "theme": theme.index
     };
   }
 }
