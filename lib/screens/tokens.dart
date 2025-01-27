@@ -2,10 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/shock_disclamer.dart';
+import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../components/token_item.dart';
-import '../main.dart';
 import 'shares.dart';
 
 class TokenScreen extends StatefulWidget {
@@ -56,9 +56,9 @@ class TokenScreenState extends State<TokenScreen> {
         content: SingleChildScrollView(child: 
           Column(
             children: <Widget>[
-              DefaultTextStyle(style: TextStyle(), child: SelectableText.rich(TextSpan(children: [
+              DefaultTextStyle(style: Theme.of(context).textTheme.bodyMedium!, child: SelectableText.rich(TextSpan(children: [
                 TextSpan(text: "As you are using a browser, you must use a token to sign in. To get one visit "),
-                TextSpan(text: "https://next.openshock.app/settings/api-tokens", recognizer: recognizer, style: TextStyle(decoration: TextDecoration.underline), mouseCursor: SystemMouseCursors.click),
+                TextSpan(text: "https://next.openshock.app/settings/api-tokens", recognizer: recognizer, style: TextStyle(color: Theme.of(context).hintColor, decoration: TextDecoration.underline), mouseCursor: SystemMouseCursors.click),
                 TextSpan(text: " and generate a token with all permissions. Then paste it here.")
               ]
               
@@ -224,7 +224,42 @@ class TokenScreenState extends State<TokenScreen> {
               showLoginPopup();
             }
           }, child: Text("Log in to OpenShock", style: TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),),
-          
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Theme"),
+              SegmentedButton<int>(
+                segments: [
+                  ButtonSegment(value: 0, label: Icon(Icons.devices)),
+                  ButtonSegment(value: 1, label: Icon(Icons.sunny)),
+                  ButtonSegment(value: 2, label: Icon(Icons.nightlight)),
+                ],
+                selected: {
+                  switch(context.findAncestorStateOfType<MyAppState>()?.themeMode){
+                    null => throw UnimplementedError(), // should never be null ig
+                    ThemeMode.system => 0,
+                    ThemeMode.light => 1,
+                    ThemeMode.dark => 2,
+                  }
+                },
+                onSelectionChanged: (Set<int> newSelection) {
+                  if(newSelection.isNotEmpty) {
+                    switch(newSelection.first) {
+                      case 0:
+                        context.findAncestorStateOfType<MyAppState>()?.setThemeMode(ThemeMode.system);
+                        break;
+                      case 1:
+                        context.findAncestorStateOfType<MyAppState>()?.setThemeMode(ThemeMode.light);
+                        break;
+                      case 2:
+                        context.findAncestorStateOfType<MyAppState>()?.setThemeMode(ThemeMode.dark);
+                        break;
+                    }
+                  }
+                },
+              )
+            ],
+          ),
           // Actual options
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
