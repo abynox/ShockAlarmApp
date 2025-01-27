@@ -32,7 +32,7 @@ Future requestPermissions() async{
   }
 }
 
-void initNotification() async {
+void initNotification(AlarmListManager manager) async {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
   // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
@@ -49,16 +49,15 @@ void initNotification() async {
       macOS: initializationSettingsDarwin,
       linux: initializationSettingsLinux);
 await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        onDidReceiveNotificationResponse(response, manager);
+      });
     
   flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
       AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
 }
 
-void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
-
-  AlarmListManager manager = AlarmListManager();
-  await manager.loadAllFromStorage();
+void onDidReceiveNotificationResponse(NotificationResponse notificationResponse, AlarmListManager manager) async {
   print("Notification received");
   if(notificationResponse.id != null) {
     print("Notification id owo: ${notificationResponse.id}");
@@ -82,7 +81,9 @@ void onDidReceiveNotificationResponse(NotificationResponse notificationResponse)
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  initNotification();
+  AlarmListManager manager = AlarmListManager();
+  await manager.loadAllFromStorage();
+  initNotification(manager);
   if(isAndroid()) {
     await AndroidAlarmManager.initialize();
     await requestPermissions();
@@ -93,10 +94,10 @@ void main() async {
 
 @pragma('vm:entry-point')
 void alarmCallback(int id) async {
-
   AlarmListManager manager = AlarmListManager();
-  initNotification(); 
   await manager.loadAllFromStorage();
+
+  initNotification(manager);
   manager.getAlarms().forEach((element) {
     print("Checking alarm");
     if(element.active && id ==element.id) {
@@ -105,10 +106,32 @@ void alarmCallback(int id) async {
   });
 }
 
-class MyApp extends StatelessWidget {
-  int? alarmId;
-  MyApp(this.alarmId);
+class MyApp extends StatefulWidget {
+  final int? alarmId;
+  const MyApp(this.alarmId, {super.key});
 
+  @override
+  State<StatefulWidget> createState() => MyAppState();
+
+}
+
+class MyAppState extends State<MyApp> {
+  int? alarmId;
+  ThemeMode themeMode = AlarmListManager.getInstance().settings.theme;
+
+  @override
+  void initState() {
+    super.initState();
+    alarmId = widget.alarmId;
+  }
+
+  void setThemeMode(ThemeMode themeMode) {
+    AlarmListManager.getInstance().settings.theme = themeMode;
+    AlarmListManager.getInstance().saveSettings();
+    setState(() {
+      this.themeMode = themeMode;
+    });
+  }
 
   // This widget is the root of your application.
   @override
@@ -119,15 +142,15 @@ class MyApp extends StatelessWidget {
     return DynamicColorBuilder(builder: (lightColorScheme, darkColorScheme) {
       return MaterialApp(
         title: 'ShockAlarm',
-        theme: ThemeData(
+        theme: lightColorScheme != null ? ThemeData(
           useMaterial3: true,
           colorScheme: lightColorScheme,
-        ),
-        darkTheme: ThemeData(
+        ): ThemeData.light(),
+        darkTheme: darkColorScheme != null ? ThemeData(
           useMaterial3: true,
           colorScheme: darkColorScheme,
-        ),
-        themeMode: ThemeMode.system,
+        ): ThemeData.dark(),
+        themeMode: themeMode,
         home: ScreenSelector(manager: manager)
       );
     });
