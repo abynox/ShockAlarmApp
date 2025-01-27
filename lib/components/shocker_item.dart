@@ -533,6 +533,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                   allowRandom
               ? RangeSlider(
                   values: controlsContainer.intensityRange,
+                  divisions: maxIntensity,
                   max: maxIntensity.toDouble(),
                   min: 0,
                   onChanged: (RangeValues values) {
@@ -568,6 +569,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                     reverseMapDuration(controlsContainer.durationRange.end)),
                 max: 1,
                 min: 0,
+                divisions: maxDuration,
                 onChanged: (RangeValues values) {
                   setState(() {
                     controlsContainer.durationRange = RangeValues(
