@@ -735,11 +735,54 @@ class Hub {
 
 class ControlsContainer {
 
-  int currentDuration;
-  int currentIntensity;
-  RangeValues durationRange = RangeValues(0, 0);
+  RangeValues durationRange;
+  RangeValues intensityRange;
+  RangeValues delayRange = RangeValues(0, 0);
 
-  ControlsContainer({this.currentDuration = 300, this.currentIntensity = 25});
+  String getStringRepresentation(RangeValues values, bool trunance, {String unit = ""}) {
+    if(values.end == values.start) {
+      return "${trunance ? values.start.toInt() : values.start}${unit}";
+    }
+    return "${trunance ? values.start.toInt() : values.start}${unit} - ${trunance ? values.end.toInt() : values.end}${unit}";
+  }
+
+  void limitTo(int duration, int intensity) {
+    durationRange = RangeValues(min(durationRange.start, duration.toDouble()), min(durationRange.end, duration.toDouble()));
+    intensityRange = RangeValues(min(intensityRange.start, intensity.toDouble()), min(intensityRange.end, intensity.toDouble()));
+  }
+
+  ControlsContainer({this.durationRange = const RangeValues(300, 300), this.intensityRange = const RangeValues(25, 25)});
+
+  void setIntensity(double value) {
+    intensityRange = RangeValues(value, value);
+  }
+
+  void setDuration(int mapDuration) {
+    durationRange = RangeValues(mapDuration.toDouble(), mapDuration.toDouble());
+  }
+
+  String getDurationString() {
+    RangeValues durationRange = RangeValues(this.durationRange.start / 1000, this.durationRange.end / 1000);
+    return getStringRepresentation(durationRange, false, unit: " s");
+  }
+
+  static fromInts({required int intensity, required int duration}) {
+    return ControlsContainer(durationRange: RangeValues(duration.toDouble(), duration.toDouble()), intensityRange: RangeValues(intensity.toDouble(), intensity.toDouble()));
+  }
+
+  int getRandomDuration() {
+    if(durationRange.start == durationRange.end) {
+      return durationRange.start.toInt();
+    }
+    return Random().nextInt((durationRange.end - durationRange.start).toInt()) + durationRange.start.toInt();
+  }
+
+  int getRandomIntensity() {
+    if(intensityRange.start == intensityRange.end) {
+      return intensityRange.start.toInt();
+    }
+    return Random().nextInt((intensityRange.end - intensityRange.start).toInt()) + intensityRange.start.toInt();
+  }
 }
 
 class Shocker {
@@ -811,7 +854,7 @@ class Shocker {
   }
 
   String getIdentifier() {
-    return "$id-$apiTokenId-${paused}-${shockAllowed}-${vibrateAllowed}-${soundAllowed}-${durationLimit}-${intensityLimit}";
+    return "$id-$apiTokenId-${paused}-${shockAllowed}-${vibrateAllowed}-${soundAllowed}-${durationLimit}-${intensityLimit}-${AlarmListManager.getInstance().settings.useRangeSliderForRandomDelay}";
   }
 
   Control getLimitedControls(ControlType type, int intensity, int duration) {

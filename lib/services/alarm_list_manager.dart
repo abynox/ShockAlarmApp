@@ -12,6 +12,8 @@ import 'dart:convert';
 class Settings {
   bool showRandomDelay = true;
   bool useRangeSliderForRandomDelay = true;
+  bool useRangeSliderForIntensity = false;
+  bool useRangeSliderForDuration = false;
 
   bool disableHubFiltering = false;
 
@@ -24,6 +26,7 @@ class Settings {
 
   int maxAlarmLengthSeconds = 60;
 
+
   Settings();
 
   Settings.fromJson(Map<String, dynamic> json) {
@@ -31,6 +34,10 @@ class Settings {
       showRandomDelay = json["showRandomDelay"];
     if(json["useRangeSliderForRandomDelay"] != null)
       useRangeSliderForRandomDelay = json["useRangeSliderForRandomDelay"];
+    if(json["useRangeSliderForIntensity"] != null)
+      useRangeSliderForIntensity = json["useRangeSliderForIntensity"];
+    if(json["useRangeSliderForDuration"] != null)
+      useRangeSliderForDuration = json["useRangeSliderForDuration"];
     if(json["disableHubFiltering"] != null)
       disableHubFiltering = json["disableHubFiltering"];
     if(json["allowTokenEditing"] != null)
@@ -45,6 +52,8 @@ class Settings {
     return {
       "showRandomDelay": showRandomDelay,
       "useRangeSliderForRandomDelay": useRangeSliderForRandomDelay,
+      "useRangeSliderForIntensity": useRangeSliderForIntensity,
+      "useRangeSliderForDuration": useRangeSliderForDuration,
       "disableHubFiltering": disableHubFiltering,
       "allowTokenEditing": allowTokenEditing,
       "useHttpShocking": useHttpShocking,
@@ -63,6 +72,7 @@ class AlarmListManager {
   final Map<String, bool> enabledHubs = {};
   Settings settings = Settings();
   OpenShockWS? ws;
+  static AlarmListManager? instance;
 
   AlarmListManager();
 
@@ -74,8 +84,13 @@ class AlarmListManager {
 
   bool delayVibrationEnabled = false;
 
+  static AlarmListManager getInstance() {
+    return instance!;
+  }
+
 
   Future loadAllFromStorage() async {
+    instance = this;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String alarms = prefs.getString("alarms") ?? "[]";
     String tokens = prefs.getString("tokens") ?? "[]";
@@ -134,6 +149,7 @@ class AlarmListManager {
   void saveSettings() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("settings", jsonEncode(settings));
+    reloadAllMethod!();
   }
 
   void rescheduleAlarms() async {
@@ -512,4 +528,5 @@ class AlarmListManager {
     }
     return worked;
   }
+
 }

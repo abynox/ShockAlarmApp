@@ -168,10 +168,10 @@ class ToneComponentItemState extends State<ToneComponentItem> {
                         )
                   ],),
 
-                    IntensityDurationSelector(key: ValueKey(component.type), controlsContainer: ControlsContainer(currentIntensity: component.intensity, currentDuration: component.duration), onSet: (intensity, duration) {
+                    IntensityDurationSelector(key: ValueKey(component.type), controlsContainer: ControlsContainer.fromInts(intensity: component.intensity, duration: component.duration), onSet: (container) {
                             setState(() {
-                              component.duration = duration;
-                              component.intensity = intensity;
+                              component.duration = container.durationRange.start.toInt();
+                              component.intensity = container.intensityRange.start.toInt();
                             });
                           }, maxDuration: 3000,
                           maxIntensity: 100,

@@ -281,7 +281,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                   shockAllowed: limitedShocker.shockAllowed,
                   onDelayAction: executeAll,
                   onProcessAction: executeAll,
-                  onSet: (intensity, duration) {},
+                  onSet: (container) {},
                   key: ValueKey(DateTime.now().millisecondsSinceEpoch)),
             ],
           )

@@ -12,7 +12,7 @@ import 'services/alarm_list_manager.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 String GetUserAgent() {
-  return "ShockAlarm/0.0.8";
+  return "ShockAlarm/0.0.9";
 }
 
 bool isAndroid() {

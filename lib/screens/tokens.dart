@@ -250,6 +250,30 @@ class TokenScreenState extends State<TokenScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Text("Use range slider for intensity"),
+              Switch(value: manager.settings.useRangeSliderForIntensity, onChanged: (value) {
+                setState(() {
+                  manager.settings.useRangeSliderForIntensity = value;
+                  manager.saveSettings();
+                });
+              })
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Use range slider for duration"),
+              Switch(value: manager.settings.useRangeSliderForDuration, onChanged: (value) {
+                setState(() {
+                  manager.settings.useRangeSliderForDuration = value;
+                  manager.saveSettings();
+                });
+              })
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               Text("Disable hub filtering"),
               Switch(value: manager.settings.disableHubFiltering, onChanged: (value) {
                 setState(() {

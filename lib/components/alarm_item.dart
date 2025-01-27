@@ -243,10 +243,10 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                               },
                             ),
                             if(alarmShocker.type != null)
-                              IntensityDurationSelector(key: ValueKey(alarmShocker.type), controlsContainer: ControlsContainer(currentIntensity: alarmShocker.intensity, currentDuration: alarmShocker.duration), onSet: (intensity, duration) {
+                              IntensityDurationSelector(key: ValueKey(alarmShocker.type), controlsContainer: ControlsContainer.fromInts(intensity: alarmShocker.intensity, duration: alarmShocker.duration), onSet: (ControlsContainer container) {
                                 setState(() {
-                                  alarmShocker.duration = duration;
-                                  alarmShocker.intensity = intensity;
+                                  alarmShocker.duration = container.durationRange.start.toInt();
+                                  alarmShocker.intensity = container.intensityRange.start.toInt();
                                 });
                               }, maxDuration: alarmShocker.shockerReference?.durationLimit ?? 300,
                               maxIntensity: alarmShocker.shockerReference?.intensityLimit ?? 0,
