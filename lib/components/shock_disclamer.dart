@@ -40,7 +40,6 @@ class ShockDisclaimer extends StatelessWidget {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              spacing: 20,
               children: [
                 TextButton(
                     onPressed: () {
