@@ -24,9 +24,13 @@ jobs:
           pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
           pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
       - run: flutter --version
-      - run: flutter doctor
       - run: flutter build web --release --base-href /ShockAlarmApp/build/web/
       
+      - name: Commit files
+        run: |
+          git config --local user.email "ShockAlarms+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -a -m "Build web"
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
