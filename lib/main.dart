@@ -97,7 +97,7 @@ void alarmCallback(int id) async {
   AlarmListManager manager = AlarmListManager();
   await manager.loadAllFromStorage();
 
-  initNotification(manager);
+  //initNotification(manager);
   manager.getAlarms().forEach((element) {
     print("Checking alarm");
     if(element.active && id ==element.id) {

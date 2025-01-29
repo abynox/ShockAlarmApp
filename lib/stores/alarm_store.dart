@@ -154,7 +154,7 @@ class Alarm {
     ])), payload: id.toString());
     DateTime startedAt = DateTime.now();
     var maxDuration = 0;
-    bool shouldContinue = repeatAlarmsTone;
+    bool shouldContinue = true;
     while(shouldContinue) {
       Map<int, List<Control>> controlTimes = {0: []};
       for (var shocker in shockers) {
@@ -195,24 +195,31 @@ class Alarm {
       }
 
       int timeTillNow = 0;
+      int timeDiff = 0;
       for (var time in controlTimes.keys) {
+        timeDiff = time - timeTillNow;
         print(time);
-        print(time- timeTillNow);
-        if(time - timeTillNow > 0) await Future.delayed(Duration(milliseconds: time - timeTillNow));
+        print(timeDiff);
+        if(timeDiff > 0) await Future.delayed(Duration(milliseconds: timeDiff));
         timeTillNow = time;
+
+
+        print("checking alarm$id.active");
+        await prefs.reload();
+        shouldContinue = prefs.getBool("alarm$id.active") ?? false;
+        if(!shouldContinue) break;
 
         await manager.sendControls(controlTimes[time]??[], customName: name, useWs: false);
       }
 
 
       // Wait until all shockers have finished
-      await Future.delayed(Duration(milliseconds: maxDuration + manager.settings.alarmToneRepeatDelayMs - timeTillNow));
-      print("checking alarm$id.active");
-      await prefs.reload();
-      shouldContinue = prefs.getBool("alarm$id.active") ?? false;
+      int waitTime =maxDuration - timeTillNow + manager.settings.alarmToneRepeatDelayMs;
+      print("Waiting for $waitTime");
+      await Future.delayed(Duration(milliseconds: waitTime));
       print("is $shouldContinue");
       int secondsSinceAlarmStart = DateTime.now().difference(startedAt).inSeconds;
-      if(secondsSinceAlarmStart >= manager.settings.maxAlarmLengthSeconds) shouldContinue = false;
+      if(secondsSinceAlarmStart >= manager.settings.maxAlarmLengthSeconds || !repeatAlarmsTone) shouldContinue = false;
     }
     onAlarmStopped(manager);
 
