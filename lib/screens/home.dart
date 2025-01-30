@@ -28,7 +28,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
   @override void initState() {
     // TODO: implement initState
     if(manager.getAnyUserToken() == null) _selectedIndex = 4;
-    if(!supportsAlarms) _selectedIndex -= 2;
+    if(!supportsAlarms) _selectedIndex -= 1;
   }
 
   ScreenSelectorState({required this.manager});
@@ -47,11 +47,10 @@ class ScreenSelectorState extends State<ScreenSelector> {
     };
     final screens = <Widget>[
       if(supportsAlarms) HomeScreen(manager: manager),
-      if(supportsAlarms) AlarmToneScreen(manager),
       ShockerScreen(manager: manager),
       GroupedShockerScreen(manager: manager),
+      ShareLinksScreen(),
       TokenScreen(manager: manager),
-      ShareLinksScreen()
     ];
     final floatingActionButtons = <Widget?>[
       if(supportsAlarms) FloatingActionButton(onPressed: () {
@@ -71,28 +70,16 @@ class ScreenSelectorState extends State<ScreenSelector> {
           duration: Duration(seconds: 3),
         ));
       }, child: Icon(Icons.add)),
-      if(supportsAlarms) FloatingActionButton(onPressed: () {
-        final newTone = new AlarmTone(
-            id: manager.getNewToneId(),
-            name: 'New Tone');
-        setState(() {
-          manager.saveTone(newTone);
-        });
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Tone added'),
-          duration: Duration(seconds: 3),
-        ));
-      }, child: Icon(Icons.add)),
       ShockerScreen.getFloatingActionButton(manager, context, () {
         setState(() {});
       }),
       ShockerScreen.getFloatingActionButton(manager, context, () {
+        setState(() {});
+      }),
+      ShareLinksScreen.getFloatingActionButton(manager, context, () {
         setState(() {});
       }),
       null,
-      ShareLinksScreen.getFloatingActionButton(manager, context, () {
-        setState(() {});
-      })
     ];
     return Scaffold(
       body: Padding(
@@ -109,11 +96,10 @@ class ScreenSelectorState extends State<ScreenSelector> {
       bottomNavigationBar: BottomNavigationBar(items: 
          [
           if(supportsAlarms) BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
-          if(supportsAlarms) BottomNavigationBarItem(icon: Icon(Icons.volume_up), label: 'Tones'),
           BottomNavigationBarItem(icon: OpenShockClient.getIconForControlType(ControlType.shock), label: 'Devices'),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Grouped'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
           BottomNavigationBarItem(icon: Icon(Icons.link), label: 'Share Links'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
@@ -152,6 +138,9 @@ class HomeScreenState extends State<HomeScreen> {
           ),
           Text("Alarms are currently semi working",
           style: t.textTheme.headlineSmall),
+          TextButton(onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) => AlarmToneScreen(manager)));
+          }, child: Text("Edit Tones")),
           Flexible(
             child: ListView.builder(
               shrinkWrap: true,

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/tone_item.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 
+import '../stores/alarm_store.dart';
+
 class AlarmToneScreen extends StatefulWidget {
   final AlarmListManager manager;
 
@@ -23,26 +25,46 @@ class AlarmToneScreenState extends State<AlarmToneScreen> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    return Column(children: [
-      Text(
-        'Alarm tones',
-        style: t.textTheme.headlineMedium,
+    return
+    Scaffold(
+      appBar: AppBar(
+        title: Text('Alarm tones'),
       ),
-      if(manager.alarmTones.isEmpty)
-        Text(
-            "No alarm tones found",
-            style: t.textTheme.headlineSmall
-        ),
-      Flexible(
-        child:  ListView(children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: manager.alarmTones.map((tone) {
-                return ToneItem(tone: tone, manager: manager, onRebuild: onRebuild);
-              }).toList()
-            )
-          ],)
-      )
-    ],);
+      body: Padding(
+        padding: EdgeInsets.all(8),
+        child: Column(children: [
+          Text(
+            'Alarm tones',
+            style: t.textTheme.headlineMedium,
+          ),
+          if(manager.alarmTones.isEmpty)
+            Text(
+                "No alarm tones found",
+                style: t.textTheme.headlineSmall
+            ),
+          Flexible(
+            child:  ListView(children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: manager.alarmTones.map((tone) {
+                    return ToneItem(tone: tone, manager: manager, onRebuild: onRebuild);
+                  }).toList()
+                )
+              ],)
+          )
+        ],),
+      ),
+      floatingActionButton: FloatingActionButton(onPressed: () {
+        final newTone = new AlarmTone(
+            id: manager.getNewToneId(),
+            name: 'New Tone');
+        setState(() {
+          manager.saveTone(newTone);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Tone added'),
+          duration: Duration(seconds: 3),
+        ));
+      }, child: Icon(Icons.add)),);
   }
 }
