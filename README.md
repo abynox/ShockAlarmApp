@@ -15,11 +15,11 @@ It's fully material you themed just like the standard Android apps you're alread
 Furthermore it fixes some layout flaws of the official OpenShock Frontend like having shared and own shockers in seperate tabs (which is annoying). On top it also has lots of info buttons you can press to get more insight on what something does.
 
 # Screenshots
-![ShockAlarm](fastlane/images/phoneScreenshots/1.png)
-![ShockAlarm](fastlane/images/phoneScreenshots/2.png)
-![ShockAlarm](fastlane/images/phoneScreenshots/3.png)
-![ShockAlarm](fastlane/images/phoneScreenshots/4.png)
-![ShockAlarm](fastlane/images/phoneScreenshots/5.png)
+![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/1.png)
+![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/2.png)
+![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/3.png)
+![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/4.png)
+![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/5.png)
 
 # Planned features
 - [x] (Un)Pausing of shockers
