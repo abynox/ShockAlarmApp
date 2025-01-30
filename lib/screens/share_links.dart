@@ -147,11 +147,10 @@ class ShareLinksScreen extends StatefulWidget {
 }
 
 class ShareLinksScreenState extends State<ShareLinksScreen> {
-  List<OpenShockShareLink> shareLinks = [];
-  bool initialLoading = true;
+  bool initialLoading = false;
 
   Future loadShares() async {
-    shareLinks = await AlarmListManager.getInstance().getShareLinks();
+    AlarmListManager.getInstance().shareLinks = await AlarmListManager.getInstance().getShareLinks();
     setState(() {
       initialLoading = false;
     });
@@ -161,8 +160,10 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
   void initState() {
     // TODO: implement initState
     AlarmListManager.getInstance().reloadShareLinksMethod = loadShares;
-    initialLoading = true;
-    loadShares();
+    if(AlarmListManager.getInstance().shareLinks == null) {
+      initialLoading = true;
+      loadShares();
+    }
     super.initState();
   }
 
@@ -170,8 +171,10 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     List<Widget> shareEntries = [];
-    for (OpenShockShareLink shareLink in shareLinks) {
-      shareEntries.add(ShareLinkItem(shareLink: shareLink, reloadMethod: loadShares));
+    if(AlarmListManager.getInstance().shareLinks != null) {
+      for (OpenShockShareLink shareLink in AlarmListManager.getInstance().shareLinks!) {
+        shareEntries.add(ShareLinkItem(shareLink: shareLink, reloadMethod: loadShares));
+      }
     }
     if(shareEntries.isEmpty) {
       shareEntries.add(Center(child: Text("No share links created yet",
