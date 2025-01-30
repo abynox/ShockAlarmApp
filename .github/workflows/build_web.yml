@@ -22,16 +22,9 @@ jobs:
           pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
           pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
       - run: flutter --version
-      - run: flutter build web --release --base-href /ShockAlarmApp/build/web/
-      
-      - name: Commit files
-        run: |
-          git config --local user.email "ShockAlarms+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git fetch --all
-          git add .
-          git commit -a -m "Build web"
-          git push -D origin deploy || true
-          git branch -D deploy || true
-          git checkout -b deploy
-          git push --force origin deploy
+      - run: flutter build web --release --base-href /ShockAlarmApp/
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: /build/web/ # The folder the action should deploy.
