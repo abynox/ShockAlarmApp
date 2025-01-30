@@ -4,6 +4,7 @@ import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../components/qr_card.dart';
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
 
@@ -381,6 +382,25 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                   IconButton(onPressed: () async {
                     Share.share("Claim my shocker with this share code: ${shareCode.id}");
                   }, icon: Icon(Icons.share)),
+                  /*
+                  IconButton(onPressed: () async {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('Scan with app to claim'),
+                          content: QrCard(data: shareCode.id),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('Close'))
+                          ],
+                        );
+                      });
+                  }, icon: Icon(Icons.qr_code)),
+                  */
                 ],
               )
             ],
