@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 import 'package:shock_alarm_app/components/hub_item.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:shock_alarm_app/screens/logs.dart';
@@ -182,113 +183,119 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
         groupedShockers[hub] = [];
       }
     }
-    return Column(
-      children: [
-        Flexible(
-          child: ListView(
-            children: [
-              for (MapEntry<Hub?, List<Shocker>> hubContainer
-                  in groupedShockers.entries)
-                StickyHeader(
-                  header: HubItem(
-                    hub: hubContainer.key!,
-                    manager: manager,
-                    onRebuild: onRebuild,
-                    key: ValueKey(hubContainer.key?.getIdentifier(manager)),
-                  ),
-                  content: Card(
-                    color: t.colorScheme.onInverseSurface,
-                    child: Padding(
-                        padding: EdgeInsets.all(15),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                  child: Wrap(
-                                spacing: 5,
-                                children: [
-                                  for (Shocker s in hubContainer.value)
-                                    ShockerChip(
-                                      shocker: s,
-                                      manager: manager,
-                                      onSelected: (bool b) {
-                                        setState(() {
-                                          if (b) {
-                                            manager.selectedShockers.add(s.id);
-                                          } else {
-                                            manager.selectedShockers
-                                                .remove(s.id);
-                                          }
-                                        });
-                                      },
-                                      key: ValueKey(s.getIdentifier()),
-                                    )
-                                ],
-                              ))
-                            ])),
-                  ),
-                )
-            ],
-          ),
-        ),
-        if (manager.selectedShockers.length > 0)
-          Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return DesktopMobileRefreshIndicator(
+        onRefresh: () async {
+            await manager.updateShockerStore();
+            setState(() {});
+        },
+        child: Column(
+          children: [
+            Flexible(
+              child: ListView(
                 children: [
-                  if (loadingPause) CircularProgressIndicator(),
-                  if (!loadingPause && canPause())
-                    IconButton(
-                        onPressed: () {
-                          pauseAll(true);
-                        },
-                        icon: Icon(Icons.pause)),
-                  if (loadingResume) CircularProgressIndicator(),
-                  if (!loadingResume && canResume())
-                    IconButton(
-                        onPressed: () {
-                          pauseAll(false);
-                        },
-                        icon: Icon(Icons.play_arrow)),
-                  if (canViewLogs())
-                    ElevatedButton(
-                      onPressed: () {
-                        List<Shocker> shockers = [];
-                        for (String shockerId in manager.selectedShockers) {
-                          Shocker s = manager.shockers
-                              .firstWhere((x) => x.id == shockerId);
-                          if (!s.isOwn) continue;
-                          shockers.add(s);
-                        }
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => LogScreen(
-                                    shockers: shockers, manager: manager)));
-                      },
-                      child: Text("View logs"),
+                  for (MapEntry<Hub?, List<Shocker>> hubContainer
+                      in groupedShockers.entries)
+                    StickyHeader(
+                      header: HubItem(
+                        hub: hubContainer.key!,
+                        manager: manager,
+                        onRebuild: onRebuild,
+                        key: ValueKey(hubContainer.key?.getIdentifier(manager)),
+                      ),
+                      content: Card(
+                        color: t.colorScheme.onInverseSurface,
+                        child: Padding(
+                            padding: EdgeInsets.all(15),
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                      child: Wrap(
+                                    spacing: 5,
+                                    children: [
+                                      for (Shocker s in hubContainer.value)
+                                        ShockerChip(
+                                          shocker: s,
+                                          manager: manager,
+                                          onSelected: (bool b) {
+                                            setState(() {
+                                              if (b) {
+                                                manager.selectedShockers
+                                                    .add(s.id);
+                                              } else {
+                                                manager.selectedShockers
+                                                    .remove(s.id);
+                                              }
+                                            });
+                                          },
+                                          key: ValueKey(s.getIdentifier()),
+                                        )
+                                    ],
+                                  ))
+                                ])),
+                      ),
                     )
                 ],
               ),
-              ShockingControls(
-                  manager: manager,
-                  controlsContainer: manager.controls,
-                  durationLimit: limitedShocker.durationLimit,
-                  intensityLimit: limitedShocker.intensityLimit,
-                  soundAllowed: limitedShocker.soundAllowed,
-                  vibrateAllowed: limitedShocker.vibrateAllowed,
-                  shockAllowed: limitedShocker.shockAllowed,
-                  onDelayAction: executeAll,
-                  onProcessAction: executeAll,
-                  onSet: (container) {},
-                  key: ValueKey(DateTime.now().millisecondsSinceEpoch)),
-            ],
-          )
-        else
-          Text("No shockers selected", style: t.textTheme.headlineMedium)
-      ],
-    );
+            ),
+            if (manager.selectedShockers.length > 0)
+              Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      if (loadingPause) CircularProgressIndicator(),
+                      if (!loadingPause && canPause())
+                        IconButton(
+                            onPressed: () {
+                              pauseAll(true);
+                            },
+                            icon: Icon(Icons.pause)),
+                      if (loadingResume) CircularProgressIndicator(),
+                      if (!loadingResume && canResume())
+                        IconButton(
+                            onPressed: () {
+                              pauseAll(false);
+                            },
+                            icon: Icon(Icons.play_arrow)),
+                      if (canViewLogs())
+                        ElevatedButton(
+                          onPressed: () {
+                            List<Shocker> shockers = [];
+                            for (String shockerId in manager.selectedShockers) {
+                              Shocker s = manager.shockers
+                                  .firstWhere((x) => x.id == shockerId);
+                              if (!s.isOwn) continue;
+                              shockers.add(s);
+                            }
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => LogScreen(
+                                        shockers: shockers, manager: manager)));
+                          },
+                          child: Text("View logs"),
+                        )
+                    ],
+                  ),
+                  ShockingControls(
+                      manager: manager,
+                      controlsContainer: manager.controls,
+                      durationLimit: limitedShocker.durationLimit,
+                      intensityLimit: limitedShocker.intensityLimit,
+                      soundAllowed: limitedShocker.soundAllowed,
+                      vibrateAllowed: limitedShocker.vibrateAllowed,
+                      shockAllowed: limitedShocker.shockAllowed,
+                      onDelayAction: executeAll,
+                      onProcessAction: executeAll,
+                      onSet: (container) {},
+                      key: ValueKey(DateTime.now().millisecondsSinceEpoch)),
+                ],
+              )
+            else
+              Text("No shockers selected", style: t.textTheme.headlineMedium)
+          ],
+        ));
   }
 }
 
@@ -318,55 +325,56 @@ class ShockerChipState extends State<ShockerChip> {
   Widget build(BuildContext context) {
     t = Theme.of(context);
     return GestureDetector(
-        onLongPress: onLongPress,
-        onSecondaryTap: onLongPress,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 5,
-          children: [
-            FilterChip(
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 5,
-                children: [
-                  Text(shocker.name + (shocker.paused ? " (paused)" : "")),
-                ],
-              ),
-              onSelected: onSelected,
-              selected: manager.selectedShockers.contains(shocker.id),
-              backgroundColor:
-                  shocker.paused ? t!.colorScheme.errorContainer : null,
-              selectedColor:
-                  shocker.paused ? t!.colorScheme.errorContainer : null,
+      onLongPress: onLongPress,
+      onSecondaryTap: onLongPress,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 5,
+        children: [
+          FilterChip(
+            label: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 5,
+              children: [
+                Text(shocker.name + (shocker.paused ? " (paused)" : "")),
+              ],
             ),
-            if (shocker.paused)
-              GestureDetector(
-                child: Icon(
-                  Icons.info,
-                  color: t!.colorScheme.error,
-                ),
-                onTap: () {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text("Shocker is paused"),
-                          content: Text(shocker.isOwn
-                              ? "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by selecting the shocker and pressing unpause selected."
-                              : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
-                          actions: [
-                            TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text("Close"))
-                          ],
-                        );
-                      });
-                },
-              )
-          ],
-        ),);
+            onSelected: onSelected,
+            selected: manager.selectedShockers.contains(shocker.id),
+            backgroundColor:
+                shocker.paused ? t!.colorScheme.errorContainer : null,
+            selectedColor:
+                shocker.paused ? t!.colorScheme.errorContainer : null,
+          ),
+          if (shocker.paused)
+            GestureDetector(
+              child: Icon(
+                Icons.info,
+                color: t!.colorScheme.error,
+              ),
+              onTap: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text("Shocker is paused"),
+                        content: Text(shocker.isOwn
+                            ? "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by selecting the shocker and pressing unpause selected."
+                            : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Close"))
+                        ],
+                      );
+                    });
+              },
+            )
+        ],
+      ),
+    );
   }
 
   void onLongPress() {

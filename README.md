@@ -40,6 +40,7 @@ Furthermore it fixes some layout flaws of the official OpenShock Frontend like h
 - [x] Safety warning
 - [x] Share link management
 - [ ] Add ui to rename tones
+- [ ] save last opened tab (and load it on start)
 - [ ] Random shocking (specify random delay between shocks, min and max intensity/duration)
 - [ ] Fix alarms not sending controls when app is quit
 - [ ] Live controls
