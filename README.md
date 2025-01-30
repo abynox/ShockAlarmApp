@@ -23,6 +23,8 @@ The latest Android build can be found [here](http://github.com/ComputerElite/Sho
 - [x] Redo settings
 - [x] Random intensity and duration
 - [x] Safety warning
+- [ ] Share link management
+- [ ] Live controls
 - [ ] (Big controls mode)
 - [x] Web support (alarms not working)
 - [x] Linux support (alarms not working)
