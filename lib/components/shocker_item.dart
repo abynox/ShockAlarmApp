@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/delete_dialog.dart';
 import '../screens/logs.dart';
 import '../screens/shares.dart';
 import '../stores/alarm_store.dart';
@@ -103,42 +104,33 @@ class ShockerItem extends StatefulWidget {
             BuildContext context, Function onRebuild) {
           showDialog(
               context: context,
-              builder: (context) => AlertDialog(
-                    title: Text("Delete shocker"),
-                    content: Text(
-                        "Are you sure you want to delete the shocker ${shocker.name}?\n\n(You can add it again later)"),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("Cancel")),
-                      TextButton(
-                          onPressed: () async {
-                            String? errorMessage =
-                                await manager.deleteShocker(shocker);
-                            if (errorMessage != null) {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                        title: Text("Failed to delete shocker"),
-                                        content: Text(errorMessage),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: Text("Ok"))
-                                        ],
-                                      ));
-                              return;
-                            }
-                            Navigator.of(context).pop();
-                            onRebuild();
-                          },
-                          child: Text("Delete"))
-                    ],
-                  ));
+              builder: (context) => DeleteDialog(onDelete: () async {
+                showDialog(
+                    context: context,
+                    builder: (context) =>
+                        LoadingDialog(title: "Deleting shocker"));
+                String? errorMessage =
+                    await manager.deleteShocker(shocker);
+                Navigator.of(context).pop();
+                if (errorMessage != null) {
+                  showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                            title: Text("Failed to delete shocker"),
+                            content: Text(errorMessage),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Ok"))
+                            ],
+                          ));
+                  return;
+                }
+                Navigator.of(context).pop();
+                onRebuild();
+              }, title: "Delete shocker", body: "Are you sure you want to delete the shocker ${shocker.name}?\n\n(You can add it again later)"));
         }),
   ];
 

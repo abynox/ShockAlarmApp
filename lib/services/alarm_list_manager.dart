@@ -536,4 +536,25 @@ class AlarmListManager {
     return worked;
   }
 
+  Future<List<OpenShockShareLink>> getShareLinks() async {
+    List<OpenShockShareLink> links = [];
+    OpenShockClient client = OpenShockClient();
+    for(Token token in getTokens()) {
+      links.addAll(await client.getShareLinks(token));
+    }
+    return links;
+  }
+
+  void deleteShareLink(OpenShockShareLink shareLink) {}
+
+  Future<OpenShockShareLink?> getShareLink(OpenShockShareLink shareLink) async {
+    OpenShockClient client = OpenShockClient();
+    return client.getShareLink(shareLink.tokenReference!, shareLink.id);
+  }
+
+  Future<String?> addShockerToShareLink(Shocker? selectedShocker, OpenShockShareLink openShockShareLink) {
+    OpenShockClient client = OpenShockClient();
+    return client.addShockerToShareLink(selectedShocker!, openShockShareLink);
+  }
+
 }

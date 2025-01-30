@@ -7,6 +7,7 @@ import 'package:shock_alarm_app/screens/tones.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../components/alarm_item.dart';
 import '../services/alarm_list_manager.dart';
+import 'share_links.dart';
 import 'tokens.dart';
 import '../stores/alarm_store.dart';
 
@@ -50,6 +51,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       ShockerScreen(manager: manager),
       GroupedShockerScreen(manager: manager),
       TokenScreen(manager: manager),
+      ShareLinksScreen()
     ];
     final floatingActionButtons = <Widget?>[
       if(supportsAlarms) FloatingActionButton(onPressed: () {
@@ -87,7 +89,8 @@ class ScreenSelectorState extends State<ScreenSelector> {
       ShockerScreen.getFloatingActionButton(manager, context, () {
         setState(() {});
       }),
-      null
+      null,
+      null // ToDo: Add share link button
     ];
     return Scaffold(
       body: Padding(
@@ -108,6 +111,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
           BottomNavigationBarItem(icon: OpenShockClient.getIconForControlType(ControlType.shock), label: 'Devices'),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Grouped'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.link), label: 'Share Links'),
         ],
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,

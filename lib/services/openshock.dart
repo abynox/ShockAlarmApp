@@ -473,6 +473,115 @@ class OpenShockClient {
     var response = await PostRequest(token, "/1/account/logout", "");
     return getErrorCode(response, "Failed to logout");
   }
+
+  Future<List<OpenShockShareLink>> getShareLinks(Token token) async {
+    var response = await GetRequest(token, "/1/shares/links");
+    List<OpenShockShareLink> links = [];
+    if(response.statusCode == 200) {
+      jsonDecode(response.body)["data"].forEach((element) {
+        OpenShockShareLink link = OpenShockShareLink.fromJson(element, tokenReference: token);
+        links.add(link);
+      });
+    }
+    return links;
+  }
+
+  Future<OpenShockShareLink?> getShareLink(Token token, String id) async {
+    var response = await GetRequest(token, "/1/public/shares/links/$id");
+    if(response.statusCode == 200) {
+      OpenShockShareLink link = OpenShockShareLink.fromJson(jsonDecode(response.body)["data"] , tokenReference: token);
+      return link;
+    }
+    return null;
+  }
+
+  Future<String?> addShockerToShareLink(Shocker shocker, OpenShockShareLink shareLink) async {
+    Token? t = shareLink.tokenReference;
+    if(t == null) return "Token not found";
+    var response = await PostRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}", "");
+    if(response.statusCode == 200) {
+      return null;
+    }
+    return getErrorCode(response, "Failed to add shocker");
+  }
+
+  Future<String?> setPauseStateOfShareLinkShocker(OpenShockShareLink shareLink, Shocker shocker, bool paused) async {
+    Token? t = shareLink.tokenReference;
+    if(t == null) return null;
+    var response = await PostRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}/pause", jsonEncode({
+      "pause": paused
+    }));
+    if(response.statusCode == 200) {
+      return null;
+    }
+    return getErrorCode(response, "Failed to set pause state");
+  }
+
+  Future<String?> removeShockerFromShareLink(OpenShockShareLink shareLink, Shocker shocker) async {
+    Token? t = shareLink.tokenReference;
+    if(t == null) return null;
+    var response = await DeleteRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}", "");
+    if(response.statusCode == 200) {
+      return null;
+    }
+    return getErrorCode(response, "Failed to remove shocker");
+  }
+
+  Future<String?> setLimitsOfShareLinkShocker(OpenShockShareLink shareLink, Shocker shocker, OpenShockShareLimits limits) async {
+    Token? t = shareLink.tokenReference;
+    if(t == null) return null;
+    var response = await PatchRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}", jsonEncode(limits.toJson()));
+    if(response.statusCode == 200) {
+      return null;
+    }
+    return getErrorCode(response, "Failed to update shocker limits");
+  }
+}
+
+class OpenShockShareLink {
+  DateTime createdOn = DateTime.now();
+  DateTime? expiresOn;
+  OpenShockUser? author;
+  String id  = "";
+  String name = "";
+  List<Shocker> shockers = [];
+  Token? tokenReference;
+
+  String getLink() {
+    String host = "https://openshock.app";
+    if(tokenReference != null) {
+      host = tokenReference!.server.replaceAll("//api.", "//");
+    }
+    if(host.endsWith("/")) {
+      host = host.substring(0, host.length - 1);
+    } 
+    return "$host/s/$id";
+  }
+
+  OpenShockShareLink.fromJson(Map<String, dynamic> json, {this.tokenReference}) {
+    id = json["id"];
+    createdOn = DateTime.parse(json["createdOn"]);
+    if(json["expiresOn"] != null) {
+      expiresOn = DateTime.parse(json["expiresOn"]);
+    }
+    if(json["author"] != null) {
+      author = OpenShockUser.fromJson(json["author"]);
+    }
+    if(json["devices"] != null) {
+      
+      for(var device in json["devices"]) {
+        OpenShockDevice d = OpenShockDevice.fromJson(device, tokenReference: tokenReference);
+        for(OpenShockShocker s in d.shockers) {
+          Shocker shocker = Shocker.fromOpenShockShocker(s);
+          shocker.hubId = d.id;
+          shocker.hubReference = AlarmListManager().getHub(d.id);
+          shocker.apiTokenId = tokenReference!.id;
+          shockers.add(shocker);
+        }
+      }
+    }
+    name = json["name"];
+  }
 }
 
 class CreatedHub {
@@ -540,6 +649,16 @@ class OpenShockShareLimits {
     permissions.vibrate = share.permissions.vibrate;
     permissions.sound = share.permissions.sound;
     permissions.live = share.permissions.live;
+  }
+
+  static OpenShockShareLimits fromShocker(Shocker shocker) {
+    OpenShockShareLimits limits = OpenShockShareLimits();
+    limits.limits.duration = shocker.durationLimit;
+    limits.limits.intensity = shocker.intensityLimit;
+    limits.permissions.shock = shocker.shockAllowed;
+    limits.permissions.vibrate = shocker.vibrateAllowed;
+    limits.permissions.sound = shocker.soundAllowed;
+    return limits;
   }
 }
 
@@ -791,6 +910,12 @@ class ControlsContainer {
   }
 }
 
+enum PauseReason {
+  shocker,
+  share,
+  shareLink
+}
+
 class Shocker {
   Shocker() {}
   
@@ -803,20 +928,49 @@ class Shocker {
   bool shockAllowed = true;
   bool vibrateAllowed = true;
   bool soundAllowed = true;
+  bool liveAllowed = true;
   int durationLimit = 30000;
   int intensityLimit = 100;
   bool isOwn = false;
+  List<PauseReason> pauseReasons = [];
   ControlsContainer controls = ControlsContainer();
   
+  String getPausedLevels() {
+    List<String> levels = [];
+    if(pauseReasons.contains(PauseReason.shocker)) {
+      levels.add("Shocker");
+    }
+    if(pauseReasons.contains(PauseReason.share)) {
+      levels.add("Share");
+    }
+    if(pauseReasons.contains(PauseReason.shareLink)) {
+      levels.add("Share Link");
+    }
+    return levels.join(", ");
+  }
 
   Shocker.fromOpenShockShocker(OpenShockShocker shocker) {
     id = shocker.id;
     name = shocker.name;
+
     paused = shocker.isPaused;
+    if(shocker.paused != null) {
+      if(shocker.paused! & 1 != 0) {
+        pauseReasons.add(PauseReason.shocker);
+      }
+      if(shocker.paused! & 2 != 0) {
+        pauseReasons.add(PauseReason.share);
+      }
+      if(shocker.paused! & 4 != 0) {
+        pauseReasons.add(PauseReason.shareLink);
+      }
+    }
+
     if(shocker.permissions != null) {
       shockAllowed = shocker.permissions!.shock;
       vibrateAllowed = shocker.permissions!.vibrate;
       soundAllowed = shocker.permissions!.sound;
+      liveAllowed = shocker.permissions!.live;
     }
     if(shocker.limits != null) {
       durationLimit = shocker.limits!.duration ?? 30000;
@@ -835,6 +989,7 @@ class Shocker {
       "shockAllowed": shockAllowed,
       "vibrateAllowed": vibrateAllowed,
       "soundAllowed": soundAllowed,
+      "liveAllowed": liveAllowed,
       "durationLimit": durationLimit,
       "intensityLimit": intensityLimit,
       "isOwn": isOwn
@@ -854,13 +1009,15 @@ class Shocker {
     s.soundAllowed = shocker["soundAllowed"];
     s.durationLimit = shocker["durationLimit"];
     s.intensityLimit = shocker["intensityLimit"];
+    if(shocker["liveAllowed"] != null)
+      s.liveAllowed = shocker["liveAllowed"];
     if(shocker["isOwn"] != null)
       s.isOwn = shocker["isOwn"];
     return s;
   }
 
   String getIdentifier() {
-    return "$id-$apiTokenId-${paused}-${shockAllowed}-${vibrateAllowed}-${soundAllowed}-${durationLimit}-${intensityLimit}-${AlarmListManager.getInstance().settings.useRangeSliderForRandomDelay}-${AlarmListManager.getInstance().settings.useRangeSliderForDuration}-${AlarmListManager.getInstance().settings.useRangeSliderForIntensity}";
+    return "$id-$apiTokenId-${paused}-${shockAllowed}-${vibrateAllowed}-${liveAllowed}-${soundAllowed}-${durationLimit}-${intensityLimit}-${AlarmListManager.getInstance().settings.useRangeSliderForRandomDelay}-${AlarmListManager.getInstance().settings.useRangeSliderForDuration}-${AlarmListManager.getInstance().settings.useRangeSliderForIntensity}";
   }
 
   Control getLimitedControls(ControlType type, int intensity, int duration) {
@@ -883,6 +1040,15 @@ class Shocker {
         }
       }
       return c;
+  }
+
+  void setLimits(OpenShockShareLimits limits) {
+    durationLimit = limits.limits.duration ?? 30000;
+    intensityLimit = limits.limits.intensity ?? 100;
+    shockAllowed = limits.permissions.shock;
+    vibrateAllowed = limits.permissions.vibrate;
+    soundAllowed = limits.permissions.sound;
+    liveAllowed = limits.permissions.live;
   }
 }
 
@@ -945,7 +1111,7 @@ class OpenShockDevice
     
     Token? apiTokenReference;
 
-    OpenShockDevice.fromJson(Map<String, dynamic> json)
+    OpenShockDevice.fromJson(Map<String, dynamic> json, {Token? tokenReference = null})
     {
       if(json['name'] != null)
         name = json['name'];
@@ -963,6 +1129,7 @@ class OpenShockDevice
             shockers.add(OpenShockShocker.fromJson(v));
         });
       }
+      apiTokenReference = tokenReference;
     }
     
     Map<String, dynamic> toJson() {
@@ -978,6 +1145,7 @@ class OpenShockShocker
     String name = "";
     String id = "";
     bool isPaused = false;
+    int? paused;
     bool? isDisabled = false;
     OpenShockShockerLimits? limits;
     OpenShockShockerPermissions? permissions;
@@ -996,6 +1164,8 @@ class OpenShockShocker
             limits!.intensity = json['limits']['intensity'];
             limits!.duration = json['limits']['duration'];
         }
+        if(json['paused'] != null)
+          paused = json['paused'];
         if (json['permissions'] != null)
         {
             permissions = OpenShockShockerPermissions();

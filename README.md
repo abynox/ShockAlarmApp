@@ -24,6 +24,8 @@ The latest Android build can be found [here](http://github.com/ComputerElite/Sho
 - [x] Random intensity and duration
 - [x] Safety warning
 - [ ] Share link management
+- [ ] Add ui to rename tones
+- [ ] Fix alarms not sending controls when app is quit
 - [ ] Live controls
 - [ ] (Big controls mode)
 - [x] Web support (alarms not working)

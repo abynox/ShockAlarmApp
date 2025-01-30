@@ -51,7 +51,7 @@ class SharesScreenState extends State<SharesScreen> {
     OpenShockShareLimits limits = OpenShockShareLimits();
     OpenShockShare share = OpenShockShare();
     await showDialog(context: context, builder: (context) => AlertDialog(
-      content: ShockerShareEntryEditor(share: share, manager: manager, limits: limits),
+      content: ShockerShareEntryEditor(limits: limits),
       actions: [
         TextButton(onPressed: () {
           Navigator.of(context).pop();
@@ -180,10 +180,14 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
         Navigator.of(context).pop();
       }, child: Text("Cancel")),
       TextButton(onPressed: () async {
-        deleting = true;
+        setState(() {
+          deleting = true;
+        });
         String? errorMessage = await manager.deleteShare(share);
         if(errorMessage != null) {
-          deleting = false;
+          setState(() {
+            deleting = false;
+          });
           showDialog(context: context, builder: (context) => AlertDialog(title: Text("Failed to delete share"), content: Text(errorMessage), actions: [TextButton(onPressed: () {
             Navigator.of(context).pop();
           }, child: Text("Ok"))],));
@@ -273,10 +277,10 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
                         Row(
                           spacing: 10,
                           children: [
-                            ShockerShareEntryPermission(share: share, type: ControlType.sound, value: share.permissions.sound),
-                            ShockerShareEntryPermission(share: share, type: ControlType.vibrate, value: share.permissions.vibrate),
-                            ShockerShareEntryPermission(share: share, type: ControlType.shock, value: share.permissions.shock),
-                            ShockerShareEntryPermission(share: share, type: ControlType.live, value: share.permissions.live),
+                            ShockerShareEntryPermission(type: ControlType.sound, value: share.permissions.sound),
+                            ShockerShareEntryPermission(type: ControlType.vibrate, value: share.permissions.vibrate),
+                            ShockerShareEntryPermission(type: ControlType.shock, value: share.permissions.shock),
+                            ShockerShareEntryPermission(type: ControlType.live, value: share.permissions.live),
                           ],
                         ),
                         
@@ -302,7 +306,7 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
               ],
             ),
           if(editing)
-            ShockerShareEntryEditor(share: share, manager: manager, limits: limits,),
+            ShockerShareEntryEditor(limits: limits,),
           
         ],
       ),
@@ -402,23 +406,19 @@ class LoadingDialog extends StatelessWidget {
 }
 
 class ShockerShareEntryEditor extends StatefulWidget {
-  OpenShockShare share;
   OpenShockShareLimits limits;
-  AlarmListManager manager;
 
-  ShockerShareEntryEditor({Key? key, required this.share, required this.manager, required this.limits}) : super(key: key) {
+  ShockerShareEntryEditor({Key? key, required this.limits}) : super(key: key) {
   }
 
   @override
-  State<StatefulWidget> createState() => ShockerShareEntryEditorState(share, manager, limits);
+  State<StatefulWidget> createState() => ShockerShareEntryEditorState(limits);
 }
 
 class ShockerShareEntryEditorState extends State<ShockerShareEntryEditor> {
   OpenShockShareLimits limits;
-  AlarmListManager manager;
-  OpenShockShare share;
   
-  ShockerShareEntryEditorState(this.share, this.manager, this.limits);
+  ShockerShareEntryEditorState(this.limits);
 
   @override
   Widget build(BuildContext context) {
@@ -441,12 +441,12 @@ class ShockerShareEntryEditorState extends State<ShockerShareEntryEditor> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-              ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.sound, value: limits.permissions.sound, onSet: (value) {
+              ShockerShareEntryPermissionEditor(type: ControlType.sound, value: limits.permissions.sound, onSet: (value) {
                 setState(() {
                   limits.permissions.sound = value;
                 });
               },),
-              ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.vibrate, value: limits.permissions.vibrate, onSet: (value) {
+              ShockerShareEntryPermissionEditor(type: ControlType.vibrate, value: limits.permissions.vibrate, onSet: (value) {
                 setState(() {
                   limits.permissions.vibrate = value;
                 });
@@ -455,12 +455,12 @@ class ShockerShareEntryEditorState extends State<ShockerShareEntryEditor> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-              ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.shock, value: limits.permissions.shock, onSet: (value) {
+              ShockerShareEntryPermissionEditor(type: ControlType.shock, value: limits.permissions.shock, onSet: (value) {
                 setState(() {
                   limits.permissions.shock = value;
                 });
               },),
-              ShockerShareEntryPermissionEditor(manager: manager, share: share, type: ControlType.live, value: limits.permissions.live, onSet: (value) {
+              ShockerShareEntryPermissionEditor(type: ControlType.live, value: limits.permissions.live, onSet: (value) {
                 setState(() {
                   limits.permissions.live = value;
                 });
@@ -475,11 +475,10 @@ class ShockerShareEntryEditorState extends State<ShockerShareEntryEditor> {
 }
 
 class ShockerShareEntryPermission extends StatelessWidget {
-  final OpenShockShare share;
   final ControlType type;
   final bool value;
 
-  const ShockerShareEntryPermission({Key? key, required this.share, required this.type, required this.value}) : super(key: key);
+  const ShockerShareEntryPermission({Key? key, required this.type, required this.value}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -492,25 +491,20 @@ class ShockerShareEntryPermission extends StatelessWidget {
 }
 
 class ShockerShareEntryPermissionEditor extends StatefulWidget {
-  final OpenShockShare share;
   final ControlType type;
   final bool value;
   final Function(bool) onSet;
-  final AlarmListManager manager;
 
-  const ShockerShareEntryPermissionEditor({Key? key, required this.share, required this.type, required this.value, required this.manager, required this.onSet}) : super(key: key);
+  const ShockerShareEntryPermissionEditor({Key? key, required this.type, required this.value, required this.onSet}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => ShockerShareEntryPermissionEditorState(share, type, value, manager, onSet);
+  State<StatefulWidget> createState() => ShockerShareEntryPermissionEditorState(type, value, onSet);
 }
 
 class ShockerShareEntryPermissionEditorState extends State<ShockerShareEntryPermissionEditor> {
-  OpenShockShare share;
   ControlType type;
   bool value;
   Function(bool) onSet;
-
-  AlarmListManager manager;
 
   Map<ControlType, String> descriptions = {
     ControlType.sound: "This allows the other person to let your shocker beep",
@@ -526,7 +520,7 @@ class ShockerShareEntryPermissionEditorState extends State<ShockerShareEntryPerm
     ControlType.live: "Live"
   };
 
-  ShockerShareEntryPermissionEditorState(this.share, this.type, this.value, this.manager, this.onSet);
+  ShockerShareEntryPermissionEditorState(this.type, this.value, this.onSet);
 
   @override
   Widget build(BuildContext context) {
