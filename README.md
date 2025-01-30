@@ -1,7 +1,7 @@
 # ShockAlarm
 A powerfull app for controling [OpenShock](https://openshock.org/) shockers and setting alarms with custom tones.
 
-A lite web version can be found [here](https://computerelite.github.io/ShockAlarmApp/build/web/)
+A lite web version can be found [here](https://computerelite.github.io/ShockAlarmApp/)
 
 The latest Android build can be found [here](http://github.com/ComputerElite/ShockAlarmApp/releases/latest)
 
