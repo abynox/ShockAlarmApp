@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shock_alarm_app/components/card.dart';
+import 'package:shock_alarm_app/components/delete_dialog.dart';
 import 'package:shock_alarm_app/components/qr_card.dart';
 import 'package:shock_alarm_app/screens/share_link_edit.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
@@ -10,11 +11,139 @@ import 'package:shock_alarm_app/services/openshock.dart';
 
 import '../components/desktop_mobile_refresh_indicator.dart';
 
+class ShareLinkCreationDialog extends StatefulWidget {
+  String shareLinkName = "";
+  DateTime? expiresOn = DateTime.now().add(Duration(days: 1));
+
+  @override
+  State<StatefulWidget> createState() => ShareLinkCreationDialogState();
+}
+
+class ShareLinkCreationDialogState extends State<ShareLinkCreationDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text("Create Share Link"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            decoration: InputDecoration(
+              labelText: "Name",
+            ),
+            onChanged: (value) {
+              widget.shareLinkName = value;
+            },
+          ),
+          Padding(padding: EdgeInsets.all(15)),
+          Text("Expires: ${widget.expiresOn.toString().split(".").first}",
+              style: TextStyle(fontSize: 20)),
+          TextButton(
+              onPressed: () async {
+                widget.expiresOn = await showDatePicker(
+                    context: context,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(Duration(days: 365)),
+                    initialDate: widget.expiresOn);
+                if (widget.expiresOn == null) return;
+                TimeOfDay? time = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.fromDateTime(widget.expiresOn!));
+                setState(() {
+                  widget.expiresOn = DateTime(
+                      widget.expiresOn!.year,
+                      widget.expiresOn!.month,
+                      widget.expiresOn!.day,
+                      time!.hour,
+                      time.minute);
+                });
+              },
+              child: Text("Change expiry")),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel")),
+        TextButton(
+            onPressed: () async {
+              if(widget.shareLinkName.isEmpty) {
+                showDialog(context: context, builder: (context) {
+                  return AlertDialog(
+                    title: Text("Name is empty"),
+                    content: Text("Please enter a name for the share link"),
+                    actions: [
+                      TextButton(onPressed: () {
+                        Navigator.of(context).pop();
+                      }, child: Text("Ok"))
+                    ],
+                  );
+                });
+                return;
+              }
+
+              showDialog(context: context, builder: (context) => LoadingDialog(title: "Creating Share Link"));
+              String? error = await AlarmListManager.getInstance().createShareLink(widget.shareLinkName, widget.expiresOn!);
+              if(error != null) {
+                Navigator.of(context).pop();
+                showDialog(context: context, builder: (context) {
+                  return AlertDialog(
+                    title: Text("Error creating share link"),
+                    content: Text(error),
+                    actions: [
+                      TextButton(onPressed: () {
+                        Navigator.of(context).pop();
+                      }, child: Text("Ok"))
+                    ],
+                  );
+                });
+                return;
+              }
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+              AlarmListManager.getInstance().reloadShareLinksMethod!();
+            },
+            child: Text("Create")),
+      ],
+    );
+  }
+}
+
 class ShareLinksScreen extends StatefulWidget {
   const ShareLinksScreen({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => ShareLinksScreenState();
+
+  static getFloatingActionButton(
+      AlarmListManager manager, BuildContext context, Function reloadState) {
+    return FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              if (!manager.hasValidAccount()) {
+                return AlertDialog(
+                  title: Text("You're not logged in"),
+                  content: Text(
+                      "Login to OpenShock to create a Share Link. To do this visit the settings page."),
+                  actions: <Widget>[
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text("Ok"))
+                  ],
+                );
+              }
+              return ShareLinkCreationDialog();
+            },
+          );
+        },
+        child: Icon(Icons.add));
+  }
 }
 
 class ShareLinksScreenState extends State<ShareLinksScreen> {
@@ -23,39 +152,44 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
 
   Future loadShares() async {
     shareLinks = await AlarmListManager.getInstance().getShareLinks();
-    initialLoading = false;
+    setState(() {
+      initialLoading = false;
+    });
   }
 
   @override
   void initState() {
     // TODO: implement initState
+    AlarmListManager.getInstance().reloadShareLinksMethod = loadShares;
     initialLoading = true;
-    loadShares().then((value) {
-      setState(() {
-        initialLoading = false;
-      });
-    });
+    loadShares();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final shareEntries =
-        shareLinks.map((link) => ShareLinkItem(shareLink: link)).toList();
+    ThemeData t = Theme.of(context);
+    List<Widget> shareEntries = [];
+    for (OpenShockShareLink shareLink in shareLinks) {
+      shareEntries.add(ShareLinkItem(shareLink: shareLink, reloadMethod: loadShares));
+    }
+    if(shareEntries.isEmpty) {
+      shareEntries.add(Center(child: Text("No share links created yet",
+            style: t.textTheme.headlineSmall)));
+    }
     return initialLoading
         ? Center(child: CircularProgressIndicator())
         : DesktopMobileRefreshIndicator(
-            onRefresh: () async {
-              return loadShares();
-            },
+            onRefresh: loadShares,
             child: ListView(children: shareEntries));
   }
 }
 
 class ShareLinkItem extends StatelessWidget {
   final OpenShockShareLink shareLink;
+  final Function reloadMethod;
 
-  const ShareLinkItem({Key? key, required this.shareLink}) : super(key: key);
+  const ShareLinkItem({Key? key, required this.shareLink, required this.reloadMethod}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +203,29 @@ class ShareLinkItem extends StatelessWidget {
             IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () {
-                  AlarmListManager.getInstance().deleteShareLink(shareLink);
+                  showDialog(context: context, builder: (context) {
+                    return DeleteDialog(onDelete: () async {
+                      showDialog(context: context, builder: (context) => LoadingDialog(title: "Deleting ${shareLink.name}"));
+                      String? error = await AlarmListManager.getInstance().deleteShareLink(shareLink);
+                      Navigator.of(context).pop();
+                      if(error != null) {
+                        showDialog(context: context, builder: (context) {
+                          return AlertDialog(
+                            title: Text("Error deleting share link"),
+                            content: Text(error),
+                            actions: [
+                              TextButton(onPressed: () {
+                                Navigator.of(context).pop();
+                              }, child: Text("Ok"))
+                            ],
+                          );
+                        });
+                        return;
+                      }
+                      Navigator.of(context).pop();
+                      reloadMethod();
+                    }, title: "Delete ${shareLink.name}", body: "Are you sure you want to delete ${shareLink.name}?");
+                  });
                 }),
             IconButton(
                 onPressed: () {
@@ -95,11 +251,14 @@ class ShareLinkItem extends StatelessWidget {
                 onPressed: () {
                   Share.share(shareLink.getLink());
                 }),
-                IconButton(onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+            IconButton(
+                onPressed: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) {
                     return ShareLinkEditScreen(shareLink: shareLink);
                   }));
-                }, icon: Icon(Icons.edit))
+                },
+                icon: Icon(Icons.edit))
           ],
         )
       ],

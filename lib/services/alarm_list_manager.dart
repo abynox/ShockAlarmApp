@@ -74,6 +74,7 @@ class AlarmListManager {
   final List<Hub> hubs = [];
   final List<String> onlineHubs = [];
   final List<AlarmTone> alarmTones = [];
+  List<OpenShockShareLink>? shareLinks;
   final Map<String, bool> enabledHubs = {};
   Settings settings = Settings();
   OpenShockWS? ws;
@@ -439,6 +440,8 @@ class AlarmListManager {
   Map<String?, List<ShockerLog>> availableShockerLogs = {};
   Function? reloadShockerLogs;
 
+  Function()? reloadShareLinksMethod;
+
   Future startWS(Token t, {bool stopExisting = true}) async {
     if(ws != null) {
       if(!stopExisting) return;
@@ -545,7 +548,10 @@ class AlarmListManager {
     return links;
   }
 
-  void deleteShareLink(OpenShockShareLink shareLink) {}
+  Future<String?> deleteShareLink(OpenShockShareLink shareLink) async {
+    OpenShockClient client = OpenShockClient();
+    return client.deleteShareLink(shareLink);
+  }
 
   Future<OpenShockShareLink?> getShareLink(OpenShockShareLink shareLink) async {
     OpenShockClient client = OpenShockClient();
@@ -555,6 +561,13 @@ class AlarmListManager {
   Future<String?> addShockerToShareLink(Shocker? selectedShocker, OpenShockShareLink openShockShareLink) {
     OpenShockClient client = OpenShockClient();
     return client.addShockerToShareLink(selectedShocker!, openShockShareLink);
+  }
+
+  Future<String?> createShareLink(String shareLinkName, DateTime dateTime) async {
+    OpenShockClient client = OpenShockClient();
+    Token? token = getAnyUserToken();
+    if(token == null) return "No token found";
+    return client.createShareLink(token, shareLinkName, dateTime);
   }
 
 }

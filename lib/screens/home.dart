@@ -90,7 +90,9 @@ class ScreenSelectorState extends State<ScreenSelector> {
         setState(() {});
       }),
       null,
-      null // ToDo: Add share link button
+      ShareLinksScreen.getFloatingActionButton(manager, context, () {
+        setState(() {});
+      })
     ];
     return Scaffold(
       body: Padding(

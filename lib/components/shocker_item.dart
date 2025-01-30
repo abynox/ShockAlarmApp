@@ -302,7 +302,6 @@ class ShockerItemState extends State<ShockerItem>
                       Expanded(
                         child: Text(
                           shocker.name,
-                          style: t.textTheme.headlineSmall,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

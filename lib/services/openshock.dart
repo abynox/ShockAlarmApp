@@ -507,7 +507,7 @@ class OpenShockClient {
 
   Future<String?> setPauseStateOfShareLinkShocker(OpenShockShareLink shareLink, Shocker shocker, bool paused) async {
     Token? t = shareLink.tokenReference;
-    if(t == null) return null;
+    if(t == null) return "Token not found";
     var response = await PostRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}/pause", jsonEncode({
       "pause": paused
     }));
@@ -519,7 +519,7 @@ class OpenShockClient {
 
   Future<String?> removeShockerFromShareLink(OpenShockShareLink shareLink, Shocker shocker) async {
     Token? t = shareLink.tokenReference;
-    if(t == null) return null;
+    if(t == null) return "Token not found";
     var response = await DeleteRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}", "");
     if(response.statusCode == 200) {
       return null;
@@ -529,12 +529,33 @@ class OpenShockClient {
 
   Future<String?> setLimitsOfShareLinkShocker(OpenShockShareLink shareLink, Shocker shocker, OpenShockShareLimits limits) async {
     Token? t = shareLink.tokenReference;
-    if(t == null) return null;
+    if(t == null) return "Token not found";
     var response = await PatchRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}", jsonEncode(limits.toJson()));
     if(response.statusCode == 200) {
       return null;
     }
     return getErrorCode(response, "Failed to update shocker limits");
+  }
+
+  Future<String?> createShareLink(Token t, String shareLinkName, DateTime dateTime) async {
+    var response = await PostRequest(t, "/1/shares/links", jsonEncode({
+      "name": shareLinkName,
+      "expiresOn": dateTime.toIso8601String()
+    }));
+    if(response.statusCode == 200) {
+      return null;
+    }
+    return getErrorCode(response, "Failed to create share link");
+  }
+
+  Future<String?> deleteShareLink(OpenShockShareLink shareLink) async {
+    Token? t = shareLink.tokenReference;
+    if(t == null) return "Token not found";
+    var response = await DeleteRequest(t, "/1/shares/links/${shareLink.id}", "");
+    if(response.statusCode == 200) {
+      return null;
+    }
+    return getErrorCode(response, "Failed to delete share link");    
   }
 }
 

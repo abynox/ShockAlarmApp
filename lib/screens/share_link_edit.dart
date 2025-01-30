@@ -72,6 +72,12 @@ class ShareLinkEditScreenState extends State<ShareLinkEditScreen> {
           Navigator.of(context).pop();
         }, child: Text("Cancel")),
         TextButton(onPressed: () async {
+          if(selectedShocker == null) {
+            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Error"), content: Text("Please select a shocker to add"), actions: [TextButton(onPressed: () {
+              Navigator.of(context).pop();
+            }, child: Text("Ok"))],));
+            return;
+          }
           showDialog(context: context, builder: (context) => LoadingDialog(title: "Adding shocker"));
 
           String? error = await AlarmListManager.getInstance().addShockerToShareLink(selectedShocker, shareLink!);
