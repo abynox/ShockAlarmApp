@@ -95,6 +95,9 @@ class TokenScreenState extends State<TokenScreen> {
             },
             child: Text("Cancel")
           ),
+          TextButton(child: Text("Register"), onPressed: () {
+            launchUrl(Uri.parse("https://openshock.app/#/account/signup"));
+          },),
           TextButton(
             onPressed: () async {
               showDialog(context: context, builder: (context) => LoadingDialog(title: "Logging in"));
@@ -167,6 +170,9 @@ class TokenScreenState extends State<TokenScreen> {
             },
             child: Text("Cancel")
           ),
+          TextButton(child: Text("Register"), onPressed: () {
+            launchUrl(Uri.parse("https://openshock.app/#/account/signup"));
+          },),
           TextButton(
             onPressed: () async {
               showDialog(context: context, builder: (context) => LoadingDialog(title: "Logging in"));

@@ -179,8 +179,23 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
     if(shareEntries.isEmpty) {
       shareEntries.add(Center(child: Text("No share links created yet",
             style: t.textTheme.headlineSmall)));
+      
     }
-    return initialLoading
+    shareEntries.insert(0, IconButton(onPressed: () {
+        showDialog(context: context, builder: (context) {
+          return AlertDialog(
+            title: Text("What are share links?"),
+            content: Text("Share links are a way to share your shockers with people who do not have an OpenShock account and don't want to create one (or for giving a group access to your shockers). Share links have limits just like normal shares. However people can just use any name they want to access the share link. Their actions will also be shown in the shockers log."),
+            actions: [
+              TextButton(onPressed: () {
+                Navigator.of(context).pop();
+              }, child: Text("Ok"))
+            ],
+          );
+        });
+      }, icon: Icon(Icons.info)));
+    return 
+      initialLoading
         ? Center(child: CircularProgressIndicator())
         : DesktopMobileRefreshIndicator(
             onRefresh: loadShares,
