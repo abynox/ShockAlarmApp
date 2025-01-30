@@ -1,9 +1,25 @@
-# shock_alarm_app
-An app for controling [OpenShock](https://openshock.org/) shockers and setting alarms with custom tones.
+# ShockAlarm
+A powerfull app for controling [OpenShock](https://openshock.org/) shockers and setting alarms with custom tones.
 
 A lite web version can be found [here](https://computerelite.github.io/ShockAlarmApp/build/web/)
 
 The latest Android build can be found [here](http://github.com/ComputerElite/ShockAlarmApp/releases/latest)
+
+# Features
+ShockAlarm is a powerful tool for controlling your Shockers via OpenShock. It allows you to fully manage your shockers, logs, shares, hubs, and share links.
+
+There is advanced functionaity like specifying a random interval for intensity, duration and a delay (if you're into that).
+
+It's fully material you themed just like the standard Android apps you're already used to and provides a responsive ui with a nice design.
+
+Furthermore it fixes some layout flaws of the official OpenShock Frontend like having shared and own shockers in seperate tabs (which is annoying). On top it also has lots of info buttons you can press to get more insight on what something does.
+
+# Screenshots
+![ShockAlarm](fastlane/images/phoneScreenshots/1.png)
+![ShockAlarm](fastlane/images/phoneScreenshots/2.png)
+![ShockAlarm](fastlane/images/phoneScreenshots/3.png)
+![ShockAlarm](fastlane/images/phoneScreenshots/4.png)
+![ShockAlarm](fastlane/images/phoneScreenshots/5.png)
 
 # Planned features
 - [x] (Un)Pausing of shockers
