@@ -17,9 +17,8 @@ Furthermore it fixes some layout flaws of the official OpenShock Frontend like h
 # Screenshots
 ![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/1.png)
 ![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/2.png)
-![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/3.png)
-![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/4.png)
-![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/5.png)
+
+[More images](fastlane/metadata/android/en-US/images/phoneScreenshots)
 
 # Planned features
 - [x] (Un)Pausing of shockers
