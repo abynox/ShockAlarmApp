@@ -248,6 +248,11 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     manager.context = context;
     ThemeData t = Theme.of(context);
+    List<Widget> alarms = manager.getAlarms().map((x) {
+      return AlarmItem(
+          alarm: x, manager: manager, onRebuild: rebuild, key: ValueKey(x.id));
+    }).toList();
+
     return ListView(
       children: [
         Text(
@@ -268,21 +273,7 @@ class HomeScreenState extends State<HomeScreen> {
               },
               child: Text("Edit Tones")),
         ),
-        Flexible(
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              final alarm = manager.getAlarms()[index];
-
-              return AlarmItem(
-                  alarm: alarm,
-                  manager: manager,
-                  onRebuild: rebuild,
-                  key: ValueKey(alarm.id));
-            },
-            itemCount: manager.getAlarms().length,
-          ),
-        )
+        ...alarms,
       ],
     );
   }

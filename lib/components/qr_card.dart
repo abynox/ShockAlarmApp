@@ -39,9 +39,10 @@ class QrCardState extends State<QrCard> {
                     Clipboard.setData(ClipboardData(text: widget.data));
                   },
                   child: TextButton(
-                    child: Row(
+                    child: Column(
                       children: [
-                        Text(widget.data),
+                          Icon(Icons.copy, color: widget.c),
+                        Text(widget.data, softWrap: true, style: t.textTheme.bodyMedium?.copyWith(color: widget.c),),
                         if (widget.copied)
                           Icon(Icons.check, color: Colors.green),
                       ],
