@@ -201,7 +201,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                             in groupedShockers.entries)
                           StickyHeader(
                             header: HubItem(
-                              hub: hubContainer.key!,
+                              hub: hubContainer.key ?? Hub(),
                               manager: manager,
                               onRebuild: onRebuild,
                               key: ValueKey(

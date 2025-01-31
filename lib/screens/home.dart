@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:protocol_handler/protocol_handler.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/grouped_shockers.dart';
 import 'package:shock_alarm_app/screens/shockers.dart';
@@ -23,7 +24,7 @@ class ScreenSelector extends StatefulWidget {
   State<StatefulWidget> createState() => ScreenSelectorState(manager: manager);
 }
 
-class ScreenSelectorState extends State<ScreenSelector> {
+class ScreenSelectorState extends State<ScreenSelector> with ProtocolListener {
   final AlarmListManager manager;
   int _selectedIndex = 3;
   bool supportsAlarms = isAndroid();
@@ -32,8 +33,15 @@ class ScreenSelectorState extends State<ScreenSelector> {
   List<BottomNavigationBarItem> navigationBarItems = [];
   List<Widget?> floatingActionButtons = [];
 
+  @override void dispose() {
+    // TODO: implement dispose
+    protocolHandler.removeListener(this);
+    super.dispose();
+  }
+
   @override
   void initState() {
+    protocolHandler.addListener(this);
     screens = [
       if (supportsAlarms) HomeScreen(manager: manager),
       ShockerScreen(manager: manager),
@@ -94,8 +102,16 @@ class ScreenSelectorState extends State<ScreenSelector> {
       }
       setState(() {});
     });
+    super.initState();
   }
 
+
+  @override
+  void onProtocolUrlReceived(String url) {
+    String log = 'Url received: $url)';
+    print(log);
+  }
+  
   ScreenSelectorState({required this.manager});
 
   void _tap(int index) {
@@ -105,7 +121,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       _selectedIndex = index;
     });
     AlarmListManager.getInstance().savePageIndex(index);
-  }  
+  }
   final FocusNode focusNode = FocusNode();
 
   @override

@@ -536,25 +536,25 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                                 "Claim my shocker with this share code: ${shareCode.id}");
                           },
                           icon: Icon(Icons.share)),
-                      /*
-                  IconButton(onPressed: () async {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text('Scan with app to claim'),
-                          content: QrCard(data: shareCode.id),
-                          actions: [
-                            TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text('Close'))
-                          ],
-                        );
-                      });
-                  }, icon: Icon(Icons.qr_code)),
-                  */
+                      
+                          IconButton(onPressed: () async {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text('Scan to claim'),
+                                  content: QrCard(data: "openshock://sharecode/${shareCode.id}"),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text('Close'))
+                                  ],
+                                );
+                              });
+                          }, icon: Icon(Icons.qr_code)),
+                          
                     ],
                   )
                 ],
