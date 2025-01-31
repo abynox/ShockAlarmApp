@@ -437,7 +437,7 @@ class ShockerScreenState extends State<ShockerScreen> {
       }
       shockers.add(StickyHeader(
           header:
-              HubItem(hub: shocker.key!, manager: manager, onRebuild: rebuild),
+              HubItem(hub: shocker.key!, manager: manager, key: ValueKey(shocker.key!.getIdentifier(manager)), onRebuild: rebuild),
           content: Column(
             children: shockerWidgets,
           )));
@@ -450,11 +450,9 @@ class ShockerScreenState extends State<ShockerScreen> {
             },
             child: Column(
               children: [
-                Flexible(
-                  child: Text(
-                    'All devices',
-                    style: t.textTheme.headlineMedium,
-                  ),
+                Text(
+                  'All devices',
+                  style: t.textTheme.headlineMedium,
                 ),
                 if (groupedShockers.isEmpty)
                   Text("No shockers found", style: t.textTheme.headlineSmall),
