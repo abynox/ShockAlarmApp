@@ -3,12 +3,12 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:protocol_handler/protocol_handler.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/grouped_shockers.dart';
 import 'package:shock_alarm_app/screens/shockers.dart';
 import 'package:shock_alarm_app/screens/tones.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
+import 'package:uni_links3/uni_links.dart';
 import '../components/alarm_item.dart';
 import '../services/alarm_list_manager.dart';
 import 'share_links.dart';
@@ -24,7 +24,7 @@ class ScreenSelector extends StatefulWidget {
   State<StatefulWidget> createState() => ScreenSelectorState(manager: manager);
 }
 
-class ScreenSelectorState extends State<ScreenSelector> with ProtocolListener {
+class ScreenSelectorState extends State<ScreenSelector> {
   final AlarmListManager manager;
   int _selectedIndex = 3;
   bool supportsAlarms = isAndroid();
@@ -33,15 +33,14 @@ class ScreenSelectorState extends State<ScreenSelector> with ProtocolListener {
   List<BottomNavigationBarItem> navigationBarItems = [];
   List<Widget?> floatingActionButtons = [];
 
-  @override void dispose() {
-    // TODO: implement dispose
-    protocolHandler.removeListener(this);
-    super.dispose();
-  }
 
   @override
   void initState() {
-    protocolHandler.addListener(this);
+    getInitialLink().then((String? url) {
+      if (url != null) {
+        onProtocolUrlReceived(url);
+      }
+    });
     screens = [
       if (supportsAlarms) HomeScreen(manager: manager),
       ShockerScreen(manager: manager),
@@ -108,10 +107,33 @@ class ScreenSelectorState extends State<ScreenSelector> with ProtocolListener {
 
   @override
   void onProtocolUrlReceived(String url) {
-    String log = 'Url received: $url)';
-    print(log);
+    String log = 'Url received: $url';
+    List<String> parts = url.split('/');
+    if(parts.length < 4) return;
+    String action = parts[2];
+    String code = parts[3];
+    if(action == "sharecode") {
+      showDialog(context: context, builder: (context) {
+        return AlertDialog(
+          title: Text("Redeem share code?"),
+          content: Text(code),
+          actions: [
+            TextButton(onPressed: () {
+              Navigator.of(context).pop();
+            }, child: Text("Close")),
+            TextButton(onPressed: () async {
+              
+              if(await ShockerScreen.redeemShareCode(code, context, manager)) {
+                Navigator.of(context).pop();
+                manager.reloadAllMethod!();
+              }
+            }, child: Text("Redeem"))
+          ],
+        );
+      });
+    }
   }
-  
+
   ScreenSelectorState({required this.manager});
 
   void _tap(int index) {

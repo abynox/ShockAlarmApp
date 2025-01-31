@@ -14,7 +14,7 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 const String issues_url = "https://github.com/ComputerElite/ShockAlarmApp/issues";
 
 String GetUserAgent() {
-  return "ShockAlarm/0.0.10";
+  return "ShockAlarm/0.0.11";
 }
 
 bool isAndroid() {
@@ -84,10 +84,14 @@ void main() async {
   AlarmListManager manager = AlarmListManager();
   await manager.loadAllFromStorage();
   initNotification(manager);
+
+  // Register a custom protocol
+  // For macOS platform needs to declare the scheme in ios/Runner/Info.plist
   if(isAndroid()) {
     await AndroidAlarmManager.initialize();
     await requestPermissions();
   }
+  
 
   runApp(MyApp(null));
 }
@@ -123,6 +127,27 @@ class MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     alarmId = widget.alarmId;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  void onProtocolUrlReceived(String url) {
+    print("Received protocol url: $url");
+    showDialog(context: context, builder: (context) {
+      return AlertDialog(
+        title: Text("Received protocol url"),
+        content: Text(url),
+        actions: [
+          TextButton(onPressed: () {
+            Navigator.of(context).pop();
+          }, child: Text("Close"))
+        ],
+      );
+    });
   }
 
   void setThemeMode(ThemeMode themeMode) {

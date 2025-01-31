@@ -65,40 +65,47 @@ class ShockerScreen extends StatefulWidget {
                           });
                       return;
                     }
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return LoadingDialog(title: "Redeeming code");
-                        });
-                    String? error = await manager.redeemShareCode(code);
-                    if (error != null) {
+                    if(await redeemShareCode(code, context, manager)) {
                       Navigator.of(context).pop();
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text("Error"),
-                              content: Text(error),
-                              actions: <Widget>[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text("Ok"))
-                              ],
-                            );
-                          });
-                      return;
+                      reloadState();
                     }
-                    await manager.updateShockerStore();
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                    reloadState();
                   },
                   child: Text("Redeem"))
             ],
           );
         });
+  }
+
+  static Future<bool> redeemShareCode(
+      String code, BuildContext context, AlarmListManager manager) async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return LoadingDialog(title: "Redeeming code");
+        });
+    String? error = await manager.redeemShareCode(code);
+    if (error != null) {
+      Navigator.of(context).pop();
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Error"),
+              content: Text(error),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Ok"))
+              ],
+            );
+          });
+      return false;
+    }
+    await manager.updateShockerStore();
+    Navigator.of(context).pop();
+    return true;
   }
 
   static startAddHub(AlarmListManager manager, BuildContext context,
@@ -436,8 +443,11 @@ class ShockerScreenState extends State<ShockerScreen> {
             key: ValueKey(s.getIdentifier())));
       }
       shockers.add(StickyHeader(
-          header:
-              HubItem(hub: shocker.key!, manager: manager, key: ValueKey(shocker.key!.getIdentifier(manager)), onRebuild: rebuild),
+          header: HubItem(
+              hub: shocker.key!,
+              manager: manager,
+              key: ValueKey(shocker.key!.getIdentifier(manager)),
+              onRebuild: rebuild),
           content: Column(
             children: shockerWidgets,
           )));
