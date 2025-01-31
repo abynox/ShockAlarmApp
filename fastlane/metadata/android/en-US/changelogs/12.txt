@@ -1,0 +1,4 @@
+**Changelog:**
+- Fixed several layout bugs
+- Updates copy button on qr codes
+- Make random shock tool run in background
