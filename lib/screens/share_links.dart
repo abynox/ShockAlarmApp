@@ -85,13 +85,13 @@ class ShareLinkCreationDialogState extends State<ShareLinkCreationDialog> {
               }
 
               showDialog(context: context, builder: (context) => LoadingDialog(title: "Creating Share Link"));
-              String? error = await AlarmListManager.getInstance().createShareLink(widget.shareLinkName, widget.expiresOn!);
-              if(error != null) {
+              PairCode error = await AlarmListManager.getInstance().createShareLink(widget.shareLinkName, widget.expiresOn!);
+              if(error.error != null) {
                 Navigator.of(context).pop();
                 showDialog(context: context, builder: (context) {
                   return AlertDialog(
                     title: Text("Error creating share link"),
-                    content: Text(error),
+                    content: Text(error.error!),
                     actions: [
                       TextButton(onPressed: () {
                         Navigator.of(context).pop();
@@ -103,6 +103,7 @@ class ShareLinkCreationDialogState extends State<ShareLinkCreationDialog> {
               }
               Navigator.of(context).pop();
               Navigator.of(context).pop();
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => ShareLinkEditScreen(shareLink: OpenShockShareLink.fromId(error.code!, widget.shareLinkName, AlarmListManager.getInstance().getAnyUserToken()))));
               AlarmListManager.getInstance().reloadShareLinksMethod!();
             },
             child: Text("Create")),

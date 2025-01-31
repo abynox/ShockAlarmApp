@@ -42,6 +42,7 @@ class ShareLinkEditScreenState extends State<ShareLinkEditScreen> {
     List<String> existingShockers = shareLink!.shockers.map((e) => e.id).toList();
     List<Shocker> ownShockers = await AlarmListManager.getInstance().shockers.where((element) => element.isOwn && !existingShockers.contains(element.id)).toList();
     Shocker? selectedShocker = null;
+    OpenShockShareLimits limits = OpenShockShareLimits();
 
     if(ownShockers.length <= 0) {
       showDialog(context: context, builder: (context) => AlertDialog(title: Text("All done"), content: Text("You have already added all your shockers to this share link."), actions: [TextButton(onPressed: () {
@@ -65,6 +66,7 @@ class ShareLinkEditScreenState extends State<ShareLinkEditScreen> {
               selectedShocker = value;
             });
           }),
+          ShockerShareEntryEditor(limits: limits),
         ],
       ),
       actions: [
@@ -81,9 +83,17 @@ class ShareLinkEditScreenState extends State<ShareLinkEditScreen> {
           showDialog(context: context, builder: (context) => LoadingDialog(title: "Adding shocker"));
 
           String? error = await AlarmListManager.getInstance().addShockerToShareLink(selectedShocker, shareLink!);
+          if(error != null) {
+            Navigator.of(context).pop();
+            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Error"), content: Text(error!), actions: [TextButton(onPressed: () {
+              Navigator.of(context).pop();
+            }, child: Text("Ok"))],));
+            return;
+          }
+          error = await OpenShockClient().setLimitsOfShareLinkShocker(shareLink!, selectedShocker!, limits);
           Navigator.of(context).pop();
           if(error != null) {
-            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Error"), content: Text(error), actions: [TextButton(onPressed: () {
+            showDialog(context: context, builder: (context) => AlertDialog(title: Text("Error"), content: Text(error!), actions: [TextButton(onPressed: () {
               Navigator.of(context).pop();
             }, child: Text("Ok"))],));
             return;

@@ -563,10 +563,10 @@ class AlarmListManager {
     return client.addShockerToShareLink(selectedShocker!, openShockShareLink);
   }
 
-  Future<String?> createShareLink(String shareLinkName, DateTime dateTime) async {
+  Future<PairCode> createShareLink(String shareLinkName, DateTime dateTime) async {
     OpenShockClient client = OpenShockClient();
     Token? token = getAnyUserToken();
-    if(token == null) return "No token found";
+    if(token == null) return PairCode("No token found", null);
     return client.createShareLink(token, shareLinkName, dateTime);
   }
 

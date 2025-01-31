@@ -537,15 +537,15 @@ class OpenShockClient {
     return getErrorCode(response, "Failed to update shocker limits");
   }
 
-  Future<String?> createShareLink(Token t, String shareLinkName, DateTime dateTime) async {
+  Future<PairCode> createShareLink(Token t, String shareLinkName, DateTime dateTime) async {
     var response = await PostRequest(t, "/1/shares/links", jsonEncode({
       "name": shareLinkName,
       "expiresOn": dateTime.toIso8601String()
     }));
     if(response.statusCode == 200) {
-      return null;
+      return PairCode(null, jsonDecode(response.body)['data']);
     }
-    return getErrorCode(response, "Failed to create share link");
+    return PairCode(getErrorCode(response, "Failed to create share link"), null);
   }
 
   Future<String?> deleteShareLink(OpenShockShareLink shareLink) async {
@@ -567,6 +567,9 @@ class OpenShockShareLink {
   String name = "";
   List<Shocker> shockers = [];
   Token? tokenReference;
+
+  OpenShockShareLink();
+  OpenShockShareLink.fromId(this.id, this.name, this.tokenReference);
 
   String getLink() {
     String host = "https://openshock.app";
@@ -611,7 +614,6 @@ class CreatedHub {
 
   CreatedHub(this.hubId, this.error);
 }
-
 class PairCode {
   String? code;
   String? error;
