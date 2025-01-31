@@ -452,19 +452,26 @@ class ShockerScreenState extends State<ShockerScreen> {
             children: shockerWidgets,
           )));
     }
-    return ListView(
-      
-      children: [
+    return DesktopMobileRefreshIndicator(
+      onRefresh: () async {
+        await manager.updateShockerStore();
+        setState(() {});
+      },
+      child: ListView(children: [
         Text(
           'All devices',
           style: t.textTheme.headlineMedium,
           textAlign: TextAlign.center,
         ),
         if (groupedShockers.isEmpty)
-          Text("No shockers found", style: t.textTheme.headlineSmall,
-          textAlign: TextAlign.center,),
+          Text(
+            "No shockers found",
+            style: t.textTheme.headlineSmall,
+            textAlign: TextAlign.center,
+          ),
         if (!manager.settings.disableHubFiltering)
-          Center(child: Wrap(
+          Center(
+              child: Wrap(
             spacing: 5,
             runAlignment: WrapAlignment.start,
             children: manager.enabledHubs.keys.map<FilterChip>((hub) {
@@ -477,16 +484,8 @@ class ShockerScreenState extends State<ShockerScreen> {
                   selected: manager.enabledHubs[hub]!);
             }).toList(),
           )),
-        DesktopMobileRefreshIndicator(
-            onRefresh: () async {
-              await manager.updateShockerStore();
-              setState(() {});
-            },
-            child: ConstrainedContainer(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: groupedShockers.isNotEmpty ? shockers : [])))
-      ],
+          ...(groupedShockers.isNotEmpty ? shockers : [])
+      ]),
     );
   }
 }

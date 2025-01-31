@@ -42,7 +42,7 @@ class QrCardState extends State<QrCard> {
                     child: Column(
                       children: [
                           Icon(Icons.copy, color: widget.c),
-                        Text(widget.data, softWrap: true, style: t.textTheme.bodyMedium?.copyWith(color: widget.c),),
+                        Text(widget.data, textAlign: TextAlign.center, softWrap: true, style: t.textTheme.bodyMedium?.copyWith(color: widget.c),),
                         if (widget.copied)
                           Icon(Icons.check, color: Colors.green),
                       ],

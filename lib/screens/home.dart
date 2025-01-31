@@ -66,7 +66,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
     floatingActionButtons = <Widget?>[
       if (supportsAlarms)
         FloatingActionButton(
-            onPressed: () {
+            onPressed: () async {
               TimeOfDay tod = TimeOfDay.fromDateTime(DateTime.now());
               print("alarms: ${manager.getAlarms().length}");
               final newAlarm = new Alarm(
@@ -75,8 +75,9 @@ class ScreenSelectorState extends State<ScreenSelector> {
                   hour: tod.hour,
                   minute: tod.minute,
                   active: false);
+              await manager.saveAlarm(newAlarm);
               setState(() {
-                manager.saveAlarm(newAlarm);
+                
               });
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text('Alarm added'),
@@ -98,12 +99,13 @@ class ScreenSelectorState extends State<ScreenSelector> {
 
     manager.getPageIndex().then((index) {
       if (index != -1) {
-        _tap(min(index, screens.length));
+        _selectedIndex = min(index, screens.length);
       } else {
         if (manager.getAnyUserToken() == null) _selectedIndex = 4;
         if (!supportsAlarms) _selectedIndex -= 1;
       }
       setState(() {});
+      _tap(_selectedIndex);
     });
     super.initState();
   }

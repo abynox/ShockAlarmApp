@@ -15,7 +15,7 @@ class Settings {
   bool useRangeSliderForIntensity = false;
   bool useRangeSliderForDuration = false;
 
-  bool disableHubFiltering = false;
+  bool disableHubFiltering = true;
 
   bool allowTokenEditing = false;
   bool useHttpShocking = false;
@@ -258,6 +258,7 @@ class AlarmListManager {
 
   void deleteAlarm(Alarm alarm) {
     _alarms.removeWhere((findAlarm) => alarm.id == findAlarm.id);
+    saveAlarms();
   }
 
   void rebuildAlarmShockers() {

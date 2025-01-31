@@ -109,7 +109,7 @@ class RandomShocksState extends State<RandomShocks> {
                   return AlertDialog(
                     title: Text("Random shocks"),
                     content: Text(
-                        "This tool will do random shocks with the selected shockers. You can set the intensity and duration range, the delay between the shocks and the type of control to use randomly.\n\nNote: This feature currently only works while the app is open. Closing it on android may make this feature stop."),
+                        "This tool will do random shocks with the selected shockers. You can set the intensity and duration range, the delay between the shocks and the type of control to use randomly.\n\nNote: This feature might only work while the app is open in the background. Closing it on android may stop this feature."),
                     actions: [
                       TextButton(
                           onPressed: () {

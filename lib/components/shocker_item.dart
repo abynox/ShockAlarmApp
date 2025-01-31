@@ -226,20 +226,12 @@ class ShockerItemState extends State<ShockerItem>
   DateTime actionDoneTime = DateTime.now();
   DateTime delayDoneTime = DateTime.now();
   double delayDuration = 0;
-  AnimationController? progressCircularController;
-  AnimationController? delayVibrationController;
   bool loadingPause = false;
 
   @override
   void initState() {
     super.initState();
     shocker.controls.limitTo(shocker.durationLimit, shocker.intensityLimit);
-  }
-
-  @override
-  void dispose() {
-    progressCircularController?.dispose();
-    super.dispose();
   }
 
   void setPauseState(bool pause) async {
@@ -277,11 +269,12 @@ class ShockerItemState extends State<ShockerItem>
         ? ShockerItem.ownShockerActions
         : ShockerItem.foreignShockerActions;
     return GestureDetector(
-      onTap: () => {
+      onTap: () {
         setState(() {
           if (shocker.paused) return;
           expanded = !expanded;
-        })
+        });
+        onRebuild();
       },
       child: Card(
         color: t.colorScheme.onInverseSurface,
@@ -372,6 +365,7 @@ class ShockerItemState extends State<ShockerItem>
                                 setState(() {
                                   expanded = !expanded;
                                 });
+                                onRebuild();
                               },
                               icon: Icon(expanded
                                   ? Icons.arrow_upward_rounded
