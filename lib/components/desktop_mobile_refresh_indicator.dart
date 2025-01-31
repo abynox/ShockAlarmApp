@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 
 class DesktopMobileRefreshIndicator extends StatefulWidget {
   final Widget child;
@@ -18,15 +19,10 @@ class DesktopMobileRefreshIndicatorState extends State<DesktopMobileRefreshIndic
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
-      focusNode: refreshFocusNode,
-      autofocus: true,
-      onKeyEvent: (KeyEvent event) {
-        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.f5) {
-          refreshKey.currentState?.show();
-        }
-      },
-      child: RefreshIndicator(
+    AlarmListManager.getInstance().onRefresh = () {
+      refreshKey.currentState?.show();
+    };
+    return RefreshIndicator(
         key: refreshKey,
         onRefresh: widget.onRefresh,
         child: kIsWeb ? Column(
@@ -37,8 +33,7 @@ class DesktopMobileRefreshIndicatorState extends State<DesktopMobileRefreshIndic
             Expanded(child: widget.child)
           ],
         ) : widget.child
-      )
-    );
+      );
   }
 
   @override

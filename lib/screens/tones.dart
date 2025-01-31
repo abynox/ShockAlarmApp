@@ -57,7 +57,7 @@ class AlarmToneScreenState extends State<AlarmToneScreen> {
       floatingActionButton: FloatingActionButton(onPressed: () {
         final newTone = new AlarmTone(
             id: manager.getNewToneId(),
-            name: 'New Tone');
+            name: 'Tone label');
         setState(() {
           manager.saveTone(newTone);
         });

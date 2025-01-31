@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/grouped_shockers.dart';
 import 'package:shock_alarm_app/screens/shockers.dart';
@@ -84,8 +85,9 @@ class ScreenSelectorState extends State<ScreenSelector> {
     ];
 
     manager.getPageIndex().then((index) {
-      if (index != -1)
-        _selectedIndex = min(index, screens.length);
+      if (index != -1){
+        _tap(min(index, screens.length));
+      }
       else {
         if (manager.getAnyUserToken() == null) _selectedIndex = 4;
         if (!supportsAlarms) _selectedIndex -= 1;
@@ -97,13 +99,14 @@ class ScreenSelectorState extends State<ScreenSelector> {
   ScreenSelectorState({required this.manager});
 
   void _tap(int index) {
+    index = max(0, min(index, screens.length - 1));
     setState(() {
-      pageController.animateToPage(index,
-          duration: Duration(milliseconds: 200), curve: Curves.bounceOut);
+      pageController.jumpToPage(index);
       _selectedIndex = index;
     });
     AlarmListManager.getInstance().savePageIndex(index);
-  }
+  }  
+  final FocusNode focusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -112,19 +115,29 @@ class ScreenSelectorState extends State<ScreenSelector> {
       setState(() {});
     };
     return Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.only(
-            bottom: 15,
-            left: 15,
-            right: 15,
-            top: 50,
-          ),
-          child: PageView(
-            children: screens,
-            onPageChanged: _tap,
-            controller: pageController,
-          ),
-        ),
+        body: KeyboardListener(
+          autofocus: true,
+          onKeyEvent: (KeyEvent event) {
+            if (event is KeyDownEvent) {
+              switch(event.logicalKey) {
+                case LogicalKeyboardKey.arrowLeft:
+                  _tap(_selectedIndex - 1);
+                  break;
+                case LogicalKeyboardKey.arrowRight:
+                  _tap(_selectedIndex + 1);
+                  break;
+                case LogicalKeyboardKey.f5:
+                  if(manager.onRefresh != null) manager.onRefresh!();
+                  break;
+              }
+            }
+          },
+          focusNode: focusNode, 
+        child: PageView(
+          children: screens,
+          onPageChanged: _tap,
+          controller: pageController,
+        ),),
         appBar: null,
         floatingActionButton: floatingActionButtons.elementAt(_selectedIndex),
         bottomNavigationBar: BottomNavigationBar(
@@ -145,6 +158,26 @@ class HomeScreen extends StatefulWidget {
   State<StatefulWidget> createState() => HomeScreenState(manager);
 }
 
+class PagePadding extends StatefulWidget {
+  final Widget child;
+
+  const PagePadding({Key? key, required this.child}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => PagePaddingState();
+}
+
+class PagePaddingState extends State<PagePadding> {
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return Padding(
+      padding: EdgeInsets.all(10),
+      child: widget.child,
+    );
+  }
+}
+
 class HomeScreenState extends State<HomeScreen> {
   final AlarmListManager manager;
 
@@ -158,7 +191,8 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     manager.context = context;
     ThemeData t = Theme.of(context);
-    return Column(
+    return PagePadding(
+        child: Column(
       children: <Widget>[
         Text(
           'Your alarms',
@@ -188,6 +222,6 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         )
       ],
-    );
+    ));
   }
 }

@@ -442,6 +442,8 @@ class AlarmListManager {
 
   Function()? reloadShareLinksMethod;
 
+  Function()? onRefresh;
+
   Future startWS(Token t, {bool stopExisting = true}) async {
     if(ws != null) {
       if(!stopExisting) return;

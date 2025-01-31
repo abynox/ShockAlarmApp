@@ -104,33 +104,36 @@ class ShockerItem extends StatefulWidget {
             BuildContext context, Function onRebuild) {
           showDialog(
               context: context,
-              builder: (context) => DeleteDialog(onDelete: () async {
-                showDialog(
-                    context: context,
-                    builder: (context) =>
-                        LoadingDialog(title: "Deleting shocker"));
-                String? errorMessage =
-                    await manager.deleteShocker(shocker);
-                Navigator.of(context).pop();
-                if (errorMessage != null) {
-                  showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                            title: Text("Failed to delete shocker"),
-                            content: Text(errorMessage),
-                            actions: [
-                              TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("Ok"))
-                            ],
-                          ));
-                  return;
-                }
-                Navigator.of(context).pop();
-                onRebuild();
-              }, title: "Delete shocker", body: "Are you sure you want to delete the shocker ${shocker.name}?\n\n(You can add it again later)"));
+              builder: (context) => DeleteDialog(
+                  onDelete: () async {
+                    showDialog(
+                        context: context,
+                        builder: (context) =>
+                            LoadingDialog(title: "Deleting shocker"));
+                    String? errorMessage = await manager.deleteShocker(shocker);
+                    Navigator.of(context).pop();
+                    if (errorMessage != null) {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                                title: Text("Failed to delete shocker"),
+                                content: Text(errorMessage),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text("Ok"))
+                                ],
+                              ));
+                      return;
+                    }
+                    Navigator.of(context).pop();
+                    onRebuild();
+                  },
+                  title: "Delete shocker",
+                  body:
+                      "Are you sure you want to delete the shocker ${shocker.name}?\n\n(You can add it again later)"));
         }),
   ];
 
@@ -274,159 +277,148 @@ class ShockerItemState extends State<ShockerItem>
         ? ShockerItem.ownShockerActions
         : ShockerItem.foreignShockerActions;
     return GestureDetector(
-      /*
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  EditAlarm(alarm: this.alarm, manager: manager))),
-                  */
-      child: GestureDetector(
-        onTap: () => {
-          setState(() {
-            if (shocker.paused) return;
-            expanded = !expanded;
-          })
-        },
-        child: Card(
-          color: t.colorScheme.onInverseSurface,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Text(
-                          shocker.name,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+      onTap: () => {
+        setState(() {
+          if (shocker.paused) return;
+          expanded = !expanded;
+        })
+      },
+      child: Card(
+        color: t.colorScheme.onInverseSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        shocker.name,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      Row(
-                        spacing: 5,
-                        children: [
-                          PopupMenuButton(
-                            iconColor: t.colorScheme.onSurfaceVariant,
-                            itemBuilder: (context) {
-                              return [
-                                for (ShockerAction a in actions)
-                                  PopupMenuItem(
-                                      value: a.name,
-                                      child: Row(
-                                        spacing: 10,
-                                        children: [a.icon, Text(a.name)],
-                                      )),
-                              ];
-                            },
-                            onSelected: (String value) {
-                              for (ShockerAction a in actions) {
-                                if (a.name == value) {
-                                  a.onClick(
-                                      manager, shocker, context, onRebuild);
-                                  return;
-                                }
+                    ),
+                    Row(
+                      spacing: 5,
+                      children: [
+                        PopupMenuButton(
+                          iconColor: t.colorScheme.onSurfaceVariant,
+                          itemBuilder: (context) {
+                            return [
+                              for (ShockerAction a in actions)
+                                PopupMenuItem(
+                                    value: a.name,
+                                    child: Row(
+                                      spacing: 10,
+                                      children: [a.icon, Text(a.name)],
+                                    )),
+                            ];
+                          },
+                          onSelected: (String value) {
+                            for (ShockerAction a in actions) {
+                              if (a.name == value) {
+                                a.onClick(manager, shocker, context, onRebuild);
+                                return;
                               }
+                            }
+                          },
+                        ),
+                        if (loadingPause) CircularProgressIndicator(),
+                        if (shocker.isOwn && shocker.paused && !loadingPause)
+                          IconButton(
+                              onPressed: () {
+                                setPauseState(false);
+                              },
+                              icon: Icon(Icons.play_arrow)),
+                        if (shocker.isOwn && !shocker.paused && !loadingPause)
+                          IconButton(
+                              onPressed: () {
+                                expanded = false;
+                                setPauseState(true);
+                              },
+                              icon: Icon(Icons.pause)),
+                        if (shocker.paused && !shocker.isOwn)
+                          GestureDetector(
+                            child: Chip(
+                                label: Text("paused"),
+                                backgroundColor: t.colorScheme.errorContainer,
+                                side: BorderSide.none,
+                                avatar: Icon(
+                                  Icons.info,
+                                  color: t.colorScheme.error,
+                                )),
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                        title: Text("Shocker is paused"),
+                                        content: Text(shocker.isOwn
+                                            ? "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by pressing the play button."
+                                            : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text("Ok"))
+                                        ],
+                                      ));
                             },
                           ),
-                          if (loadingPause) CircularProgressIndicator(),
-                          if (shocker.isOwn && shocker.paused && !loadingPause)
-                            IconButton(
-                                onPressed: () {
-                                  setPauseState(false);
-                                },
-                                icon: Icon(Icons.play_arrow)),
-                          if (shocker.isOwn && !shocker.paused && !loadingPause)
-                            IconButton(
-                                onPressed: () {
-                                  expanded = false;
-                                  setPauseState(true);
-                                },
-                                icon: Icon(Icons.pause)),
-                          if (shocker.paused && !shocker.isOwn)
-                            GestureDetector(
-                              child: Chip(
-                                  label: Text("paused"),
-                                  backgroundColor: t.colorScheme.errorContainer,
-                                  side: BorderSide.none,
-                                  avatar: Icon(
-                                    Icons.info,
-                                    color: t.colorScheme.error,
-                                  )),
-                              onTap: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                          title: Text("Shocker is paused"),
-                                          content: Text(shocker.isOwn
-                                              ? "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by pressing the play button."
-                                              : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
-                                          actions: [
-                                            TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: Text("Ok"))
-                                          ],
-                                        ));
+                        if (!shocker.paused)
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  expanded = !expanded;
+                                });
                               },
-                            ),
-                          if (!shocker.paused)
-                            IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    expanded = !expanded;
-                                  });
-                                },
-                                icon: Icon(expanded
-                                    ? Icons.arrow_upward_rounded
-                                    : Icons.arrow_downward_rounded)),
-                        ],
-                      )
-                    ],
-                  ),
-                  if (expanded)
-                    ShockingControls(
-                      manager: manager,
-                      controlsContainer: shocker.controls,
-                      key: ValueKey(
-                          shocker.getIdentifier() + "-shocking-controls"),
-                      durationLimit: shocker.durationLimit,
-                      intensityLimit: shocker.intensityLimit,
-                      shockAllowed: shocker.shockAllowed,
-                      vibrateAllowed: shocker.vibrateAllowed,
-                      soundAllowed: shocker.soundAllowed,
-                      onDelayAction: (type, intensity, duration) {
-                        manager
-                            .sendShock(type, shocker, intensity, duration)
-                            .then((errorMessage) {
-                          if (errorMessage == null) return;
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(errorMessage),
-                            duration: Duration(seconds: 3),
-                          ));
-                        });
-                      },
-                      onProcessAction: (type, intensity, duration) {
-                        manager
-                            .sendShock(type, shocker, intensity, duration)
-                            .then((errorMessage) {
-                          if (errorMessage == null) return;
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(errorMessage),
-                            duration: Duration(seconds: 3),
-                          ));
-                        });
-                      },
-                      onSet: (container) {
-                        setState(() {});
-                      },
+                              icon: Icon(expanded
+                                  ? Icons.arrow_upward_rounded
+                                  : Icons.arrow_downward_rounded)),
+                      ],
                     )
-                ],
-              )),
-        ),
+                  ],
+                ),
+                if (expanded)
+                  ShockingControls(
+                    manager: manager,
+                    controlsContainer: shocker.controls,
+                    key: ValueKey(
+                        shocker.getIdentifier() + "-shocking-controls"),
+                    durationLimit: shocker.durationLimit,
+                    intensityLimit: shocker.intensityLimit,
+                    shockAllowed: shocker.shockAllowed,
+                    vibrateAllowed: shocker.vibrateAllowed,
+                    soundAllowed: shocker.soundAllowed,
+                    onDelayAction: (type, intensity, duration) {
+                      manager
+                          .sendShock(type, shocker, intensity, duration)
+                          .then((errorMessage) {
+                        if (errorMessage == null) return;
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(errorMessage),
+                          duration: Duration(seconds: 3),
+                        ));
+                      });
+                    },
+                    onProcessAction: (type, intensity, duration) {
+                      manager
+                          .sendShock(type, shocker, intensity, duration)
+                          .then((errorMessage) {
+                        if (errorMessage == null) return;
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(errorMessage),
+                          duration: Duration(seconds: 3),
+                        ));
+                      });
+                    },
+                    onSet: (container) {
+                      setState(() {});
+                    },
+                  )
+              ],
+            )),
       ),
     );
   }

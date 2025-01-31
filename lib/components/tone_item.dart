@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/delete_dialog.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../stores/alarm_store.dart';
@@ -48,6 +49,12 @@ class ToneItemState extends State<ToneItem> {
     setState(() {});
   }
 
+  void onDeleteComponent(AlarmToneComponent component) {
+    tone.components.remove(component);
+    manager.saveTone(tone);
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
@@ -69,7 +76,28 @@ class ToneItemState extends State<ToneItem> {
                   children: <Widget>[
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[Text(tone.name)],
+                      children: <Widget>[TextButton(onPressed: () async {
+                        String newName = "";
+                        TextEditingController controller = TextEditingController(text: tone.name);
+                        await showDialog(context: context, builder: (builder) {
+                          return AlertDialog(
+                            title: Text("Rename tone"),
+                            content: TextField(
+                              controller: controller
+                            ),
+                            actions: [
+                              TextButton(onPressed: () {
+                                Navigator.of(context).pop();
+                              }, child: Text("Cancel")),
+                              TextButton(onPressed: () {
+                                Navigator.of(context).pop();
+                                tone.name = controller.text;
+                                _save();
+                              }, child: Text("Save"))
+                            ],
+                          );
+                        });
+                      }, child: Text(tone.name),)],
                     ),
                     Column(
                       children: [
@@ -94,13 +122,19 @@ class ToneItemState extends State<ToneItem> {
                         return ToneComponentItem(
                             component: component,
                             manager: manager,
-                            onRebuild: onRebuild);
+                            onRebuild: onRebuild,
+                            onDelete: onDeleteComponent,);
                       }).toList()),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           IconButton(
-                            onPressed: _delete,
+                            onPressed: () {
+                              showDialog(context: context, builder: (builder) => DeleteDialog(onDelete: () {
+                                _delete();
+                                Navigator.of(context).pop();
+                              }, title: "Delete tone", body: "Are you sure you want to delete this tone?"));
+                            },
                             icon: Icon(Icons.delete),
                           ),
                           IconButton(
@@ -124,32 +158,37 @@ class ToneComponentItem extends StatefulWidget {
   final AlarmToneComponent component;
   final AlarmListManager manager;
   final Function onRebuild;
+  final Function(AlarmToneComponent) onDelete;
 
   const ToneComponentItem(
       {Key? key,
       required this.component,
       required this.manager,
-      required this.onRebuild})
+      required this.onRebuild,
+      required this.onDelete})
       : super(key: key);
 
   @override
   State<StatefulWidget> createState() =>
-      ToneComponentItemState(component, manager, onRebuild);
+      ToneComponentItemState();
 }
 
 class ToneComponentItemState extends State<ToneComponentItem> {
-  final AlarmToneComponent component;
-  final AlarmListManager manager;
-  final Function onRebuild;
 
-  ToneComponentItemState(this.component, this.manager, this.onRebuild);
+  ToneComponentItemState();
+
+  void _delete() {
+    
+    widget.onDelete(widget.component);
+  }
 
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     TextEditingController timeController =
-        TextEditingController(text: (component.time / 1000.0).toString());
+        TextEditingController(text: (widget.component.time / 1000.0).toString());
     return PaddedCard(
+      color: t.colorScheme.surface,
       child: Column(
         children: [
           Column(
@@ -174,10 +213,10 @@ class ToneComponentItemState extends State<ToneComponentItem> {
                           value: ControlType.sound,
                         ),
                       ],
-                      initialSelection: component.type,
+                      initialSelection: widget.component.type,
                       onSelected: (value) {
                         setState(() {
-                          component.type = value;
+                          widget.component.type = value;
                         });
                       }),
                   Expanded(
@@ -186,7 +225,7 @@ class ToneComponentItemState extends State<ToneComponentItem> {
                       decoration: InputDecoration(
                           labelText: "Time (sec)", hintText: "Time"),
                       onSubmitted: (value) {
-                        component.time = (double.parse(value) * 1000).toInt();
+                        widget.component.time = (double.parse(value) * 1000).toInt();
                       },
                       controller: timeController,
                     ),
@@ -194,22 +233,27 @@ class ToneComponentItemState extends State<ToneComponentItem> {
                 ],
               ),
               IntensityDurationSelector(
-                key: ValueKey(component.type),
+                key: ValueKey(widget.component.type),
                 controlsContainer: ControlsContainer.fromInts(
-                    intensity: component.intensity,
-                    duration: component.duration),
+                    intensity: widget.component.intensity,
+                    duration: widget.component.duration),
                 onSet: (container) {
                   setState(() {
-                    component.duration = container.durationRange.start.toInt();
-                    component.intensity =
+                    widget.component.duration = container.durationRange.start.toInt();
+                    widget.component.intensity =
                         container.intensityRange.start.toInt();
                   });
                 },
                 maxDuration: 3000,
                 maxIntensity: 100,
-                showIntensity: component.type != ControlType.sound,
-                type: component.type ?? ControlType.shock,
+                showIntensity: widget.component.type != ControlType.sound,
+                type: widget.component.type ?? ControlType.shock,
               ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                IconButton(onPressed: _delete, icon: Icon(Icons.delete))
+              ],)
             ],
           ),
         ],

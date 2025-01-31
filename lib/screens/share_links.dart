@@ -5,10 +5,12 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shock_alarm_app/components/card.dart';
 import 'package:shock_alarm_app/components/delete_dialog.dart';
 import 'package:shock_alarm_app/components/qr_card.dart';
+import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/screens/share_link_edit.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 
+import '../components/constrained_container.dart';
 import '../components/desktop_mobile_refresh_indicator.dart';
 
 class ShareLinkCreationDialog extends StatefulWidget {
@@ -69,41 +71,58 @@ class ShareLinkCreationDialogState extends State<ShareLinkCreationDialog> {
             child: Text("Cancel")),
         TextButton(
             onPressed: () async {
-              if(widget.shareLinkName.isEmpty) {
-                showDialog(context: context, builder: (context) {
-                  return AlertDialog(
-                    title: Text("Name is empty"),
-                    content: Text("Please enter a name for the share link"),
-                    actions: [
-                      TextButton(onPressed: () {
-                        Navigator.of(context).pop();
-                      }, child: Text("Ok"))
-                    ],
-                  );
-                });
+              if (widget.shareLinkName.isEmpty) {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text("Name is empty"),
+                        content: Text("Please enter a name for the share link"),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Ok"))
+                        ],
+                      );
+                    });
                 return;
               }
 
-              showDialog(context: context, builder: (context) => LoadingDialog(title: "Creating Share Link"));
-              PairCode error = await AlarmListManager.getInstance().createShareLink(widget.shareLinkName, widget.expiresOn!);
-              if(error.error != null) {
+              showDialog(
+                  context: context,
+                  builder: (context) =>
+                      LoadingDialog(title: "Creating Share Link"));
+              PairCode error = await AlarmListManager.getInstance()
+                  .createShareLink(widget.shareLinkName, widget.expiresOn!);
+              if (error.error != null) {
                 Navigator.of(context).pop();
-                showDialog(context: context, builder: (context) {
-                  return AlertDialog(
-                    title: Text("Error creating share link"),
-                    content: Text(error.error!),
-                    actions: [
-                      TextButton(onPressed: () {
-                        Navigator.of(context).pop();
-                      }, child: Text("Ok"))
-                    ],
-                  );
-                });
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text("Error creating share link"),
+                        content: Text(error.error!),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Ok"))
+                        ],
+                      );
+                    });
                 return;
               }
               Navigator.of(context).pop();
               Navigator.of(context).pop();
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) => ShareLinkEditScreen(shareLink: OpenShockShareLink.fromId(error.code!, widget.shareLinkName, AlarmListManager.getInstance().getAnyUserToken()))));
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => ShareLinkEditScreen(
+                      shareLink: OpenShockShareLink.fromId(
+                          error.code!,
+                          widget.shareLinkName,
+                          AlarmListManager.getInstance().getAnyUserToken()))));
               AlarmListManager.getInstance().reloadShareLinksMethod!();
             },
             child: Text("Create")),
@@ -151,7 +170,8 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
   bool initialLoading = false;
 
   Future loadShares() async {
-    AlarmListManager.getInstance().shareLinks = await AlarmListManager.getInstance().getShareLinks();
+    AlarmListManager.getInstance().shareLinks =
+        await AlarmListManager.getInstance().getShareLinks();
     setState(() {
       initialLoading = false;
     });
@@ -159,9 +179,8 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     AlarmListManager.getInstance().reloadShareLinksMethod = loadShares;
-    if(AlarmListManager.getInstance().shareLinks == null) {
+    if (AlarmListManager.getInstance().shareLinks == null) {
       initialLoading = true;
       loadShares();
     }
@@ -172,35 +191,46 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     List<Widget> shareEntries = [];
-    if(AlarmListManager.getInstance().shareLinks != null) {
-      for (OpenShockShareLink shareLink in AlarmListManager.getInstance().shareLinks!) {
-        shareEntries.add(ShareLinkItem(shareLink: shareLink, reloadMethod: loadShares));
+    if (AlarmListManager.getInstance().shareLinks != null) {
+      for (OpenShockShareLink shareLink
+          in AlarmListManager.getInstance().shareLinks!) {
+        shareEntries
+            .add(ShareLinkItem(shareLink: shareLink, reloadMethod: loadShares));
       }
     }
-    if(shareEntries.isEmpty) {
-      shareEntries.add(Center(child: Text("No share links created yet",
-            style: t.textTheme.headlineSmall)));
-      
+    if (shareEntries.isEmpty) {
+      shareEntries.add(Center(
+          child: Text("No share links created yet",
+              style: t.textTheme.headlineSmall)));
     }
-    shareEntries.insert(0, IconButton(onPressed: () {
-        showDialog(context: context, builder: (context) {
-          return AlertDialog(
-            title: Text("What are share links?"),
-            content: Text("Share links are a way to share your shockers with people who do not have an OpenShock account and don't want to create one (or for giving a group access to your shockers). Share links have limits just like normal shares. However people can just use any name they want to access the share link. Their actions will also be shown in the shockers log."),
-            actions: [
-              TextButton(onPressed: () {
-                Navigator.of(context).pop();
-              }, child: Text("Ok"))
-            ],
-          );
-        });
-      }, icon: Icon(Icons.info)));
-    return 
-      initialLoading
-        ? Center(child: CircularProgressIndicator())
-        : DesktopMobileRefreshIndicator(
-            onRefresh: loadShares,
-            child: ListView(children: shareEntries));
+    shareEntries.insert(
+        0,
+        IconButton(
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text("What are share links?"),
+                      content: Text(
+                          "Share links are a way to share your shockers with people who do not have an OpenShock account and don't want to create one (or for giving a group access to your shockers). Share links have limits just like normal shares. However people can just use any name they want to access the share link. Their actions will also be shown in the shockers log."),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Ok"))
+                      ],
+                    );
+                  });
+            },
+            icon: Icon(Icons.info)));
+    return PagePadding(
+        child: initialLoading
+            ? Center(child: CircularProgressIndicator())
+            : DesktopMobileRefreshIndicator(
+                onRefresh: loadShares,
+                child: ConstrainedContainer(child: ListView(children: shareEntries),)));
   }
 }
 
@@ -208,7 +238,9 @@ class ShareLinkItem extends StatelessWidget {
   final OpenShockShareLink shareLink;
   final Function reloadMethod;
 
-  const ShareLinkItem({Key? key, required this.shareLink, required this.reloadMethod}) : super(key: key);
+  const ShareLinkItem(
+      {Key? key, required this.shareLink, required this.reloadMethod})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -222,29 +254,45 @@ class ShareLinkItem extends StatelessWidget {
             IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () {
-                  showDialog(context: context, builder: (context) {
-                    return DeleteDialog(onDelete: () async {
-                      showDialog(context: context, builder: (context) => LoadingDialog(title: "Deleting ${shareLink.name}"));
-                      String? error = await AlarmListManager.getInstance().deleteShareLink(shareLink);
-                      Navigator.of(context).pop();
-                      if(error != null) {
-                        showDialog(context: context, builder: (context) {
-                          return AlertDialog(
-                            title: Text("Error deleting share link"),
-                            content: Text(error),
-                            actions: [
-                              TextButton(onPressed: () {
-                                Navigator.of(context).pop();
-                              }, child: Text("Ok"))
-                            ],
-                          );
-                        });
-                        return;
-                      }
-                      Navigator.of(context).pop();
-                      reloadMethod();
-                    }, title: "Delete ${shareLink.name}", body: "Are you sure you want to delete ${shareLink.name}?");
-                  });
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return DeleteDialog(
+                            onDelete: () async {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => LoadingDialog(
+                                      title: "Deleting ${shareLink.name}"));
+                              String? error =
+                                  await AlarmListManager.getInstance()
+                                      .deleteShareLink(shareLink);
+                              Navigator.of(context).pop();
+                              if (error != null) {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title:
+                                            Text("Error deleting share link"),
+                                        content: Text(error),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text("Ok"))
+                                        ],
+                                      );
+                                    });
+                                return;
+                              }
+                              Navigator.of(context).pop();
+                              reloadMethod();
+                            },
+                            title: "Delete ${shareLink.name}",
+                            body:
+                                "Are you sure you want to delete ${shareLink.name}?");
+                      });
                 }),
             IconButton(
                 onPressed: () {

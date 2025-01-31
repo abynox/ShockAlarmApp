@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 
 import '../services/alarm_list_manager.dart';
@@ -70,7 +71,7 @@ class LogScreenState extends State<LogScreen> {
         ),
         child:
         initialLoading ? Center(child: CircularProgressIndicator()) :
-        DesktopMobileRefreshIndicator(
+        ConstrainedContainer(child: DesktopMobileRefreshIndicator(
           onRefresh: () async {
             return loadLogs();
           },
@@ -82,7 +83,7 @@ class LogScreenState extends State<LogScreen> {
             }
           )
         )
-      )
+      ))
     );
   }
 }
