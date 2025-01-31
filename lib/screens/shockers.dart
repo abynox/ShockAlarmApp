@@ -443,14 +443,16 @@ class ShockerScreenState extends State<ShockerScreen> {
             key: ValueKey(s.getIdentifier())));
       }
       shockers.add(StickyHeader(
-          header: HubItem(
-              hub: shocker.key!,
-              manager: manager,
-              key: ValueKey(shocker.key!.getIdentifier(manager)),
-              onRebuild: rebuild),
-          content: Column(
+          header: ConstrainedContainer(
+              child: HubItem(
+                  hub: shocker.key!,
+                  manager: manager,
+                  key: ValueKey(shocker.key!.getIdentifier(manager)),
+                  onRebuild: rebuild)),
+          content: ConstrainedContainer(
+              child: Column(
             children: shockerWidgets,
-          )));
+          ))));
     }
     return DesktopMobileRefreshIndicator(
       onRefresh: () async {
@@ -484,7 +486,7 @@ class ShockerScreenState extends State<ShockerScreen> {
                   selected: manager.enabledHubs[hub]!);
             }).toList(),
           )),
-          ...(groupedShockers.isNotEmpty ? shockers : [])
+        ...(groupedShockers.isNotEmpty ? shockers : [])
       ]),
     );
   }

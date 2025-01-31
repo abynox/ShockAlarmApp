@@ -15,7 +15,7 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 const String issues_url = "https://github.com/ComputerElite/ShockAlarmApp/issues";
 
 String GetUserAgent() {
-  return "ShockAlarm/0.0.11";
+  return "ShockAlarm/0.0.12";
 }
 
 bool isAndroid() {
