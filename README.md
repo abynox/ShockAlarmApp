@@ -45,8 +45,9 @@ Furthermore it fixes some layout flaws of the official OpenShock Frontend like h
 - [x] Better desktop support (layout)
 - [ ] Better desktop support (dynamic layout)
 - [x] save last opened tab (and load it on start)
-- [ ] Random shocking (specify random delay between shocks, min and max intensity/duration)
-- [ ] Fix alarms not sending controls when app is quit
+- [x] Random shocking (specify random delay between shocks, min and max intensity/duration)
+- [ ] Random shocking -> Add background task + notification
+- [ ] Fix alarms not sending controls when app is minimized
 - [ ] Live controls
 - [ ] (Big controls mode)
 - [x] Web support (alarms not working)
