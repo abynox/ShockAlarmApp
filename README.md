@@ -56,3 +56,23 @@ Furthermore it fixes some layout flaws of the official OpenShock Frontend like h
 # Planned settings
 - [x] Hide/unhiding of the delay option
 - [x] Slider instead of RangeSlider for delay
+
+# Development
+This app is based on flutter and thus you need to first install flutter: https://docs.flutter.dev/get-started/install
+
+Afterwards clone the repository and get all dependencies:
+
+1. `git clone https://github.com/ComputerElite/ShockAlarmApp`
+2. `cd ShockAlarmApp`
+3. `flutter pub get`
+
+# Publishing
+## Steps for making a new release
+1. Test functionality of app on Android, Web and Linux
+2. Bump the version in [pubspec.yaml](pubspec.yaml) and [main.dart](main.dart)
+3. Create a changelog at [fastlane/metadata/android/en-US/changelogs](fastlane/metadata/android/en-US) in a file names `<versioncode>.txt`. It should be markdown formatted.
+4. Create a new tag (or release) and push it to the repo. Actions will spin up to compile the binaries and add the previously created changelog to the release
+5. (optional) Update the screenshots in [fastlane/metadata/android/en-US/images/phoneScreenshots/](fastlane/metadata/android/en-US/images/phoneScreenshots/) for FDroid and the ReadMe
+
+## Publishing on FDroid
+FDroid will publish the update autonomously once a build cycle starts. The changelog we created earlier will be added to the FDroid page automatically
