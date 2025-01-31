@@ -116,7 +116,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       showDialog(context: context, builder: (context) {
         return AlertDialog(
           title: Text("Redeem share code?"),
-          content: Text(code),
+          content: Text("This will allow you to control someone elses shocker. The code is $code"),
           actions: [
             TextButton(onPressed: () {
               Navigator.of(context).pop();
