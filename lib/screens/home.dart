@@ -8,7 +8,7 @@ import 'package:shock_alarm_app/screens/grouped_shockers.dart';
 import 'package:shock_alarm_app/screens/shockers.dart';
 import 'package:shock_alarm_app/screens/tones.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
-import 'package:uni_links3/uni_links.dart';
+import 'package:uni_links5/uni_links.dart';
 import '../components/alarm_item.dart';
 import '../services/alarm_list_manager.dart';
 import 'share_links.dart';
