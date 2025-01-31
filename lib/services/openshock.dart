@@ -598,7 +598,7 @@ class OpenShockShareLink {
         for(OpenShockShocker s in d.shockers) {
           Shocker shocker = Shocker.fromOpenShockShocker(s);
           shocker.hubId = d.id;
-          shocker.hubReference = AlarmListManager().getHub(d.id);
+          shocker.hubReference = AlarmListManager.getInstance().getHub(d.id);
           shocker.apiTokenId = tokenReference!.id;
           shockers.add(shocker);
         }

@@ -582,4 +582,39 @@ class AlarmListManager {
     return prefs.getInt("page") ?? -1;
   }
 
+
+  Shocker getSelectedShockerLimits() {
+    Shocker limitedShocker = Shocker();
+    limitedShocker.durationLimit = 300;
+    limitedShocker.intensityLimit = 0;
+    limitedShocker.shockAllowed = false;
+    limitedShocker.soundAllowed = false;
+    limitedShocker.vibrateAllowed = false;
+    for (Shocker s in shockers.where((x) {
+      return selectedShockers.contains(x.id);
+    })) {
+      if (s.durationLimit > limitedShocker.durationLimit) {
+        limitedShocker.durationLimit = s.durationLimit;
+      }
+      if (s.intensityLimit > limitedShocker.intensityLimit) {
+        limitedShocker.intensityLimit = s.intensityLimit;
+      }
+      if (s.shockAllowed) {
+        limitedShocker.shockAllowed = true;
+      }
+      if (s.soundAllowed) {
+        limitedShocker.soundAllowed = true;
+      }
+      if (s.vibrateAllowed) {
+        limitedShocker.vibrateAllowed = true;
+      }
+    }
+    return limitedShocker;
+  }
+
+  Iterable<Shocker> getSelectedShockers() {
+    return shockers.where((x) {
+      return selectedShockers.contains(x.id);
+    });
+  }
 }

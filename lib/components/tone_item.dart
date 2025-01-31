@@ -76,28 +76,38 @@ class ToneItemState extends State<ToneItem> {
                   children: <Widget>[
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[TextButton(onPressed: () async {
-                        String newName = "";
-                        TextEditingController controller = TextEditingController(text: tone.name);
-                        await showDialog(context: context, builder: (builder) {
-                          return AlertDialog(
-                            title: Text("Rename tone"),
-                            content: TextField(
-                              controller: controller
-                            ),
-                            actions: [
-                              TextButton(onPressed: () {
-                                Navigator.of(context).pop();
-                              }, child: Text("Cancel")),
-                              TextButton(onPressed: () {
-                                Navigator.of(context).pop();
-                                tone.name = controller.text;
-                                _save();
-                              }, child: Text("Save"))
-                            ],
-                          );
-                        });
-                      }, child: Text(tone.name),)],
+                      children: <Widget>[
+                        TextButton(
+                          onPressed: () async {
+                            String newName = "";
+                            TextEditingController controller =
+                                TextEditingController(text: tone.name);
+                            await showDialog(
+                                context: context,
+                                builder: (builder) {
+                                  return AlertDialog(
+                                    title: Text("Rename tone"),
+                                    content: TextField(controller: controller),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text("Cancel")),
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                            tone.name = controller.text;
+                                            _save();
+                                          },
+                                          child: Text("Save"))
+                                    ],
+                                  );
+                                });
+                          },
+                          child: Text(tone.name),
+                        )
+                      ],
                     ),
                     Column(
                       children: [
@@ -120,20 +130,27 @@ class ToneItemState extends State<ToneItem> {
                       Column(
                           children: tone.components.map((component) {
                         return ToneComponentItem(
-                            component: component,
-                            manager: manager,
-                            onRebuild: onRebuild,
-                            onDelete: onDeleteComponent,);
+                          component: component,
+                          manager: manager,
+                          onRebuild: onRebuild,
+                          onDelete: onDeleteComponent,
+                        );
                       }).toList()),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           IconButton(
                             onPressed: () {
-                              showDialog(context: context, builder: (builder) => DeleteDialog(onDelete: () {
-                                _delete();
-                                Navigator.of(context).pop();
-                              }, title: "Delete tone", body: "Are you sure you want to delete this tone?"));
+                              showDialog(
+                                  context: context,
+                                  builder: (builder) => DeleteDialog(
+                                      onDelete: () {
+                                        _delete();
+                                        Navigator.of(context).pop();
+                                      },
+                                      title: "Delete tone",
+                                      body:
+                                          "Are you sure you want to delete this tone?"));
                             },
                             icon: Icon(Icons.delete),
                           ),
@@ -169,24 +186,19 @@ class ToneComponentItem extends StatefulWidget {
       : super(key: key);
 
   @override
-  State<StatefulWidget> createState() =>
-      ToneComponentItemState();
+  State<StatefulWidget> createState() => ToneComponentItemState();
 }
 
 class ToneComponentItemState extends State<ToneComponentItem> {
-
   ToneComponentItemState();
 
   void _delete() {
-    
     widget.onDelete(widget.component);
   }
 
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    TextEditingController timeController =
-        TextEditingController(text: (widget.component.time / 1000.0).toString());
     return PaddedCard(
       color: t.colorScheme.surface,
       child: Column(
@@ -219,17 +231,15 @@ class ToneComponentItemState extends State<ToneComponentItem> {
                           widget.component.type = value;
                         });
                       }),
-                  Expanded(
-                    child: TextField(
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                          labelText: "Time (sec)", hintText: "Time"),
-                      onSubmitted: (value) {
-                        widget.component.time = (double.parse(value) * 1000).toInt();
-                      },
-                      controller: timeController,
-                    ),
-                  )
+                  SecondTextField(
+                    timeMs: widget.component.duration,
+                    label: "Time",
+                    onSet: (value) {
+                      setState(() {
+                        widget.component.duration = value;
+                      });
+                    },
+                  ),
                 ],
               ),
               IntensityDurationSelector(
@@ -239,7 +249,8 @@ class ToneComponentItemState extends State<ToneComponentItem> {
                     duration: widget.component.duration),
                 onSet: (container) {
                   setState(() {
-                    widget.component.duration = container.durationRange.start.toInt();
+                    widget.component.duration =
+                        container.durationRange.start.toInt();
                     widget.component.intensity =
                         container.intensityRange.start.toInt();
                   });
@@ -252,11 +263,38 @@ class ToneComponentItemState extends State<ToneComponentItem> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                IconButton(onPressed: _delete, icon: Icon(Icons.delete))
-              ],)
+                  IconButton(onPressed: _delete, icon: Icon(Icons.delete))
+                ],
+              )
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class SecondTextField extends StatelessWidget {
+  int timeMs = 0;
+  String label = "";
+  Function(int) onSet;
+
+  SecondTextField({Key? key, required this.timeMs, required this.onSet, required this.label})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    TextEditingController timeController =
+        TextEditingController(text: (timeMs / 1000.0).toString());
+    return Expanded(
+      child: TextField(
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(labelText: "$label (sec)", hintText: label),
+        onSubmitted: (value) {
+          timeMs = (double.parse(value) * 1000).toInt();
+          onSet(timeMs);
+        },
+        controller: timeController,
       ),
     );
   }

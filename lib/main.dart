@@ -161,9 +161,6 @@ class MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-
-    AlarmListManager manager = AlarmListManager();
-    manager.loadAllFromStorage();
     return DynamicColorBuilder(builder: (lightColorScheme, darkColorScheme) {
       return MaterialApp(
         title: 'ShockAlarm',
@@ -176,7 +173,7 @@ class MyAppState extends State<MyApp> {
           colorScheme: darkColorScheme,
         ): ThemeData.dark(),
         themeMode: themeMode,
-        home: ScreenSelector(manager: manager)
+        home: ScreenSelector(manager: AlarmListManager.getInstance())
       );
     });
   }

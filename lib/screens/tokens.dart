@@ -9,6 +9,7 @@ import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../components/token_item.dart';
 import 'shares.dart';
+import 'tools.dart';
 
 class TokenScreen extends StatefulWidget {
   final AlarmListManager manager;
@@ -379,6 +380,9 @@ class TokenScreenState extends State<TokenScreen> {
                 })
           ],
         ),
+        Center(child: FilledButton(onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ToolsScreen()));
+        }, child: Text("More tools")),),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
