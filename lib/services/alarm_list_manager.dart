@@ -570,4 +570,14 @@ class AlarmListManager {
     return client.createShareLink(token, shareLinkName, dateTime);
   }
 
+  void savePageIndex(int index) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setInt("page", index);
+  }
+
+  Future<int> getPageIndex() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt("page") ?? -1;
+  }
+
 }
