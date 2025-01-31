@@ -36,7 +36,7 @@ jobs:
       # Step 3. Verify the changelog file exists using the extracted version code.
       - name: Verify changelog file exists
         run: |
-          FILE_PATH="fastlane/metadata/anroid/en-US/changelogs/${{ env.VERSION_CODE }}.txt"
+          FILE_PATH="fastlane/metadata/android/en-US/changelogs/${{ env.VERSION_CODE }}.txt"
           if [ ! -f "$FILE_PATH" ]; then
             echo "Changelog file not found at $FILE_PATH"
             exit 1
@@ -48,7 +48,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FILE_PATH="fastlane/metadata/anroid/en-US/changelogs/${{ env.VERSION_CODE }}.txt"
+          FILE_PATH="fastlane/metadata/android/en-US/changelogs/${{ env.VERSION_CODE }}.txt"
           echo "Updating release notes from file: $FILE_PATH"
           echo "Changelog content:"
           cat "$FILE_PATH"
