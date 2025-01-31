@@ -209,9 +209,8 @@ class TokenScreenState extends State<TokenScreen> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    return PagePadding(
-        child: ConstrainedContainer(
-            child: ListView(
+    return ConstrainedContainer(
+        child: ListView(
       children: <Widget>[
         Column(
           spacing: 10,
@@ -380,9 +379,14 @@ class TokenScreenState extends State<TokenScreen> {
                 })
           ],
         ),
-        Center(child: FilledButton(onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ToolsScreen()));
-        }, child: Text("More tools")),),
+        Center(
+          child: FilledButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ToolsScreen()));
+              },
+              child: Text("More tools")),
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -418,6 +422,6 @@ class TokenScreenState extends State<TokenScreen> {
           ],
         )
       ],
-    )));
+    ));
   }
 }

@@ -225,12 +225,11 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
                   });
             },
             icon: Icon(Icons.info)));
-    return PagePadding(
-        child: initialLoading
+    return initialLoading
             ? Center(child: CircularProgressIndicator())
             : DesktopMobileRefreshIndicator(
                 onRefresh: loadShares,
-                child: ConstrainedContainer(child: ListView(children: shareEntries),)));
+                child: ConstrainedContainer(child: ListView(children: shareEntries),));
   }
 }
 

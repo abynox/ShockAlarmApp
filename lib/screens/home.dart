@@ -33,11 +33,10 @@ class ScreenSelectorState extends State<ScreenSelector> {
   List<BottomNavigationBarItem> navigationBarItems = [];
   List<Widget?> floatingActionButtons = [];
 
-
   @override
   void initState() {
     try {
-      if(isAndroid()) {
+      if (isAndroid()) {
         getInitialLink().then((String? url) {
           if (url != null) {
             onProtocolUrlReceived(url);
@@ -98,10 +97,9 @@ class ScreenSelectorState extends State<ScreenSelector> {
     ];
 
     manager.getPageIndex().then((index) {
-      if (index != -1){
+      if (index != -1) {
         _tap(min(index, screens.length));
-      }
-      else {
+      } else {
         if (manager.getAnyUserToken() == null) _selectedIndex = 4;
         if (!supportsAlarms) _selectedIndex -= 1;
       }
@@ -110,33 +108,39 @@ class ScreenSelectorState extends State<ScreenSelector> {
     super.initState();
   }
 
-
   @override
   void onProtocolUrlReceived(String url) {
     String log = 'Url received: $url';
     List<String> parts = url.split('/');
-    if(parts.length < 4) return;
+    if (parts.length < 4) return;
     String action = parts[2];
     String code = parts[3];
-    if(action == "sharecode") {
-      showDialog(context: context, builder: (context) {
-        return AlertDialog(
-          title: Text("Redeem share code?"),
-          content: Text("This will allow you to control someone elses shocker. The code is $code"),
-          actions: [
-            TextButton(onPressed: () {
-              Navigator.of(context).pop();
-            }, child: Text("Close")),
-            TextButton(onPressed: () async {
-              
-              if(await ShockerScreen.redeemShareCode(code, context, manager)) {
-                Navigator.of(context).pop();
-                manager.reloadAllMethod!();
-              }
-            }, child: Text("Redeem"))
-          ],
-        );
-      });
+    if (action == "sharecode") {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Redeem share code?"),
+              content: Text(
+                  "This will allow you to control someone elses shocker. The code is $code"),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Close")),
+                TextButton(
+                    onPressed: () async {
+                      if (await ShockerScreen.redeemShareCode(
+                          code, context, manager)) {
+                        Navigator.of(context).pop();
+                        manager.reloadAllMethod!();
+                      }
+                    },
+                    child: Text("Redeem"))
+              ],
+            );
+          });
     }
   }
 
@@ -150,6 +154,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
     });
     AlarmListManager.getInstance().savePageIndex(index);
   }
+
   final FocusNode focusNode = FocusNode();
 
   @override
@@ -160,28 +165,36 @@ class ScreenSelectorState extends State<ScreenSelector> {
     };
     return Scaffold(
         body: KeyboardListener(
-          autofocus: true,
-          onKeyEvent: (KeyEvent event) {
-            if (event is KeyDownEvent) {
-              switch(event.logicalKey) {
-                case LogicalKeyboardKey.arrowLeft:
-                  _tap(_selectedIndex - 1);
-                  break;
-                case LogicalKeyboardKey.arrowRight:
-                  _tap(_selectedIndex + 1);
-                  break;
-                case LogicalKeyboardKey.f5:
-                  if(manager.onRefresh != null) manager.onRefresh!();
-                  break;
+            autofocus: true,
+            onKeyEvent: (KeyEvent event) {
+              if (event is KeyDownEvent) {
+                switch (event.logicalKey) {
+                  case LogicalKeyboardKey.arrowLeft:
+                    _tap(_selectedIndex - 1);
+                    break;
+                  case LogicalKeyboardKey.arrowRight:
+                    _tap(_selectedIndex + 1);
+                    break;
+                  case LogicalKeyboardKey.f5:
+                    if (manager.onRefresh != null) manager.onRefresh!();
+                    break;
+                }
               }
-            }
-          },
-          focusNode: focusNode, 
-        child: PageView(
-          children: screens,
-          onPageChanged: _tap,
-          controller: pageController,
-        ),),
+            },
+            focusNode: focusNode,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                bottom: 15,
+                left: 15,
+                right: 15,
+                top: 15,
+              ),
+              child: PageView(
+                children: screens,
+                onPageChanged: _tap,
+                controller: pageController,
+              ),
+            )),
         appBar: null,
         floatingActionButton: floatingActionButtons.elementAt(_selectedIndex),
         bottomNavigationBar: BottomNavigationBar(
@@ -235,21 +248,26 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     manager.context = context;
     ThemeData t = Theme.of(context);
-    return PagePadding(
-        child: Column(
-      children: <Widget>[
+    return ListView(
+      children: [
         Text(
           'Your alarms',
           style: t.textTheme.headlineMedium,
+          textAlign: TextAlign.center,
         ),
-        Text("Alarms are currently semi working",
-            style: t.textTheme.headlineSmall),
-        TextButton(
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => AlarmToneScreen(manager)));
-            },
-            child: Text("Edit Tones")),
+        Text(
+          "Alarms are currently semi working",
+          style: t.textTheme.headlineSmall,
+          textAlign: TextAlign.center,
+        ),
+        Center(
+          child: TextButton(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AlarmToneScreen(manager)));
+              },
+              child: Text("Edit Tones")),
+        ),
         Flexible(
           child: ListView.builder(
             shrinkWrap: true,
@@ -266,6 +284,6 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         )
       ],
-    ));
+    );
   }
 }

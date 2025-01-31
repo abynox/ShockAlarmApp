@@ -31,7 +31,6 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
     setState(() {});
   }
 
-
   void executeAll(ControlType type, int intensity, int duration) {
     List<Control> controls = [];
     for (Shocker s in manager.getSelectedShockers()) {
@@ -134,79 +133,78 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     Shocker limitedShocker = manager.getSelectedShockerLimits();
-    
-    return PagePadding(
-        child: DesktopMobileRefreshIndicator(
-            onRefresh: () async {
-              await manager.updateShockerStore();
-              setState(() {});
-            },
-            child: Column(
-              children: [
-                GroupedShockerSelector(onChanged: onRebuild,),
-                if (manager.selectedShockers.length > 0)
-                  ConstrainedContainer(
-                    child: Column(
+
+    return DesktopMobileRefreshIndicator(
+        onRefresh: () async {
+          await manager.updateShockerStore();
+          setState(() {});
+        },
+        child: Column(
+          children: [
+            GroupedShockerSelector(
+              onChanged: onRebuild,
+            ),
+            if (manager.selectedShockers.length > 0)
+              ConstrainedContainer(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            if (loadingPause) CircularProgressIndicator(),
-                            if (!loadingPause && canPause())
-                              IconButton(
-                                  onPressed: () {
-                                    pauseAll(true);
-                                  },
-                                  icon: Icon(Icons.pause)),
-                            if (loadingResume) CircularProgressIndicator(),
-                            if (!loadingResume && canResume())
-                              IconButton(
-                                  onPressed: () {
-                                    pauseAll(false);
-                                  },
-                                  icon: Icon(Icons.play_arrow)),
-                            if (canViewLogs())
-                              ElevatedButton(
-                                onPressed: () {
-                                  List<Shocker> shockers = [];
-                                  for (String shockerId
-                                      in manager.selectedShockers) {
-                                    Shocker s = manager.shockers
-                                        .firstWhere((x) => x.id == shockerId);
-                                    if (!s.isOwn) continue;
-                                    shockers.add(s);
-                                  }
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => LogScreen(
-                                              shockers: shockers,
-                                              manager: manager)));
-                                },
-                                child: Text("View logs"),
-                              )
-                          ],
-                        ),
-                        ShockingControls(
-                            manager: manager,
-                            controlsContainer: manager.controls,
-                            durationLimit: limitedShocker.durationLimit,
-                            intensityLimit: limitedShocker.intensityLimit,
-                            soundAllowed: limitedShocker.soundAllowed,
-                            vibrateAllowed: limitedShocker.vibrateAllowed,
-                            shockAllowed: limitedShocker.shockAllowed,
-                            onDelayAction: executeAll,
-                            onProcessAction: executeAll,
-                            onSet: (container) {},
-                            key: ValueKey(
-                                DateTime.now().millisecondsSinceEpoch)),
+                        if (loadingPause) CircularProgressIndicator(),
+                        if (!loadingPause && canPause())
+                          IconButton(
+                              onPressed: () {
+                                pauseAll(true);
+                              },
+                              icon: Icon(Icons.pause)),
+                        if (loadingResume) CircularProgressIndicator(),
+                        if (!loadingResume && canResume())
+                          IconButton(
+                              onPressed: () {
+                                pauseAll(false);
+                              },
+                              icon: Icon(Icons.play_arrow)),
+                        if (canViewLogs())
+                          ElevatedButton(
+                            onPressed: () {
+                              List<Shocker> shockers = [];
+                              for (String shockerId
+                                  in manager.selectedShockers) {
+                                Shocker s = manager.shockers
+                                    .firstWhere((x) => x.id == shockerId);
+                                if (!s.isOwn) continue;
+                                shockers.add(s);
+                              }
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => LogScreen(
+                                          shockers: shockers,
+                                          manager: manager)));
+                            },
+                            child: Text("View logs"),
+                          )
                       ],
                     ),
-                  )
-                else
-                  Text("No shockers selected",
-                      style: t.textTheme.headlineMedium)
-              ],
-            )));
+                    ShockingControls(
+                        manager: manager,
+                        controlsContainer: manager.controls,
+                        durationLimit: limitedShocker.durationLimit,
+                        intensityLimit: limitedShocker.intensityLimit,
+                        soundAllowed: limitedShocker.soundAllowed,
+                        vibrateAllowed: limitedShocker.vibrateAllowed,
+                        shockAllowed: limitedShocker.shockAllowed,
+                        onDelayAction: executeAll,
+                        onProcessAction: executeAll,
+                        onSet: (container) {},
+                        key: ValueKey(DateTime.now().millisecondsSinceEpoch)),
+                  ],
+                ),
+              )
+            else
+              Text("No shockers selected", style: t.textTheme.headlineMedium)
+          ],
+        ));
   }
 }
