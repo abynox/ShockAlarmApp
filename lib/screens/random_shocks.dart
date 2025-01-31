@@ -1,9 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_background/flutter_background.dart';
 import 'package:shock_alarm_app/components/grouped_shocker_selector.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:shock_alarm_app/components/tone_item.dart';
+import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 
 import '../services/openshock.dart';
@@ -29,6 +31,13 @@ class RandomShocksState extends State<RandomShocks> {
     running = true;
     runningId += 1;
     int currentId = runningId;
+    if(isAndroid()) {
+      if(!await FlutterBackground.hasPermissions) {
+        initBgService();
+      } else {
+        FlutterBackground.enableBackgroundExecution();
+      }
+    }
     setState(() {});
     lastRandom = DateTime.now();
     while (runningId == currentId) {
@@ -61,14 +70,18 @@ class RandomShocksState extends State<RandomShocks> {
   }
 
   @override
-  void dispose() {
+  void dispose() async {
     // TODO: implement dispose
+    if(isAndroid() && await FlutterBackground.hasPermissions) {
+      FlutterBackground.disableBackgroundExecution();
+    }
     running = false;
     runningId += 1;
     super.dispose();
   }
 
-  void stopRandom() {
+  void stopRandom() async {
+    if(isAndroid() && await FlutterBackground.hasPermissions)FlutterBackground.disableBackgroundExecution();
     runningId += 1;
     running = false;
     setState(() {});

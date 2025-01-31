@@ -294,6 +294,10 @@ class SecondTextField extends StatelessWidget {
           timeMs = (double.parse(value) * 1000).toInt();
           onSet(timeMs);
         },
+        onTapOutside: (event) {
+          timeMs = (double.parse(timeController.text) * 1000).toInt();
+          onSet(timeMs);
+        },
         controller: timeController,
       ),
     );

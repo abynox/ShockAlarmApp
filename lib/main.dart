@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shock_alarm_app/stores/alarm_store.dart';
@@ -79,6 +80,18 @@ void onDidReceiveNotificationResponse(NotificationResponse notificationResponse,
   }
 }
 
+Future initBgService() async {
+  final androidConfig = FlutterBackgroundAndroidConfig(
+    notificationTitle: "Shocking service",
+    notificationText: "Allows ShowAlarm to control your shockers",
+    notificationImportance: AndroidNotificationImportance.normal,
+    showBadge: true,
+    notificationIcon: AndroidResource(name: 'monochrome_icon', defType: 'drawable'), // Default is ic_launcher from folder mipmap
+  );
+  bool success = await FlutterBackground.initialize(androidConfig: androidConfig);
+  print("Background service initialized: $success");
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AlarmListManager manager = AlarmListManager();
@@ -90,6 +103,7 @@ void main() async {
   if(isAndroid()) {
     await AndroidAlarmManager.initialize();
     await requestPermissions();
+    await initBgService();
   }
   
 

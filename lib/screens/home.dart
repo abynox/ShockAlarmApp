@@ -36,11 +36,17 @@ class ScreenSelectorState extends State<ScreenSelector> {
 
   @override
   void initState() {
-    getInitialLink().then((String? url) {
-      if (url != null) {
-        onProtocolUrlReceived(url);
+    try {
+      if(isAndroid()) {
+        getInitialLink().then((String? url) {
+          if (url != null) {
+            onProtocolUrlReceived(url);
+          }
+        });
       }
-    });
+    } catch (e) {
+      print("Error getting initial link (perhaps wrong platform): $e");
+    }
     screens = [
       if (supportsAlarms) HomeScreen(manager: manager),
       ShockerScreen(manager: manager),
