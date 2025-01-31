@@ -443,44 +443,46 @@ class ShockerScreenState extends State<ShockerScreen> {
           )));
     }
     return PagePadding(
-        child: Column(
-      children: [
-        Text(
-          'All devices',
-          style: t.textTheme.headlineMedium,
-        ),
-        if (groupedShockers.isEmpty)
-          Text("No shockers found", style: t.textTheme.headlineSmall),
-        if (!manager.settings.disableHubFiltering)
-          Wrap(
-            spacing: 5,
-            runAlignment: WrapAlignment.start,
-            children: manager.enabledHubs.keys.map<FilterChip>((hub) {
-              return FilterChip(
-                  label: Text(manager.getHub(hub)?.name ?? "Unknown hub"),
-                  onSelected: (bool value) {
-                    manager.enabledHubs[hub] = value;
-                    setState(() {});
-                  },
-                  selected: manager.enabledHubs[hub]!);
-            }).toList(),
-          ),
-        Flexible(
-            child: ConstrainedContainer(
-                child: DesktopMobileRefreshIndicator(
-                    onRefresh: () async {
-                      await manager.updateShockerStore();
-                      setState(() {});
-                    },
-                    child: ListView(
-                      children: [
-                        Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children:
-                                groupedShockers.isNotEmpty ? shockers : [])
-                      ],
-                    ))))
-      ],
-    ));
+        child: DesktopMobileRefreshIndicator(
+            onRefresh: () async {
+              await manager.updateShockerStore();
+              setState(() {});
+            },
+            child: Column(
+              children: [
+                Flexible(
+                  child: Text(
+                    'All devices',
+                    style: t.textTheme.headlineMedium,
+                  ),
+                ),
+                if (groupedShockers.isEmpty)
+                  Text("No shockers found", style: t.textTheme.headlineSmall),
+                if (!manager.settings.disableHubFiltering)
+                  Wrap(
+                    spacing: 5,
+                    runAlignment: WrapAlignment.start,
+                    children: manager.enabledHubs.keys.map<FilterChip>((hub) {
+                      return FilterChip(
+                          label:
+                              Text(manager.getHub(hub)?.name ?? "Unknown hub"),
+                          onSelected: (bool value) {
+                            manager.enabledHubs[hub] = value;
+                            setState(() {});
+                          },
+                          selected: manager.enabledHubs[hub]!);
+                    }).toList(),
+                  ),
+                Flexible(
+                    child: ConstrainedContainer(
+                        child: ListView(
+                  children: [
+                    Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: groupedShockers.isNotEmpty ? shockers : [])
+                  ],
+                )))
+              ],
+            )));
   }
 }
