@@ -315,7 +315,7 @@ class ShareLinkItem extends StatelessWidget {
             IconButton(
                 icon: Icon(Icons.share),
                 onPressed: () {
-                  Share.share(shareLink.getLink());
+                  Share.share("Control my OpenShock shockers without registration: " + shareLink.getLink());
                 }),
             IconButton(
                 onPressed: () {
