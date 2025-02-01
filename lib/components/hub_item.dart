@@ -198,7 +198,7 @@ class HubItemState extends State<HubItem> {
     showDialog(context: context, builder: (builder) =>
     AlertDialog(
       title: Text("Captive portal"),
-      content: Text("The captive portal is the website hosted on your hub itself. It's used for managing the wifi connection and account linking. Here you can enable or disable it."),
+      content: Text("The captive portal is the website hosted on your hub itself. It's only available in your wifi ans is used for managing the wifi connection and account linking. Here you can enable or disable it."),
       actions: [
         TextButton(
             onPressed: () {

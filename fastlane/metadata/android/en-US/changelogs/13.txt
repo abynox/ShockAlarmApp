@@ -1,0 +1,4 @@
+**Changelog:**
+- Added renaming of alarms
+- Updated rename shocker to edit shocker where you can now also edit the associated hub, shocker model and rfId
+- Added option to enable/disable the captive portal of hubs
