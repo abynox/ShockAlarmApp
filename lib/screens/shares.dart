@@ -197,17 +197,24 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
   Function() onRebuild;
   bool editing = false;
   bool deleting = false;
+  bool saving = false;
+  bool pausing = false;
 
   ShockerShareEntryState(this.share, this.manager, this.onRebuild);
 
   void setPausedState(bool paused) async {
+    setState(() {
+      pausing = true;
+    });
     String? error =
         await OpenShockClient().setPauseStateOfShare(share, manager, paused);
+    setState(() {
+      pausing = false;
+    });
     if (error != null) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(error)));
     }
-    setState(() {});
   }
 
   void openEditLimitsDialog() async {
@@ -300,31 +307,40 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
                             },
                             icon: Icon(Icons.cancel)),
                       if (editing)
-                        IconButton(
-                            onPressed: () async {
-                              String? error = await OpenShockClient()
-                                  .setLimitsOfShare(share, limits, manager);
-                              if (error != null) {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                          title: Text("Error"),
-                                          content: Text(error),
-                                          actions: [
-                                            TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: Text("Ok"))
-                                          ],
-                                        ));
-                                return;
-                              }
-                              setState(() {
-                                editing = false;
-                              });
-                            },
-                            icon: Icon(Icons.save)),
+                        (saving
+                            ? CircularProgressIndicator()
+                            : IconButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    saving = true;
+                                  });
+                                  String? error = await OpenShockClient()
+                                      .setLimitsOfShare(share, limits, manager);
+                                  setState(() {
+                                    saving = false;
+                                  });
+                                  if (error != null) {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                              title: Text("Error"),
+                                              content: Text(error),
+                                              actions: [
+                                                TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                    child: Text("Ok"))
+                                              ],
+                                            ));
+                                    return;
+                                  }
+                                  setState(() {
+                                    editing = false;
+                                  });
+                                },
+                                icon: Icon(Icons.save))),
                       if (!editing)
                         (deleting
                             ? CircularProgressIndicator()
@@ -340,17 +356,21 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
                             },
                             icon: Icon(Icons.edit)),
                       if (share.paused)
-                        IconButton(
-                            onPressed: () {
-                              setPausedState(false);
-                            },
-                            icon: Icon(Icons.play_arrow)),
+                        (pausing
+                            ? CircularProgressIndicator()
+                            : IconButton(
+                                onPressed: () {
+                                  setPausedState(false);
+                                },
+                                icon: Icon(Icons.play_arrow))),
                       if (!share.paused)
-                        IconButton(
-                            onPressed: () {
-                              setPausedState(true);
-                            },
-                            icon: Icon(Icons.pause)),
+                        (pausing
+                            ? CircularProgressIndicator()
+                            : IconButton(
+                                onPressed: () {
+                                  setPausedState(true);
+                                },
+                                icon: Icon(Icons.pause))),
                     ],
                   )
                 ],
@@ -536,25 +556,27 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                                 "Claim my shocker with this share code: ${shareCode.id}");
                           },
                           icon: Icon(Icons.share)),
-                      
-                          IconButton(onPressed: () async {
+                      IconButton(
+                          onPressed: () async {
                             showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: Text('Scan to claim'),
-                                  content: QrCard(data: "openshock://sharecode/${shareCode.id}"),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text('Close'))
-                                  ],
-                                );
-                              });
-                          }, icon: Icon(Icons.qr_code)),
-                          
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: Text('Scan to claim'),
+                                    content: QrCard(
+                                        data:
+                                            "openshock://sharecode/${shareCode.id}"),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text('Close'))
+                                    ],
+                                  );
+                                });
+                          },
+                          icon: Icon(Icons.qr_code)),
                     ],
                   )
                 ],
