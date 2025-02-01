@@ -604,7 +604,9 @@ class OpenShockShareLink {
 
   OpenShockShareLink.fromJson(Map<String, dynamic> json, {this.tokenReference}) {
     id = json["id"];
-    createdOn = DateTime.parse(json["createdOn"]);
+    if(json["createdOn"] != null) {
+      createdOn = DateTime.parse(json["createdOn"]);
+    }
     if(json["expiresOn"] != null) {
       expiresOn = DateTime.parse(json["expiresOn"]);
     }
@@ -625,6 +627,16 @@ class OpenShockShareLink {
       }
     }
     name = json["name"];
+  }
+
+  toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "createdOn": createdOn.toIso8601String(),
+      "expiresOn": expiresOn?.toIso8601String(),
+      "author": author?.toJson()
+    };
   }
 }
 
@@ -852,6 +864,16 @@ class OpenShockUser {
     if(json["connectionId"] != null)
       connectionId = json["connectionId"];
     customName = json["customName"];
+  }
+  
+  toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "image": image,
+      "connectionId": connectionId,
+      "customName": customName
+    };
   }
 }
 

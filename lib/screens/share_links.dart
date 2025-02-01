@@ -175,6 +175,7 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
     setState(() {
       initialLoading = false;
     });
+    AlarmListManager.getInstance().saveShareLinks();
   }
 
   @override

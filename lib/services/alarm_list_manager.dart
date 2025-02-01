@@ -111,11 +111,13 @@ class AlarmListManager {
     String hubs = prefs.getString("hubs") ?? "[]";
     String settings = prefs.getString("settings") ?? "{}";
     String alarmTones = prefs.getString("alarmTones") ?? "[]";
+    String shareLinks = prefs.getString("shareLinks") ?? "[]";
     List<dynamic> alarmsList = jsonDecode(alarms);
     List<dynamic> tokensList = jsonDecode(tokens);
     List<dynamic> shockersList = jsonDecode(shockers);
     List<dynamic> hubsList = jsonDecode(hubs);
     List<dynamic> alarmTonesList = jsonDecode(alarmTones);
+    List<dynamic> shareLinksList = jsonDecode(shareLinks);
     this.settings = Settings.fromJson(jsonDecode(settings));
     if(kIsWeb) this.settings.useHttpShocking = true;
     for (var alarm in alarmsList) {
@@ -141,11 +143,20 @@ class AlarmListManager {
     for (var alarmTone in alarmTonesList) {
       this.alarmTones.add(AlarmTone.fromJson(alarmTone));
     }
+    this.shareLinks = [];
+    for (var shareLink in shareLinksList) {
+      this.shareLinks!.add(OpenShockShareLink.fromJson(shareLink));
+    }
     updateHubList();
     rebuildAlarmShockers();
     if(reloadAllMethod != null) {
       reloadAllMethod!();
     }
+  }
+
+  void saveShareLinks() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("shareLinks", jsonEncode(shareLinks));
   }
 
   void updateHubList() {
