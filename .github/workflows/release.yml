@@ -71,6 +71,7 @@ jobs:
             asset_name: shock_alarm_linux_x64_${{ github.ref }}.tar.gz
             tag: ${{ github.ref }}
             overwrite: true
+        - run: bash generate_pkgbuild.sh
         - name: Publish AUR package
           uses: KSXGitHub/github-actions-deploy-aur@v3
           with:
