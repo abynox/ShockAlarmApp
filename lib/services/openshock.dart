@@ -861,12 +861,14 @@ class Hub {
   bool isOwn = false;
   bool online = false;
   int apiTokenId = 0;
+  String firmwareVersion = "";
 
   Hub();
 
   Hub.fromOpenShockDevice(OpenShockDevice device) {
     name = device.name;
     id = device.id;
+    firmwareVersion = device.firmwareVersion;
   }
 
   Hub.fromJson(Map<String, dynamic> json) {
@@ -875,6 +877,8 @@ class Hub {
     isOwn = json["isOwn"];
     if(json["apiTokenId"] != null)
       apiTokenId = json["apiTokenId"];
+    if(json["firmwareVersion"] != null)
+      firmwareVersion = json["firmwareVersion"];
     if(json["online"] != null)
       online = json["online"];
   }
@@ -885,7 +889,8 @@ class Hub {
       "id": id,
       "isOwn": isOwn,
       "apiTokenId": apiTokenId,
-      "online": online
+      "online": online,
+      "firmwareVersion": firmwareVersion
     };
   }
 

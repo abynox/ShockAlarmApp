@@ -28,6 +28,8 @@ class Settings {
 
   ThemeMode theme = ThemeMode.system;
 
+  bool showFirmwareVersion = false;
+
 
   Settings();
 
@@ -50,6 +52,8 @@ class Settings {
       useGroupedShockerSelection = json["useGroupedShockerSelection"];
     if(json["theme"] != null)
       theme = ThemeMode.values[json["theme"]];
+    if(json["showFirmwareVersion"] != null)
+      showFirmwareVersion = json["showFirmwareVersion"];
   }
 
   Map<String, dynamic> toJson() {
@@ -62,7 +66,8 @@ class Settings {
       "allowTokenEditing": allowTokenEditing,
       "useHttpShocking": useHttpShocking,
       "useGroupedShockerSelection": useGroupedShockerSelection,
-      "theme": theme.index
+      "theme": theme.index,
+      "showFirmwareVersion": showFirmwareVersion
     };
   }
 }
@@ -474,6 +479,12 @@ class AlarmListManager {
   void deviceStatusHandler(List<dynamic> args) {
     for(var arg in args[0]) {
       OpenShockDevice d = OpenShockDevice.fromJson(arg);
+      for(Hub h in hubs) {
+        if(h.id == d.device) {
+          h.online = d.online;
+          h.firmwareVersion = d.firmwareVersion;
+        }
+      }
       if(d.online && !onlineHubs.contains(d.device)) {
         onlineHubs.add(d.device);
       } else {

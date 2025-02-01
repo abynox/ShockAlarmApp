@@ -368,6 +368,20 @@ class TokenScreenState extends State<TokenScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Text("Show hub firmware version"),
+            Switch(
+                value: manager.settings.showFirmwareVersion,
+                onChanged: (value) {
+                  setState(() {
+                    manager.settings.showFirmwareVersion = value;
+                    manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Text("Use http instead of ws for shocking"),
             Switch(
                 value: manager.settings.useHttpShocking,
