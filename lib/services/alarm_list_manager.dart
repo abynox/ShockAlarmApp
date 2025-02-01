@@ -618,4 +618,9 @@ class AlarmListManager {
       return selectedShockers.contains(x.id);
     });
   }
+
+  Future<String?> setCaptivePortal(Hub hub, bool enable) async {
+    Token? token = getToken(hub.apiTokenId);
+    return await OpenShockClient().setCaptivePortal(hub, enable, token);
+  }
 }

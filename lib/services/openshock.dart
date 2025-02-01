@@ -557,6 +557,14 @@ class OpenShockClient {
     }
     return getErrorCode(response, "Failed to delete share link");    
   }
+
+  Future<String?> setCaptivePortal(Hub hub, bool enable, Token? t) async {
+    if(AlarmListManager.getInstance().ws == null || AlarmListManager.getInstance().ws?.t.id != t?.id) {
+      if(t == null) return "Token not found";
+      await AlarmListManager.getInstance().startWS(t);
+    }
+    return await AlarmListManager.getInstance().ws?.setCaptivePortal(hub, enable);
+  }
 }
 
 class OpenShockShareLink {

@@ -194,6 +194,58 @@ class HubItemState extends State<HubItem> {
             ));
   }
 
+  void captivePortal() {
+    showDialog(context: context, builder: (builder) =>
+    AlertDialog(
+      title: Text("Captive portal"),
+      content: Text("The captive portal is the website hosted on your hub itself. It's used for managing the wifi connection and account linking. Here you can enable or disable it."),
+      actions: [
+        TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel")),
+        TextButton(
+            onPressed: () async {
+              setEnable(context, true);
+            },
+            child: Text("Enable")),
+          TextButton(
+            onPressed: () async {
+              setEnable(context, false);
+            },
+            child: Text("Disable"))
+      ],
+    ));
+  }
+
+  void setEnable(BuildContext context, bool enable) async {
+    showDialog(
+        context: context,
+        builder: (context) =>
+            LoadingDialog(title: "${enable ? "Enabling" : "Disabling"} captive portal"));
+    String? errorMessage = await manager.setCaptivePortal(hub, enable);
+    Navigator.of(context).pop();
+    if (errorMessage != null) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Failed to ${enable ? "enable" : "disable"}  captive portal"),
+            content: Text(errorMessage),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Ok"))
+            ],
+          ));
+      return;
+    }
+    Navigator.of(context).pop();
+    onRebuild();
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
@@ -253,6 +305,18 @@ class HubItemState extends State<HubItem> {
                                 ],
                               )),
                           PopupMenuItem(
+                              value: "captive",
+                              child: Row(
+                                spacing: 10,
+                                children: [
+                                  Icon(
+                                    Icons.ad_units,
+                                    color: t.colorScheme.onSurfaceVariant,
+                                  ),
+                                  Text("Captive portal")
+                                ],
+                              )),
+                          PopupMenuItem(
                               value: "delete",
                               child: Row(
                                 spacing: 10,
@@ -275,6 +339,9 @@ class HubItemState extends State<HubItem> {
                         }
                         if (value == "pair") {
                           HubItem.pairHub(context, manager, hub.id);
+                        }
+                        if(value == "captive") {
+                          captivePortal();
                         }
                       },
                     ),

@@ -83,14 +83,19 @@ class OpenShockWS {
     }
   }
 
-  Future<bool> sendControls(List<Control> controls, String customName, {int depth = 0}) async {
+  Future<bool> establishConnection(int depth) async {
     if(depth > 3) {
       return false;
     }
     if(connection == null || connection!.state != HubConnectionState.connected) {
       await startConnection();
-      return sendControls(controls, customName, depth: depth + 1);
+      return establishConnection( depth + 1);
     }
+    return true;
+  }
+
+  Future<bool> sendControls(List<Control> controls, String customName, {int depth = 0}) async {
+    if(!await establishConnection(0)) return false;
     try {
       // Wrap the Map in a List
       await connection!.invoke('ControlV2', args: [
@@ -102,5 +107,18 @@ class OpenShockWS {
     }
 
     return true;
+  }
+
+  Future<String?> setCaptivePortal(Hub hub, bool enable) async {
+    if(!await establishConnection(0)) return "Connection failed";
+    try {
+      // Wrap the Map in a List
+      await connection!.invoke('CaptivePortal', args: [
+        hub.id, enable
+      ]);
+    } catch (e) {
+      return "Failed to set captive portal";
+    }
+    return null;
   }
 }
