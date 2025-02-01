@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
+import 'package:shock_alarm_app/components/shocker_details.dart';
 import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/screens/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
@@ -67,6 +68,8 @@ class ShockerScreen extends StatefulWidget {
                     }
                     if (await redeemShareCode(code, context, manager)) {
                       Navigator.of(context).pop();
+
+                      await AlarmListManager.getInstance().updateShockerStore();
                       reloadState();
                     }
                   },
@@ -103,7 +106,7 @@ class ShockerScreen extends StatefulWidget {
           });
       return false;
     }
-    await manager.updateShockerStore();
+    await AlarmListManager.getInstance().updateShockerStore();
     Navigator.of(context).pop();
     return true;
   }
@@ -172,12 +175,14 @@ class ShockerScreen extends StatefulWidget {
                           });
                       return;
                     }
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
                     await manager.updateShockerStore();
                     reloadState();
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
                     // ToDo add pair code thingy
                     await HubItem.pairHub(context, manager, hub.hubId!);
+                    await manager.updateShockerStore();
+                    reloadState();
                   },
                   child: Text("Add"))
             ],
@@ -195,56 +200,14 @@ class ShockerScreen extends StatefulWidget {
     List<OpenShockDevice> devices = await manager.getDevices();
     Navigator.of(context).pop();
     Navigator.of(context).pop();
+    OpenShockShocker newShocker = OpenShockShocker();
+    newShocker.rfId = Random().nextInt(65535);
     showDialog(
         context: context,
         builder: (context) {
-          TextEditingController nameController = TextEditingController();
-          // number only
-          TextEditingController rfIdController =
-              TextEditingController(text: Random().nextInt(65535).toString());
-          String shockerType = "CaiXianlin";
-          OpenShockDevice? device;
           return AlertDialog(
             title: Text("Add new shocker"),
-            content: SingleChildScrollView(
-              child: Column(
-                spacing: 10,
-                children: <Widget>[
-                  DropdownMenu<OpenShockDevice>(
-                      label: Text("Device"),
-                      onSelected: (value) {
-                        device = value;
-                      },
-                      dropdownMenuEntries: [
-                        for (OpenShockDevice device in devices)
-                          DropdownMenuEntry(label: device.name, value: device),
-                      ]),
-                  DropdownMenu<String>(
-                    dropdownMenuEntries: [
-                      DropdownMenuEntry(
-                          label: "CaiXianlin", value: "CaiXianlin"),
-                      DropdownMenuEntry(
-                          label: "PetTrainer", value: "PetTrainer"),
-                      DropdownMenuEntry(
-                          label: "Petrainer998DR", value: "Petrainer 998DR"),
-                    ],
-                    onSelected: (value) {
-                      shockerType = value ?? "CaiXianlin";
-                    },
-                    label: Text("Shocker type"),
-                  ),
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(labelText: "Shocker Name"),
-                  ),
-                  TextField(
-                    controller: rfIdController,
-                    decoration: InputDecoration(labelText: "RF ID"),
-                    keyboardType: TextInputType.number,
-                  )
-                ],
-              ),
-            ),
+            content: ShockerDetails(shocker: newShocker, devices: devices),
             actions: <Widget>[
               TextButton(
                   onPressed: () {
@@ -253,7 +216,7 @@ class ShockerScreen extends StatefulWidget {
                   child: Text("Cancel")),
               TextButton(
                   onPressed: () async {
-                    String name = nameController.text;
+                    String name = newShocker.name;
                     if (name.isEmpty) {
                       showDialog(
                           context: context,
@@ -272,34 +235,21 @@ class ShockerScreen extends StatefulWidget {
                           });
                       return;
                     }
-                    int rfId = int.tryParse(rfIdController.text) ?? 0;
-                    if (rfId < 0 || rfId > 65535) {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text("Invalid RF ID"),
-                              content: Text(
-                                  "The RF ID must be a number between 0 and 65535"),
-                              actions: <Widget>[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text("Ok"))
-                              ],
-                            );
-                          });
-                      return;
-                    }
+                    int rfId = newShocker.rfId ?? 0;
                     showDialog(
                         context: context,
                         builder: (context) {
                           return LoadingDialog(title: "Adding shocker");
                         });
-
+                    OpenShockDevice? device;
+                    for (OpenShockDevice d in devices) {
+                      if (d.id == newShocker.device) {
+                        device = d;
+                        break;
+                      }
+                    }
                     String? error = await manager.addShocker(
-                        name, rfId, shockerType, device);
+                        name, rfId, newShocker.model ?? "CaiXianlin", device);
                     Navigator.of(context).pop();
                     if (error != null) {
                       showDialog(
@@ -319,7 +269,6 @@ class ShockerScreen extends StatefulWidget {
                           });
                       return;
                     }
-                    manager.updateShockerStore();
                     Navigator.of(context).pop();
                     showDialog(
                         context: context,
@@ -337,6 +286,9 @@ class ShockerScreen extends StatefulWidget {
                             ],
                           );
                         });
+                    
+                    await manager.updateShockerStore();
+                    reloadState();
                   },
                   child: Text("Pair"))
             ],

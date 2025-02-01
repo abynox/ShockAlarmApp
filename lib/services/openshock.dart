@@ -202,28 +202,40 @@ class OpenShockClient {
     return token;
   }
 
-  Future<String?> renameShocker(Shocker shocker, String text, AlarmListManager manager) async {
-    Token? t = manager.getToken(shocker.apiTokenId);
+  Future<OpenShockShocker?> getShockerDetails(Shocker shocker) async {
+    Token? t = AlarmListManager.getInstance().getToken(shocker.apiTokenId);
     if(t == null) {
-      return Future.value("Token not found");
+      return null;
     }
     var response = await GetRequest(t, "/1/shockers/${shocker.id}");
 
     if(response.statusCode != 200) {
-      return "${response.statusCode} - failed to get shocker";
+      return null;
     }
     // replace name of response
-    var responseBody = jsonDecode(response.body)["data"];
-    responseBody["name"] = text;
-    String body = jsonEncode(responseBody);
+    return OpenShockShocker.fromJson(jsonDecode(response.body)["data"]);
+  }
 
-    response = await PatchRequest(t, "/1/shockers/${shocker.id}", body);
+  Future<String?> editShocker(Shocker shocker, OpenShockShocker edit, AlarmListManager manager) async {
+    Token? t = manager.getToken(shocker.apiTokenId);
+    if(t == null) {
+      return "Token not found";
+    }
+    // replace name of response
+    String body = jsonEncode({
+      "model": edit.model,
+      "rfId": edit.rfId,
+      "name": edit.name,
+      "device": edit.device
+    });
+
+    var response = await PatchRequest(t, "/1/shockers/${shocker.id}", body);
     if(response.statusCode == 200) {
-      shocker.name = text;
+      shocker.name = edit.name;
       manager.saveTokens();
       return null;
     }
-    return getErrorCode(response, "Failed to rename shocker");
+    return getErrorCode(response, "Failed to save shocker");
   }
 
 
@@ -1181,10 +1193,22 @@ class OpenShockShocker
     OpenShockShockerLimits? limits;
     OpenShockShockerPermissions? permissions;
 
+    int? rfId;
+    String? device;
+    String? model;
+
+    OpenShockShocker();
+
     OpenShockShocker.fromJson(Map<String, dynamic> json)
     {
         name = json['name'];
         id = json['id'];
+        if(json["rfId"] != null)
+          rfId = json['rfId'];
+        if(json["model"] != null)
+          model = json['model'];
+        if(json["device"] != null)
+          device = json["device"];
         if(json["isPaused"] != null)
           isPaused = json['isPaused'];
         if(json["isDisabled"] != null)

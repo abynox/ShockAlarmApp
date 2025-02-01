@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/delete_dialog.dart';
+import 'package:shock_alarm_app/components/shocker_details.dart';
 import '../screens/logs.dart';
 import '../screens/shares.dart';
 import '../stores/alarm_store.dart';
@@ -23,20 +24,40 @@ class ShockerItem extends StatefulWidget {
   final Function onRebuild;
   static List<ShockerAction> ownShockerActions = [
     ShockerAction(
-        name: "Rename",
+        name: "Edit",
         icon: Icon(Icons.edit),
         onClick: (AlarmListManager manager, Shocker shocker,
-            BuildContext context, Function onRebuild) {
+            BuildContext context, Function onRebuild) async {
+
+          showDialog(context: context, builder: (context) {
+            return LoadingDialog(title: "Loading details");
+          });
+          List<OpenShockDevice> devices = await manager.getDevices();
+          OpenShockShocker? s = await OpenShockClient().getShockerDetails(shocker);
+          Navigator.of(context).pop();
+          if (s == null) {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                      title: Text("Failed to get shocker details"),
+                      content: Text("Failed to get shocker details"),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Ok"))
+                      ],
+                    ));
+            return;
+          }
           TextEditingController controller = TextEditingController();
           controller.text = shocker.name;
           showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                    title: Text("Rename shocker"),
-                    content: TextField(
-                      controller: controller,
-                      decoration: InputDecoration(labelText: "Name"),
-                    ),
+                    title: Text("Edit shocker"),
+                    content: ShockerDetails(shocker: s, devices: devices),
                     actions: [
                       TextButton(
                           onPressed: () {
@@ -48,15 +69,15 @@ class ShockerItem extends StatefulWidget {
                             showDialog(
                                 context: context,
                                 builder: (context) =>
-                                    LoadingDialog(title: "Renaming shocker"));
-                            String? errorMessage = await manager.renameShocker(
-                                shocker, controller.text);
+                                    LoadingDialog(title: "Saving shocker"));
+                            String? errorMessage = await manager.editShocker(
+                                shocker, s);
                             Navigator.of(context).pop();
                             if (errorMessage != null) {
                               showDialog(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                        title: Text("Failed to rename shocker"),
+                                        title: Text(errorMessage),
                                         content: Text(errorMessage),
                                         actions: [
                                           TextButton(
@@ -69,9 +90,10 @@ class ShockerItem extends StatefulWidget {
                               return;
                             }
                             Navigator.of(context).pop();
+                            await AlarmListManager.getInstance().updateShockerStore();
                             onRebuild();
                           },
-                          child: Text("Rename"))
+                          child: Text("Save"))
                     ],
                   ));
         }),
@@ -129,6 +151,7 @@ class ShockerItem extends StatefulWidget {
                       return;
                     }
                     Navigator.of(context).pop();
+                    await AlarmListManager.getInstance().updateShockerStore();
                     onRebuild();
                   },
                   title: "Delete shocker",
