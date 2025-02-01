@@ -13,11 +13,16 @@ class AlarmItem extends StatefulWidget {
   final AlarmListManager manager;
   final Function onRebuild;
 
-  const AlarmItem({Key? key, required this.alarm, required this.manager, required this.onRebuild})
+  const AlarmItem(
+      {Key? key,
+      required this.alarm,
+      required this.manager,
+      required this.onRebuild})
       : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => AlarmItemState(alarm, manager, onRebuild);
+  State<StatefulWidget> createState() =>
+      AlarmItemState(alarm, manager, onRebuild);
 }
 
 class AlarmItemState extends State<AlarmItem> {
@@ -25,7 +30,7 @@ class AlarmItemState extends State<AlarmItem> {
   final AlarmListManager manager;
   final Function onRebuild;
   bool expanded = false;
-  
+
   AlarmItemState(this.alarm, this.manager, this.onRebuild);
 
   void _delete() {
@@ -42,94 +47,146 @@ class AlarmItemState extends State<AlarmItem> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    return  GestureDetector(
-          onTap: () => {
-            setState(() {
-              expanded = !expanded;
-            })
-          },
-          child:
-            Card(
-              color: t.colorScheme.onInverseSurface,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return GestureDetector(
+      onTap: () => {
+        setState(() {
+          expanded = !expanded;
+        })
+      },
+      child: Card(
+        color: t.colorScheme.onInverseSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(alarm.name),
-                            EditAlarmTime(alarm: this.alarm, manager: this.manager,),
-                            DateRow(alarm: alarm)
-                          ],
+                        TextButton(
+                          onPressed: () async {
+                            String newName = "";
+                            TextEditingController controller =
+                                TextEditingController(text: alarm.name);
+                            await showDialog(
+                                context: context,
+                                builder: (builder) {
+                                  return AlertDialog(
+                                    title: Text("Rename alarm"),
+                                    content: TextField(controller: controller),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text("Cancel")),
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                            alarm.name = controller.text;
+                                            _save();
+                                          },
+                                          child: Text("Save"))
+                                    ],
+                                  );
+                                });
+                          },
+                          child: Text(alarm.name),
                         ),
-                        Column(children: [
-                          IconButton(onPressed: () {setState(() {
-                            expanded = !expanded;
-                          });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded)),
-                          Switch(value: alarm.active,
-                            
-                            onChanged: (value) {
-                            setState(() {
-                              alarm.active = value;
-                              _save();
-                            });
-                          }),
-                        ],)
+                        EditAlarmTime(
+                          alarm: this.alarm,
+                          manager: this.manager,
+                        ),
+                        DateRow(alarm: alarm)
                       ],
                     ),
-                    if (expanded) Column(
+                    Column(
                       children: [
-
-                        EditAlarmDays(alarm: this.alarm, onRebuild: onRebuild,),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                          Text("Repeat alarm tone"),
-                          Switch(value: alarm.repeatAlarmsTone, onChanged: (value) {
-                            setState(() {
-                              alarm.repeatAlarmsTone = value;
-                              _save();
-                            });
-                          },)
-                        ],),
-                        Text(alarm.shockers.where((x) {
-                          return x.enabled;
-                        }).length.toString() + " shockers active"),
-                        Column(children: alarm.shockers.map((alarmShocker) {
-                          return AlarmShockerWidget(alarmShocker: alarmShocker, manager: manager, onRebuild: onRebuild);
-                        }).toList()),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            IconButton(
-                              onPressed: _delete,
-                              icon: Icon(Icons.delete),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                alarm.trigger(manager, false);
-                              },
-                              icon: Icon(Icons.play_arrow),
-                            ),
-                            IconButton(
-                              onPressed: _save,
-                              icon: Icon(Icons.save),
-                            ),
-                          ],
-                        ),
+                        IconButton(
+                            onPressed: () {
+                              setState(() {
+                                expanded = !expanded;
+                              });
+                            },
+                            icon: Icon(expanded
+                                ? Icons.arrow_upward_rounded
+                                : Icons.arrow_downward_rounded)),
+                        Switch(
+                            value: alarm.active,
+                            onChanged: (value) {
+                              setState(() {
+                                alarm.active = value;
+                                _save();
+                              });
+                            }),
                       ],
-                    ),
+                    )
                   ],
-                )
-              ),
-            ),
-          );
+                ),
+                if (expanded)
+                  Column(
+                    children: [
+                      EditAlarmDays(
+                        alarm: this.alarm,
+                        onRebuild: onRebuild,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Repeat alarm tone"),
+                          Switch(
+                            value: alarm.repeatAlarmsTone,
+                            onChanged: (value) {
+                              setState(() {
+                                alarm.repeatAlarmsTone = value;
+                                _save();
+                              });
+                            },
+                          )
+                        ],
+                      ),
+                      Text(alarm.shockers
+                              .where((x) {
+                                return x.enabled;
+                              })
+                              .length
+                              .toString() +
+                          " shockers active"),
+                      Column(
+                          children: alarm.shockers.map((alarmShocker) {
+                        return AlarmShockerWidget(
+                            alarmShocker: alarmShocker,
+                            manager: manager,
+                            onRebuild: onRebuild);
+                      }).toList()),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                            onPressed: _delete,
+                            icon: Icon(Icons.delete),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              alarm.trigger(manager, false);
+                            },
+                            icon: Icon(Icons.play_arrow),
+                          ),
+                          IconButton(
+                            onPressed: _save,
+                            icon: Icon(Icons.save),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+              ],
+            )),
+      ),
+    );
   }
 }
 
@@ -138,11 +195,16 @@ class AlarmShockerWidget extends StatefulWidget {
   final AlarmListManager manager;
   final Function onRebuild;
 
-  const AlarmShockerWidget({Key? key, required this.alarmShocker, required this.manager, required this.onRebuild})
+  const AlarmShockerWidget(
+      {Key? key,
+      required this.alarmShocker,
+      required this.manager,
+      required this.onRebuild})
       : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => AlarmShockerWidgetState(alarmShocker, manager, onRebuild);
+  State<StatefulWidget> createState() =>
+      AlarmShockerWidgetState(alarmShocker, manager, onRebuild);
 }
 
 class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
@@ -150,7 +212,7 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
   final AlarmListManager manager;
   final Function onRebuild;
   bool expanded = false;
-  
+
   AlarmShockerWidgetState(this.alarmShocker, this.manager, this.onRebuild);
 
   void enable(bool value) {
@@ -163,102 +225,154 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     bool isPaused = alarmShocker.shockerReference?.paused ?? false;
-    return  GestureDetector(
-          onTap: () => {
-            setState(() {
-              expanded = !expanded;
-            })
-          },
-          child:
-            Card(
-              color: t.colorScheme.surface,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  children: [
+    return GestureDetector(
+      onTap: () => {
+        setState(() {
+          expanded = !expanded;
+        })
+      },
+      child: Card(
+        color: t.colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Row(
-                          spacing: 10,
-                          children: [
-                            Text(
-                              alarmShocker.shockerReference?.name ?? "Unknown",
-                              style: t.textTheme.headlineSmall,
-                            ),
-                            Chip(label: Text(alarmShocker.shockerReference?.hubReference?.name ?? "Unknown")),
-                          ],
+                      spacing: 10,
+                      children: [
+                        Text(
+                          alarmShocker.shockerReference?.name ?? "Unknown",
+                          style: t.textTheme.headlineSmall,
                         ),
-                        Row(children: [
-                          if (isPaused)
-                          GestureDetector(child:
-                            Chip(
-                              label: Text("paused"),
-                              backgroundColor: t.colorScheme.errorContainer,
-                              side: BorderSide.none,
-                              avatar: Icon(Icons.info, color: t.colorScheme.error,)
-                            ),
-                            onTap: () {
-                              showDialog(context: context, builder: (context) => AlertDialog(title: Text("Shocker is paused"), content: Text(alarmShocker.shockerReference!.isOwn ?? false ?
-                              "This shocker was pause by you. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. Unpause it so it can be triggered." 
-                              : "This shocker was paused by the owner. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. It needs to be unpaused so it can be triggered."),
-                              actions: [TextButton(onPressed: () {
-                                Navigator.of(context).pop();
-                              }, child: Text("Ok"))],));
-                            },),
-                            
-                          Switch(value: alarmShocker.enabled, onChanged: enable,),
-
-                        ],)
+                        Chip(
+                            label: Text(alarmShocker
+                                    .shockerReference?.hubReference?.name ??
+                                "Unknown")),
                       ],
                     ),
-                    if (alarmShocker.enabled) Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 5,
+                    Row(
                       children: [
-                            DropdownMenu<ControlType?>(dropdownMenuEntries: [
-                                DropdownMenuEntry(label: "Tone", value: null,),
-                                if(alarmShocker.shockerReference?.shockAllowed ?? false) DropdownMenuEntry(label: "Shock", value: ControlType.shock,),
-                                if(alarmShocker.shockerReference?.vibrateAllowed ?? false) DropdownMenuEntry(label: "Vibration", value: ControlType.vibrate,),
-                                if(alarmShocker.shockerReference?.soundAllowed ?? false) DropdownMenuEntry(label: "Sound", value: ControlType.sound,),
-                              ],
-                              initialSelection: alarmShocker.type,
-                              onSelected: (value) {
-                                setState(() {
-                                  alarmShocker.type = value;
-                                });
-                              },
-                            ),
-                            if(alarmShocker.type == null) DropdownMenu<int?>(dropdownMenuEntries:
-                              manager.alarmTones.map((tone) {
-                                return DropdownMenuEntry(label: tone.name, value: tone.id);
-                              }).toList(),
-                              initialSelection: alarmShocker.toneId,
-                              onSelected: (value) {
-                                setState(() {
-                                  alarmShocker.toneId = value;
-                                });
-                              },
-                            ),
-                            if(alarmShocker.type != null)
-                              IntensityDurationSelector(key: ValueKey(alarmShocker.type), controlsContainer: ControlsContainer.fromInts(intensity: alarmShocker.intensity, duration: alarmShocker.duration), onSet: (ControlsContainer container) {
-                                setState(() {
-                                  alarmShocker.duration = container.durationRange.start.toInt();
-                                  alarmShocker.intensity = container.intensityRange.start.toInt();
-                                });
-                              }, maxDuration: alarmShocker.shockerReference?.durationLimit ?? 300,
-                              maxIntensity: alarmShocker.shockerReference?.intensityLimit ?? 0,
-                              showIntensity: alarmShocker.type != ControlType.sound,
-                              type: alarmShocker.type ?? ControlType.shock,),
-                          ],
+                        if (isPaused)
+                          GestureDetector(
+                            child: Chip(
+                                label: Text("paused"),
+                                backgroundColor: t.colorScheme.errorContainer,
+                                side: BorderSide.none,
+                                avatar: Icon(
+                                  Icons.info,
+                                  color: t.colorScheme.error,
+                                )),
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                        title: Text("Shocker is paused"),
+                                        content: Text(alarmShocker
+                                                    .shockerReference!.isOwn ??
+                                                false
+                                            ? "This shocker was pause by you. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. Unpause it so it can be triggered."
+                                            : "This shocker was paused by the owner. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. It needs to be unpaused so it can be triggered."),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text("Ok"))
+                                        ],
+                                      ));
+                            },
+                          ),
+                        Switch(
+                          value: alarmShocker.enabled,
+                          onChanged: enable,
                         ),
+                      ],
+                    )
                   ],
-                )
-              ),
-            ),
-          );
+                ),
+                if (alarmShocker.enabled)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 5,
+                    children: [
+                      DropdownMenu<ControlType?>(
+                        dropdownMenuEntries: [
+                          DropdownMenuEntry(
+                            label: "Tone",
+                            value: null,
+                          ),
+                          if (alarmShocker.shockerReference?.shockAllowed ??
+                              false)
+                            DropdownMenuEntry(
+                              label: "Shock",
+                              value: ControlType.shock,
+                            ),
+                          if (alarmShocker.shockerReference?.vibrateAllowed ??
+                              false)
+                            DropdownMenuEntry(
+                              label: "Vibration",
+                              value: ControlType.vibrate,
+                            ),
+                          if (alarmShocker.shockerReference?.soundAllowed ??
+                              false)
+                            DropdownMenuEntry(
+                              label: "Sound",
+                              value: ControlType.sound,
+                            ),
+                        ],
+                        initialSelection: alarmShocker.type,
+                        onSelected: (value) {
+                          setState(() {
+                            alarmShocker.type = value;
+                          });
+                        },
+                      ),
+                      if (alarmShocker.type == null)
+                        DropdownMenu<int?>(
+                          dropdownMenuEntries: manager.alarmTones.map((tone) {
+                            return DropdownMenuEntry(
+                                label: tone.name, value: tone.id);
+                          }).toList(),
+                          initialSelection: alarmShocker.toneId,
+                          onSelected: (value) {
+                            setState(() {
+                              alarmShocker.toneId = value;
+                            });
+                          },
+                        ),
+                      if (alarmShocker.type != null)
+                        IntensityDurationSelector(
+                          key: ValueKey(alarmShocker.type),
+                          controlsContainer: ControlsContainer.fromInts(
+                              intensity: alarmShocker.intensity,
+                              duration: alarmShocker.duration),
+                          onSet: (ControlsContainer container) {
+                            setState(() {
+                              alarmShocker.duration =
+                                  container.durationRange.start.toInt();
+                              alarmShocker.intensity =
+                                  container.intensityRange.start.toInt();
+                            });
+                          },
+                          maxDuration:
+                              alarmShocker.shockerReference?.durationLimit ??
+                                  300,
+                          maxIntensity:
+                              alarmShocker.shockerReference?.intensityLimit ??
+                                  0,
+                          showIntensity: alarmShocker.type != ControlType.sound,
+                          type: alarmShocker.type ?? ControlType.shock,
+                        ),
+                    ],
+                  ),
+              ],
+            )),
+      ),
+    );
   }
 }
 
@@ -282,8 +396,12 @@ class DateRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(dates.asMap().entries.where((x) => dayEnabled[x.key]).map((indexStringPair) {
-          return indexStringPair.value;
-        }).join(", "));
+    return Text(dates
+        .asMap()
+        .entries
+        .where((x) => dayEnabled[x.key])
+        .map((indexStringPair) {
+      return indexStringPair.value;
+    }).join(", "));
   }
 }

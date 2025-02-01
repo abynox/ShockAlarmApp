@@ -44,6 +44,10 @@ Furthermore it fixes some layout flaws of the official OpenShock Frontend like h
 - [x] Better desktop support (keybinds)
 - [x] Better desktop support (layout)
 - [ ] Better desktop support (dynamic layout)
+- [ ] Allow toggling of the captive portal
+- [x] Add alarm renaming
+- [ ] Finally code weekday scheduling for alarms
+- [ ] Add changing of shocker type
 - [x] save last opened tab (and load it on start)
 - [x] Random shocking (specify random delay between shocks, min and max intensity/duration)
 - [ ] Random shocking -> Add background task + notification
