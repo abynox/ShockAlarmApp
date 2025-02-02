@@ -268,7 +268,7 @@ class HomeScreenState extends State<HomeScreen> {
           textAlign: TextAlign.center,
         ),
         Center(
-          child: TextButton(
+          child: FilledButton(
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => AlarmToneScreen(manager)));
