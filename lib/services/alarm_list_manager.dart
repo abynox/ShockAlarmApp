@@ -145,7 +145,9 @@ class AlarmListManager {
     }
     this.shareLinks = [];
     for (var shareLink in shareLinksList) {
-      this.shareLinks!.add(OpenShockShareLink.fromJson(shareLink));
+      OpenShockShareLink link = OpenShockShareLink.fromJson(shareLink);
+      link.tokenReference = getToken(link.tokenId ?? 0);
+      this.shareLinks!.add(link);
     }
     updateHubList();
     rebuildAlarmShockers();
@@ -340,7 +342,12 @@ class AlarmListManager {
   }
 
   Token? getToken(int id) {
-    return _tokens.firstWhere((findToken) => id == findToken.id);
+    for(Token token in _tokens) {
+      if(token.id == id) {
+        return token;
+      }
+    }
+    return null;
   }
 
   Future<String?> sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration, {String customName = "ShockAlarm", bool useWs = true}) async {

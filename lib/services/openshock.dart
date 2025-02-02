@@ -587,9 +587,12 @@ class OpenShockShareLink {
   String name = "";
   List<Shocker> shockers = [];
   Token? tokenReference;
+  int? tokenId;
 
   OpenShockShareLink();
-  OpenShockShareLink.fromId(this.id, this.name, this.tokenReference);
+  OpenShockShareLink.fromId(this.id, this.name, this.tokenReference) {
+    this.tokenId = tokenReference?.id;
+  }
 
   String getLink() {
     String host = "https://openshock.app";
@@ -613,6 +616,7 @@ class OpenShockShareLink {
     if(json["author"] != null) {
       author = OpenShockUser.fromJson(json["author"]);
     }
+    
     if(json["devices"] != null) {
       
       for(var device in json["devices"]) {
@@ -627,6 +631,9 @@ class OpenShockShareLink {
       }
     }
     name = json["name"];
+    if(json["tokenId"] != null) {
+      tokenId = json["tokenId"];
+    }
   }
 
   toJson() {
@@ -635,7 +642,8 @@ class OpenShockShareLink {
       "name": name,
       "createdOn": createdOn.toIso8601String(),
       "expiresOn": expiresOn?.toIso8601String(),
-      "author": author?.toJson()
+      "author": author?.toJson(),
+      "tokenId": tokenReference?.id,
     };
   }
 }
