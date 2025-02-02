@@ -54,7 +54,7 @@ Install the apk file from the [releases](https://github.com/ComputerElite/ShockA
 - [ ] Better desktop support (dynamic layout)
 - [x] Allow toggling of the captive portal
 - [x] Add alarm renaming
-- [ ] Finally code weekday scheduling for alarms
+- [x] Finally code weekday scheduling for alarms
 - [x] Add changing of shocker type (and even hub and rfId)
 - [x] save last opened tab (and load it on start)
 - [x] Random shocking (specify random delay between shocks, min and max intensity/duration)

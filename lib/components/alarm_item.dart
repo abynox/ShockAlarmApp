@@ -51,6 +51,9 @@ class AlarmItemState extends State<AlarmItem> {
       onTap: () => {
         setState(() {
           expanded = !expanded;
+          if(!expanded) {
+            _save();
+          }
         })
       },
       child: Card(
@@ -109,6 +112,9 @@ class AlarmItemState extends State<AlarmItem> {
                             onPressed: () {
                               setState(() {
                                 expanded = !expanded;
+                                if(!expanded) {
+                                  _save();
+                                }
                               });
                             },
                             icon: Icon(expanded
@@ -174,11 +180,7 @@ class AlarmItemState extends State<AlarmItem> {
                               alarm.trigger(manager, false);
                             },
                             icon: Icon(Icons.play_arrow),
-                          ),
-                          IconButton(
-                            onPressed: _save,
-                            icon: Icon(Icons.save),
-                          ),
+                          )
                         ],
                       ),
                     ],

@@ -1,0 +1,3 @@
+**Changelog:**
+- Added weekday scheduling for alarms
+- Made alarms save when collapsing them

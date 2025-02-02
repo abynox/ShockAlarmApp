@@ -15,7 +15,7 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 const String issues_url = "https://github.com/ComputerElite/ShockAlarmApp/issues";
 
 String GetUserAgent() {
-  return "ShockAlarm/0.0.13";
+  return "ShockAlarm/0.0.14";
 }
 
 bool isAndroid() {
@@ -115,10 +115,12 @@ void alarmCallback(int id) async {
   AlarmListManager manager = AlarmListManager();
   await manager.loadAllFromStorage();
 
+  int adjustedId = (id / 7).floor();
+
   //initNotification(manager);
   manager.getAlarms().forEach((element) {
     print("Checking alarm");
-    if(element.active && id ==element.id) {
+    if(element.active && adjustedId ==element.id) {
       element.trigger(manager, true);
     }
   });

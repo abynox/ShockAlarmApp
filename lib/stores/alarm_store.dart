@@ -227,6 +227,8 @@ class Alarm {
       if(!shouldSchedulePerWeekday()) {
         active = false;
         manager.saveAlarm(this);
+      } else {
+        schedule(manager);
       }
     }
 
@@ -300,11 +302,34 @@ class Alarm {
     });
   }
 
+
+  DateTime nextWeekday(int weekday, alarmHour, alarmMinute) {
+    var checkedDay = DateTime.now();
+
+    if (checkedDay.weekday == weekday) {
+      final todayAlarm = DateTime(checkedDay.year, checkedDay.month,
+          checkedDay.day, alarmHour, alarmMinute);
+
+      if (checkedDay.isBefore(todayAlarm)) {
+        return todayAlarm;
+      }
+      return todayAlarm.add(Duration(days: 7));
+    }
+
+    while (checkedDay.weekday != weekday) {
+      checkedDay = checkedDay.add(Duration(days: 1));
+    }
+
+    return DateTime(checkedDay.year, checkedDay.month, checkedDay.day,
+        alarmHour, alarmMinute);
+  }
+
+
   schedule(AlarmListManager manager) async {
+    DateTime now = DateTime.now();
     if (!shouldSchedulePerWeekday()) {
-      // Schedule for next occurrance 
-      DateTime now = DateTime.now();
       DateTime nextOccurrance = DateTime(now.year, now.month, now.day, hour, minute);
+      // Schedule for next occurrance 
       if (nextOccurrance.isBefore(now)) {
         nextOccurrance = nextOccurrance.add(Duration(days: 1));
       }
@@ -318,7 +343,29 @@ class Alarm {
       } catch (e) {
         print("Error: $e");
       }
-      AndroidAlarmManager.oneShotAt(nextOccurrance, id, alarmCallback, exact: true, wakeup: true);
+      AndroidAlarmManager.oneShotAt(nextOccurrance, id * 7, alarmCallback, exact: true, wakeup: true);
+    } else {
+      // Schedule for every weekday
+      for (int i = 0; i < 7; i++) {
+        if (days[i]) {
+          if(!isAndroid()) {
+            ScaffoldMessenger.of(manager.context!).showSnackBar(SnackBar(content: Text("Alarms are only supported on Android atm")));
+            return;
+          }
+          DateTime nextOccurrance = nextWeekday(i + 1, hour, minute); // +1 as monday is 1 while in my code it's 0
+
+          if(!isAndroid()) {
+            ScaffoldMessenger.of(manager.context!).showSnackBar(SnackBar(content: Text("Alarms are only supported on Android atm")));
+            return;
+          }
+          try {
+            ScaffoldMessenger.of(manager.context!).showSnackBar(SnackBar(content: Text("Scheduled alarm for ${nextOccurrance.toString()}")));
+          } catch (e) {
+            print("Error: $e");
+          }
+          AndroidAlarmManager.oneShotAt(nextOccurrance, id * 7 + i, alarmCallback, exact: true, wakeup: true);
+        }
+      }
     }
   }
 }
