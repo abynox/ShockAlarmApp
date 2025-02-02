@@ -2,3 +2,4 @@
 - Added weekday scheduling for alarms
 - Made alarms save when collapsing them
 - Combined grouped and devices tab (which one is displayed is now changable in the settings)
+- Share Link and devices tab switched places
