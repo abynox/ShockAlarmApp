@@ -354,7 +354,7 @@ class ShockerItemState extends State<ShockerItem>
                                 setPauseState(true);
                               },
                               icon: Icon(Icons.pause)),
-                        if (shocker.paused && !shocker.isOwn)
+                        if (shocker.paused)
                           GestureDetector(
                             child: Chip(
                                 label: Text("paused"),
