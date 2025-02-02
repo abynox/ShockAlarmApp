@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/grouped_shockers.dart';
+import 'package:shock_alarm_app/screens/shock_screen_selector.dart';
 import 'package:shock_alarm_app/screens/shockers.dart';
 import 'package:shock_alarm_app/screens/tones.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
@@ -48,19 +49,17 @@ class ScreenSelectorState extends State<ScreenSelector> {
     }
     screens = [
       if (supportsAlarms) HomeScreen(manager: manager),
-      ShockerScreen(manager: manager),
-      GroupedShockerScreen(manager: manager),
       ShareLinksScreen(),
+      ShockScreenSelector(manager: manager),
       TokenScreen(manager: manager),
     ];
     navigationBarItems = [
       if (supportsAlarms)
         BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
+      BottomNavigationBarItem(icon: Icon(Icons.link), label: 'Share Links'),
       BottomNavigationBarItem(
           icon: OpenShockClient.getIconForControlType(ControlType.shock),
           label: 'Devices'),
-      BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Grouped'),
-      BottomNavigationBarItem(icon: Icon(Icons.link), label: 'Share Links'),
       BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
     ];
     floatingActionButtons = <Widget?>[
@@ -85,13 +84,10 @@ class ScreenSelectorState extends State<ScreenSelector> {
               ));
             },
             child: Icon(Icons.add)),
-      ShockerScreen.getFloatingActionButton(manager, context, () {
-        setState(() {});
-      }),
-      ShockerScreen.getFloatingActionButton(manager, context, () {
-        setState(() {});
-      }),
       ShareLinksScreen.getFloatingActionButton(manager, context, () {
+        setState(() {});
+      }),
+      ShockerScreen.getFloatingActionButton(manager, context, () {
         setState(() {});
       }),
       null,
@@ -101,7 +97,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       if (index != -1) {
         _selectedIndex = min(index, screens.length);
       } else {
-        if (manager.getAnyUserToken() == null) _selectedIndex = 4;
+        if (manager.getAnyUserToken() == null) _selectedIndex = 3;
         if (!supportsAlarms) _selectedIndex -= 1;
       }
       setState(() {});

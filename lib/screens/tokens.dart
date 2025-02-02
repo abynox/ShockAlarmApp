@@ -312,6 +312,20 @@ class TokenScreenState extends State<TokenScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Text("Use grouped shocker controlling"),
+            Switch(
+                value: manager.settings.useGroupedShockerSelection,
+                onChanged: (value) {
+                  setState(() {
+                    manager.settings.useGroupedShockerSelection = value;
+                    manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Text("Use range slider for random delay"),
             Switch(
                 value: manager.settings.useRangeSliderForRandomDelay,

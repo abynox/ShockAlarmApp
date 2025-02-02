@@ -20,7 +20,7 @@ class Settings {
   bool allowTokenEditing = false;
   bool useHttpShocking = false;
 
-  bool useGroupedShockerSelection = false;
+  bool useGroupedShockerSelection = true;
 
   int alarmToneRepeatDelayMs = 1500;
 
@@ -48,8 +48,8 @@ class Settings {
       allowTokenEditing = json["allowTokenEditing"];
     if(json["useHttpShocking"] != null)
       useHttpShocking = json["useHttpShocking"];
-    if(json["useGroupedShockerSelection"] != null)
-      useGroupedShockerSelection = json["useGroupedShockerSelection"];
+    if(json["useGroupedShockerSelection_1"] != null)
+      useGroupedShockerSelection = json["useGroupedShockerSelection_1"]; // _1 added so the default saved value on existing installations gets changed
     if(json["theme"] != null)
       theme = ThemeMode.values[json["theme"]];
     if(json["showFirmwareVersion"] != null)
@@ -65,7 +65,7 @@ class Settings {
       "disableHubFiltering": disableHubFiltering,
       "allowTokenEditing": allowTokenEditing,
       "useHttpShocking": useHttpShocking,
-      "useGroupedShockerSelection": useGroupedShockerSelection,
+      "useGroupedShockerSelection_1": useGroupedShockerSelection,
       "theme": theme.index,
       "showFirmwareVersion": showFirmwareVersion
     };
