@@ -1,7 +1,7 @@
 # <img src="https://raw.githubusercontent.com/ComputerElite/ShockAlarmApp/refs/heads/main/web/icons/Icon-192.png" width="30" height="30" alt="Logo"> ShockAlarm
 [<img src="https://github.com/user-attachments/assets/713d71c5-3dec-4ec4-a3f2-8d28d025a9c6"
     alt="Get it on Obtainium"
-    height="80">](https://github.com/user-attachments/assets/713d71c5-3dec-4ec4-a3f2-8d28d025a9c6)&nbsp;
+    height="80">](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/ComputerElite/ShockAlarmApp)&nbsp;
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
     alt="Get it on F-Droid"
     height="80">](https://f-droid.org/packages/de.computerelite.shockalarm)
@@ -24,7 +24,7 @@ Furthermore it fixes some layout flaws of the official OpenShock Frontend like h
 ## Through Obtainium (recommended as you get the updates the fastest)
 [<img src="https://github.com/user-attachments/assets/713d71c5-3dec-4ec4-a3f2-8d28d025a9c6"
     alt="Get it on Obtainium"
-    height="80">](https://github.com/user-attachments/assets/713d71c5-3dec-4ec4-a3f2-8d28d025a9c6)
+    height="80">](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/ComputerElite/ShockAlarmApp)
 1. Download [Obtainium](https://obtainium.imranr.dev/) either via [their website](https://obtainium.imranr.dev/) or [FDroid](https://f-droid.org/)
 2. Add ShockAlarm by clicking [here](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/ComputerElite/ShockAlarmApp) or putting `github.com/ComputerElite/ShockAlarmApp` as th app source
 
