@@ -5,6 +5,7 @@
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
     alt="Get it on F-Droid"
     height="80">](https://f-droid.org/packages/de.computerelite.shockalarm)
+
 A powerfull app for controling [OpenShock](https://openshock.org/) shockers and setting alarms with custom tones.
 
 A lite web version can be found [here](https://computerelite.github.io/ShockAlarmApp/)
