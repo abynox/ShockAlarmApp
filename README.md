@@ -15,9 +15,16 @@ It's fully material you themed just like the standard Android apps you're alread
 Furthermore it fixes some layout flaws of the official OpenShock Frontend like having shared and own shockers in seperate tabs (which is annoying). On top it also has lots of info buttons you can press to get more insight on what something does.
 
 # Installation on Android
-## Through Obtainium
+## Through Obtainium (recommended as you get the updates the fastest)
 1. Download [Obtainium](https://obtainium.imranr.dev/) either via [their website](https://obtainium.imranr.dev/) or [FDroid](https://f-droid.org/)
-2. Add ShockAlarm by putting `github.com/ComputerElite/ShockAlarmApp` as th app source
+2. Add ShockAlarm by clicking [here](obtainium://add/https://github.com/ComputerElite/ShockAlarmApp) or putting `github.com/ComputerElite/ShockAlarmApp` as th app source
+
+## FDroid
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/dev.imranr.obtainium.fdroid/)
+1. [Download FDroid](https://f-droid.org/)
+2. Search for ShockAlarm and install it. As easy as that!
 
 ## Manually
 Install the apk file from the [releases](https://github.com/ComputerElite/ShockAlarmApp/releases/latest)
