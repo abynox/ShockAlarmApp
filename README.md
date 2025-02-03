@@ -10,8 +10,6 @@ A powerfull app for controling [OpenShock](https://openshock.org/) shockers and 
 
 A lite web version can be found [here](https://computerelite.github.io/ShockAlarmApp/)
 
-The latest Android build can be found [here](http://github.com/ComputerElite/ShockAlarmApp/releases/latest)
-
 # Features
 ShockAlarm is a powerful tool for controlling your Shockers via OpenShock. It allows you to fully manage your shockers, logs, shares, hubs, and share links.
 
@@ -36,8 +34,12 @@ Furthermore it fixes some layout flaws of the official OpenShock Frontend like h
 1. [Download FDroid](https://f-droid.org/)
 2. Search for ShockAlarm and install it. As easy as that!
 
-## Manually
+## GitHub
 Install the apk file from the [releases](https://github.com/ComputerElite/ShockAlarmApp/releases/latest)
+
+# Installation on Linux
+## Through the AUR
+Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or [yay](https://github.com/Jguer/yay) and install `shock-alarm`. [link to aur](https://aur.archlinux.org/packages/shock-alarm)
 
 # Screenshots
 ![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/1.png)
@@ -76,7 +78,7 @@ Install the apk file from the [releases](https://github.com/ComputerElite/ShockA
 - [x] save last opened tab (and load it on start)
 - [x] Random shocking (specify random delay between shocks, min and max intensity/duration)
 - [x] Random shocking -> Add background task + notification (works without notification???)
-- [ ] Fix alarms not sending controls when app is minimized
+- [ ] Fix alarms not sending controls when app is minimized (in testing)
 - [ ] Live controls
 - [ ] (Big controls mode)
 - [x] Web support (alarms not working)
