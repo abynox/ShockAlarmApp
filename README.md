@@ -71,6 +71,8 @@ Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or
 - [x] Better desktop support (keybinds)
 - [x] Better desktop support (layout)
 - [ ] Better desktop support (dynamic layout)
+- [ ] Show 3 point menu when 1 shocker is selected
+- [ ] Share codes can't be claimed when the app is already open
 - [x] Allow toggling of the captive portal
 - [x] Add alarm renaming
 - [x] Finally code weekday scheduling for alarms
