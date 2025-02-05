@@ -289,6 +289,7 @@ class TokenScreenState extends State<TokenScreen> {
                           ?.setThemeMode(ThemeMode.dark);
                       break;
                   }
+                  setState(() {});
                 }
               },
             )
