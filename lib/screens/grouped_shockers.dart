@@ -131,7 +131,14 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    AlarmListManager.getInstance().reloadAllMethod = () {
+      setState(() {});
+    };
     ThemeData t = Theme.of(context);
+    bool isOwnShocker = canResume() || canPause();
+    List<ShockerAction> actions = isOwnShocker
+        ? ShockerItem.ownShockerActions
+        : ShockerItem.foreignShockerActions;
     Shocker limitedShocker = manager.getSelectedShockerLimits();
 
     return DesktopMobileRefreshIndicator(
@@ -184,7 +191,31 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                                           manager: manager)));
                             },
                             child: Text("View logs"),
-                          )
+                          ),
+                          if(manager.selectedShockers.length == 1) PopupMenuButton(
+                          iconColor: t.colorScheme.onSurfaceVariant,
+                          itemBuilder: (context) {
+                            return [
+                              for (ShockerAction a in actions)
+                                PopupMenuItem(
+                                    value: a.name,
+                                    child: Row(
+                                      spacing: 10,
+                                      children: [a.icon, Text(a.name)],
+                                    )),
+                            ];
+                          },
+                          onSelected: (String value) {
+                              Shocker shocker = manager.shockers
+                                  .firstWhere((x) => x.id == manager.selectedShockers[0]);
+                            for (ShockerAction a in actions) {
+                              if (a.name == value) {
+                                a.onClick(manager, shocker, context, onRebuild);
+                                return;
+                              }
+                            }
+                          },
+                        ),
                       ],
                     ),
                     ShockingControls(

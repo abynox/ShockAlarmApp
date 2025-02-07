@@ -72,16 +72,16 @@ class RandomShocksState extends State<RandomShocks> {
   @override
   void dispose() async {
     // TODO: implement dispose
-    if(isAndroid() && await FlutterBackground.hasPermissions) {
+    super.dispose();
+    if(isAndroid() && await FlutterBackground.hasPermissions && FlutterBackground.isBackgroundExecutionEnabled) {
       FlutterBackground.disableBackgroundExecution();
     }
     running = false;
     runningId += 1;
-    super.dispose();
   }
 
   void stopRandom() async {
-    if(isAndroid() && await FlutterBackground.hasPermissions)FlutterBackground.disableBackgroundExecution();
+    if(isAndroid() && await FlutterBackground.hasPermissions && FlutterBackground.isBackgroundExecutionEnabled)FlutterBackground.disableBackgroundExecution();
     runningId += 1;
     running = false;
     setState(() {});

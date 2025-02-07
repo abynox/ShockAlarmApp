@@ -65,7 +65,7 @@ class GroupedShockerSelectorState extends State<GroupedShockerSelector> {
                             Expanded(
                                 child: Wrap(
                               spacing: 5,
-                              children: [
+                              children: hubContainer.value.isEmpty ? [Text("No shockers")] : [
                                 for (Shocker s in hubContainer.value)
                                   ShockerChip(
                                     shocker: s,

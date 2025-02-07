@@ -185,6 +185,9 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
       initialLoading = true;
       loadShares();
     }
+    AlarmListManager.getInstance().reloadAllMethod = () {
+      setState(() {});
+    };
     super.initState();
   }
 

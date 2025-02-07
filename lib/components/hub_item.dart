@@ -3,6 +3,8 @@ import 'package:shock_alarm_app/screens/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 
+import '../main.dart';
+
 class HubItem extends StatefulWidget {
   Hub hub;
   AlarmListManager manager;
@@ -17,7 +19,7 @@ class HubItem extends StatefulWidget {
   static Future pairHub(
       BuildContext context, AlarmListManager manager, String hubId) async {
     await showDialog(
-        context: context,
+        context: navigatorKey.currentContext!,
         builder: (context) => AlertDialog(
               title: Text("Get pair code?"),
               content: Text(
@@ -183,10 +185,7 @@ class HubItemState extends State<HubItem> {
                         return;
                       }
                       Navigator.of(context).pop();
-                      setState(() {
-                        manager.hubs.remove(hub);
-                        manager.saveShockers();
-                      });
+                      await manager.updateShockerStore();
                       onRebuild();
                     },
                     child: Text("Delete"))

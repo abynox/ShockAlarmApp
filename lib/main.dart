@@ -126,6 +126,8 @@ void alarmCallback(int id) async {
   });
 }
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatefulWidget {
   final int? alarmId;
   const MyApp(this.alarmId, {super.key});
@@ -179,6 +181,7 @@ class MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return DynamicColorBuilder(builder: (lightColorScheme, darkColorScheme) {
       return MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'ShockAlarm',
         theme: lightColorScheme != null ? ThemeData(
           useMaterial3: true,

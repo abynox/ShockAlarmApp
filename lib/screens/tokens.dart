@@ -208,6 +208,11 @@ class TokenScreenState extends State<TokenScreen> {
   TokenScreenState(this.manager);
   @override
   Widget build(BuildContext context) {
+    AlarmListManager.getInstance().reloadAllMethod = () {
+      navigatorKey.currentState?.setState(() {
+        // ignore: invalid_use_of_protected_member
+      });
+    };
     ThemeData t = Theme.of(context);
     return ConstrainedContainer(
         child: ListView(

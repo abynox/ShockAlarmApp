@@ -251,6 +251,13 @@ class AlarmListManager {
         }
       }
     }
+    List<String> newSelected = [];
+    for(var shocker in shockers) {
+      if(selectedShockers.contains(shocker.id)) {
+        newSelected.add(shocker.id);
+      }
+    }
+    selectedShockers = newSelected;
     this.shockers.clear();
     this.shockers.addAll(shockers);
     this.hubs.clear();

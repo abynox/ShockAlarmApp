@@ -361,6 +361,9 @@ class ShockerScreenState extends State<ShockerScreen> {
   ShockerScreenState(this.manager);
   @override
   Widget build(BuildContext context) {
+    AlarmListManager.getInstance().reloadAllMethod = () {
+      setState(() {});
+    };
     ThemeData t = Theme.of(context);
     List<Shocker> filteredShockers = manager.shockers.where((shocker) {
       return (manager.enabledHubs[shocker.hubReference?.id] ?? false) ||
