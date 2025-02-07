@@ -1,0 +1,4 @@
+**Changelog:**
+- Fixed crash when going back from random shocks
+- Made reloading in parts more reliable (e. g. when adding/removing new hubs, shockers)
+- Added menu next to view logs button for managing shocker when one is selected
