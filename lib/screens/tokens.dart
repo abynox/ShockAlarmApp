@@ -120,6 +120,7 @@ class TokenScreenState extends State<TokenScreen> {
                     if (worked) {
                       Navigator.of(context).pop();
                       Navigator.of(context).pop();
+                      AlarmListManager.getInstance().reloadAllMethod!();
                     } else {
                       Navigator.of(context).pop();
                       showErrorDialog(
@@ -193,6 +194,7 @@ class TokenScreenState extends State<TokenScreen> {
                     if (worked) {
                       Navigator.of(context).pop();
                       Navigator.of(context).pop();
+                      AlarmListManager.getInstance().reloadAllMethod!();
                     } else {
                       Navigator.of(context).pop();
                       showErrorDialog(
@@ -246,6 +248,11 @@ class TokenScreenState extends State<TokenScreen> {
           onPressed: () async {
             await showDialog(
                 context: context, builder: (context) => ShockDisclaimer());
+            AlarmListManager.getInstance().reloadAllMethod = () {
+              setState(() {
+                
+              });
+            };
             if (kIsWeb) {
               showTokenLoginPopup();
             } else {

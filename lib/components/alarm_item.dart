@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
+import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../stores/alarm_store.dart';
 import '../services/alarm_list_manager.dart';
@@ -38,8 +39,11 @@ class AlarmItemState extends State<AlarmItem> {
     onRebuild();
   }
 
-  void _save() {
+  void _save() async {
     manager.saveAlarm(alarm);
+    if(manager.anyAlarmOn()) {
+      await requestAlarmPermissions();
+    }
     expanded = false;
     onRebuild();
   }

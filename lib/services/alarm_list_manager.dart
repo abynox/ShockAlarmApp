@@ -269,15 +269,15 @@ class AlarmListManager {
     reloadAllMethod!();
   }
 
-  void saveToken(Token token) async {
+  Future saveToken(Token token) async {
     final index = _tokens.indexWhere((findToken) => token.id == findToken.id);
     if (index == -1) {
       _tokens.add(token);
     } else {
       _tokens[index] = token;
     }
-    saveTokens();
-    updateShockerStore();
+    await saveTokens();
+    await updateShockerStore();
     //await _storage.writeList(_tokens.tokens);
   }
 
@@ -376,7 +376,7 @@ class AlarmListManager {
   Future<bool> login(String serverAddress, String email, String password) async {
     Token? session = await OpenShockClient().login(serverAddress, email, password, this);
     if(session != null) {
-      saveToken(session);
+      await saveToken(session);
     }
     return session != null;
   }
@@ -658,5 +658,14 @@ class AlarmListManager {
   Future<String?> setCaptivePortal(Hub hub, bool enable) async {
     Token? token = getToken(hub.apiTokenId);
     return await OpenShockClient().setCaptivePortal(hub, enable, token);
+  }
+
+  bool anyAlarmOn() {
+    for(var alarm in _alarms) {
+      if(alarm.active) {
+        return true;
+      }
+    }
+    return false;
   }
 }

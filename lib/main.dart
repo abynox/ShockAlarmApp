@@ -92,20 +92,18 @@ Future initBgService() async {
   print("Background service initialized: $success");
 }
 
+Future requestAlarmPermissions() async {
+  initNotification(AlarmListManager.getInstance());
+  if(isAndroid()) {
+    await AndroidAlarmManager.initialize();
+    await requestPermissions();
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AlarmListManager manager = AlarmListManager();
   await manager.loadAllFromStorage();
-  initNotification(manager);
-
-  // Register a custom protocol
-  // For macOS platform needs to declare the scheme in ios/Runner/Info.plist
-  if(isAndroid()) {
-    await AndroidAlarmManager.initialize();
-    await requestPermissions();
-    await initBgService();
-  }
-  
 
   runApp(MyApp(null));
 }

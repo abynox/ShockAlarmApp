@@ -27,7 +27,7 @@ class ScreenSelector extends StatefulWidget {
 
 class ScreenSelectorState extends State<ScreenSelector> {
   final AlarmListManager manager;
-  int _selectedIndex = 3;
+  int _selectedIndex = 2;
   bool supportsAlarms = isAndroid();
   PageController pageController = PageController();
   List<Widget> screens = [];
