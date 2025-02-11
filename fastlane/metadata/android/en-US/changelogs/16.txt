@@ -1,0 +1,3 @@
+**Changelog:**
+- Updated logs screen to use the space more efficiently
+- Removed unneeded permissions from Android

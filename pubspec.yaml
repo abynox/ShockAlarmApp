@@ -38,7 +38,6 @@ dependencies:
   android_alarm_manager_plus: ^4.0.5
   dynamic_color: ^1.7.0
   permission_handler: ^11.3.1
-  wakelock_plus: ^1.2.10
   flutter_local_notifications: ^18.0.1
   http: ^1.2.2
   signalr_core: ^1.1.2
