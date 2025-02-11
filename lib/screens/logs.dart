@@ -8,8 +8,9 @@ import '../services/openshock.dart';
 class LogScreen extends StatefulWidget {
   AlarmListManager manager;
   List<Shocker> shockers;
-  
-  LogScreen({Key? key, required this.manager, required this.shockers}) : super(key: key);
+
+  LogScreen({Key? key, required this.manager, required this.shockers})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => LogScreenState(manager, shockers);
@@ -29,7 +30,7 @@ class LogScreenState extends State<LogScreen> {
     initialLoading = true;
     manager.reloadShockerLogs = () {
       setState(() {
-        for (var shocker in shockers) 
+        for (var shocker in shockers)
           logs.addAll(manager.availableShockerLogs[shocker.id] ?? []);
         logs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
       });
@@ -53,38 +54,38 @@ class LogScreenState extends State<LogScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          spacing: 10,
-          children: [
-            Text('Logs for ${shockers.map((x) => x.name).join(", ")}'),
-          ],
+        appBar: AppBar(
+          title: Row(
+            spacing: 10,
+            children: [
+              Text('Logs for ${shockers.map((x) => x.name).join(", ")}'),
+            ],
+          ),
         ),
-      ),
-      body:
-      Padding(
-        padding: const EdgeInsets.only(
-          bottom: 15,
-          left: 15,
-          right: 15,
-          top: 50,
-        ),
-        child:
-        initialLoading ? Center(child: CircularProgressIndicator()) :
-        ConstrainedContainer(child: DesktopMobileRefreshIndicator(
-          onRefresh: () async {
-            return loadLogs();
-          },
-          child: ListView.builder(
-            itemCount: logs.length,
-            itemBuilder: (context, index) {
-              final log = logs[index];
-              return ShockerLogEntry(log: log, key: ValueKey("${log.createdOn}-${log.type}-${log.shockerReference?.id}"),);
-            }
-          )
-        )
-      ))
-    );
+        body: Padding(
+            padding: const EdgeInsets.only(
+              bottom: 15,
+              left: 15,
+              right: 15,
+              top: 50,
+            ),
+            child: initialLoading
+                ? Center(child: CircularProgressIndicator())
+                : ConstrainedContainer(
+                    child: DesktopMobileRefreshIndicator(
+                        onRefresh: () async {
+                          return loadLogs();
+                        },
+                        child: ListView.builder(
+                            itemCount: logs.length,
+                            itemBuilder: (context, index) {
+                              final log = logs[index];
+                              return ShockerLogEntry(
+                                log: log,
+                                key: ValueKey(
+                                    "${log.createdOn}-${log.type}-${log.shockerReference?.id}"),
+                              );
+                            })))));
   }
 }
 
@@ -95,9 +96,13 @@ class ShockerLogEntry extends StatelessWidget {
 
   String formatDateTime(DateTime dateTime) {
     final now = DateTime.now();
-    final isToday = dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day;
-    final timeString = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
-    final dateString = '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
+    final isToday = dateTime.year == now.year &&
+        dateTime.month == now.month &&
+        dateTime.day == now.day;
+    final timeString =
+        '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
+    final dateString =
+        '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
 
     return isToday ? timeString : '$dateString $timeString';
   }
@@ -105,46 +110,49 @@ class ShockerLogEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    return 
-    Column(
+    return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              spacing: 10,
-              children: [OpenShockClient.getIconForControlType(log.type),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: 10,
+            children: [
+              Row(
+                spacing: 10,
                 children: [
-                  Row(
-                    spacing: 10,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        spacing: 10,
-                        children: [
-                          Text(log.getName(), style: t.textTheme.titleMedium,),
-                        ],
-                      ),
-                      Text(formatDateTime(log.createdOn.toLocal())),
-                  ],),
-                  Row(
-                    children: [
-                      Text("${(log.duration / 100).round() / 10} s"),
-                      Text(" @ "),
-                      Text("${log.intensity}"),
-                    ],
-                  ),
-                ]
-              ),],),
-
-            Chip(label: Text(log.shockerReference?.name ?? "Unknown")),
-          ]),
-          Divider()
+                  OpenShockClient.getIconForControlType(log.type),
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          spacing: 10,
+                          children: [
+                            Text(
+                              log.getName(),
+                              style: t.textTheme.titleMedium,
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          spacing: 10,
+                          children: [
+                            Text(formatDateTime(log.createdOn.toLocal())),
+                          ],
+                        ),
+                      ]),
+                ],
+              ),
+              Row(
+                children: [
+                  Text("${(log.duration / 100).round() / 10} s"),
+                  Text(" @ "),
+                  Text("${log.intensity}"),
+                ],
+              ),
+              Chip(label: Text(log.shockerReference?.name ?? "Unknown")),
+            ]),
+        Divider()
       ],
     );
-    
   }
 }
-
