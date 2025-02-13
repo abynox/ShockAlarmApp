@@ -1,5 +1,5 @@
 **Changelog:**
 - Updated logs screen to use the space more efficiently
 - Removed unneeded permissions from Android
-- Fixed a few bugs with invalid sessions
+- Improved handling of invalid sessions
 - Removed accidental logging of session tokens (would have shown up in adb logs during the login process)
