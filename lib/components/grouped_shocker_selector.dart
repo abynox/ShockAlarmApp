@@ -45,7 +45,9 @@ class GroupedShockerSelectorState extends State<GroupedShockerSelector> {
     return Flexible(
       child: ConstrainedContainer(
         child: ListView(
-          children: [
+          children: groupedShockers.isEmpty ? [
+            Text(AlarmListManager.getInstance().hasValidAccount() ? "No shockers assosciated with account. Create them!" : "You're not logged in", style: t.textTheme.headlineMedium,textAlign: TextAlign.center,)
+          ] : [
             for (MapEntry<Hub?, List<Shocker>> hubContainer
                 in groupedShockers.entries)
               StickyHeader(

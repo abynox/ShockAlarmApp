@@ -88,7 +88,7 @@ class TokenItemState extends State<TokenItem> {
                     children: <Widget>[
                       if(token.isSession)
                         Text(
-                          "Logged in as ",
+                          token.invalidSession ? "Invalid session, log in again " : "Logged in as ",
                         ),
                       if(!token.isSession)
                         Text(

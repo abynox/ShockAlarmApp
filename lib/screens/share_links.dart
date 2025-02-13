@@ -170,12 +170,10 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
   bool initialLoading = false;
 
   Future loadShares() async {
-    AlarmListManager.getInstance().shareLinks =
-        await AlarmListManager.getInstance().getShareLinks();
+    await AlarmListManager.getInstance().updateShareLinks();
     setState(() {
       initialLoading = false;
     });
-    AlarmListManager.getInstance().saveShareLinks();
   }
 
   @override
@@ -204,7 +202,7 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
     }
     if (shareEntries.isEmpty) {
       shareEntries.add(Center(
-          child: Text("No share links created yet",
+          child: Text(AlarmListManager.getInstance().hasValidAccount() ? "No share links created yet" : "You're not logged in",
               style: t.textTheme.headlineSmall)));
     }
     shareEntries.insert(

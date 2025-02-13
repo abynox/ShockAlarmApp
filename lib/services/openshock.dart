@@ -158,6 +158,9 @@ class OpenShockClient {
     var response = await request;
     String name = "Unknown";
     String id = "";
+    if(response.statusCode == 401) {
+      return false;
+    }
     if(response.statusCode == 200) {
       var data = jsonDecode(response.body);
       name = data["data"]["name"];
@@ -187,12 +190,7 @@ class OpenShockClient {
     });
     Token? token;
     if(response.statusCode == 200) {
-      print("Login successful");
-      for(var header in response.headers.entries) {
-        print("${header.key}: ${header.value}");
-      }
       response.headers["set-cookie"]?.split(";").forEach((element) {
-        print(element);
         if(element.startsWith("openShockSession=")) {
           var sessionId = element.substring("openShockSession=".length);
           token = Token(DateTime.now().millisecondsSinceEpoch, sessionId, server: serverAddress, isSession: true);
@@ -397,6 +395,9 @@ class OpenShockClient {
     if(response.statusCode == 200) {
       return null;
     }
+    if(response.statusCode == 401) {
+      return "${response.statusCode} - Your session expired. To continue using the app log in again.";
+    }
     try{
       var data = jsonDecode(response.body);
       if(data["message"] != null) {
@@ -404,9 +405,6 @@ class OpenShockClient {
       }
     } catch (e) {
 
-    }
-    if(response.statusCode == 401) {
-      return "${response.statusCode} - Your session expired. Please log in again.";
     }
     return "${response.statusCode} - $defaultError";
   }

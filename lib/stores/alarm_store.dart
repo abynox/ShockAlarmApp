@@ -9,7 +9,7 @@ import 'package:shock_alarm_app/services/openshock.dart';
 import '../main.dart';
 
 class Token {
-  Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name="", this.isSession = false, this.userId = ""});
+  Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name="", this.isSession = false, this.userId = "", this.invalidSession = false});
 
   int id;
 
@@ -19,12 +19,14 @@ class Token {
   String name = "";
   String userId = "";
 
+  bool invalidSession = false;
+
   static Token fromJson(token) {
-    return Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "", isSession: token["isSession"] ?? false, userId: token["userId"] ?? "");
+    return Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "", isSession: token["isSession"] ?? false, userId: token["userId"] ?? "", invalidSession: token["invalidSession"] ?? false);
   }
 
   Map<String, dynamic> toJson() {
-    return {"id": id, "token": token, "server": server, "name": name, "isSession": isSession, "userId": userId};
+    return {"id": id, "token": token, "server": server, "name": name, "isSession": isSession, "userId": userId, "invalidSession": invalidSession};
   }
 }
 

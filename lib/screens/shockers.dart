@@ -158,6 +158,7 @@ class ShockerScreen extends StatefulWidget {
                         });
                     CreatedHub? hub = await manager.addHub(name);
                     if (hub.error != null || hub.hubId == null) {
+                      Navigator.of(context).pop();
                       showDialog(
                           context: context,
                           builder: (context) {

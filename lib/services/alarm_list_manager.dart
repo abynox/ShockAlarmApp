@@ -1,10 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
-import 'package:signalr_core/signalr_core.dart';
 
 import '../stores/alarm_store.dart';
 import 'dart:convert';
@@ -231,13 +230,27 @@ class AlarmListManager {
     saveAlarms();
   }
 
-  Future updateShockerStore() async {
+  
+  Future<bool> updateShockerStore() async {
     List<Shocker> shockers = [];
     List<Hub> hubs = [];
     List<Token> tokensCopy = this._tokens.toList(); // create a copy
+    bool tokenExpired = false;
     for(var token in tokensCopy) {
       OpenShockClient client = OpenShockClient();
-      await client.setInfoOfToken(token);
+      if(!await client.setInfoOfToken(token)) {
+        tokenExpired = true;
+        token.invalidSession = true;
+        // if another session of the same account exists remove that one
+        for(var otherToken in tokensCopy) {
+          if(otherToken.userId == token.userId) {
+            _tokens.remove(token);
+            tokenExpired = false;
+          }
+        }
+        continue;
+      }
+      
       DeviceContainer devices = await client.GetShockersForToken(token);
       // add shockers without duplicates
       for(var hub in devices.hubs) {
@@ -266,7 +279,23 @@ class AlarmListManager {
     saveTokens();
     updateHubList();
     rebuildAlarmShockers();
+    updateShareLinks();
     reloadAllMethod!();
+    if(tokenExpired) {
+      showSessionExpired();
+    }
+    return !tokenExpired;
+  }
+
+  void showSessionExpired() {
+    showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog(title: Text("Session expired"),
+      content: Text("Your session has expired. To continue using the app log in again in the settings page."),
+      actions: [
+        TextButton(onPressed: () {
+          Navigator.of(context).pop();
+        }, child: Text("Ok"))
+      ],
+    ));
   }
 
   Future saveToken(Token token) async {
@@ -410,10 +439,12 @@ class AlarmListManager {
 
   Token? getAnyUserToken() {
     for(var token in getTokens()) {
+      if(token.invalidSession) continue;
       if(token.name.isNotEmpty) {
         return token;
       }
     }
+    return null;
   }
 
   bool hasValidAccount() {
@@ -450,6 +481,7 @@ class AlarmListManager {
         return hub;
       }
     }
+    return null;
   }
 
   Future<String?> deleteHub(Hub hub) {
@@ -578,13 +610,14 @@ class AlarmListManager {
     return worked;
   }
 
-  Future<List<OpenShockShareLink>> getShareLinks() async {
+  Future updateShareLinks() async {
     List<OpenShockShareLink> links = [];
     OpenShockClient client = OpenShockClient();
     for(Token token in getTokens()) {
       links.addAll(await client.getShareLinks(token));
     }
-    return links;
+    shareLinks = links;
+    saveShareLinks();
   }
 
   Future<String?> deleteShareLink(OpenShockShareLink shareLink) async {

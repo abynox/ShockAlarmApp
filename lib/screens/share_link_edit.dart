@@ -265,10 +265,13 @@ class ShareLinkShockerState extends State<ShareLinkShocker> {
         widget.shareLink, widget.shocker, paused);
     setState(() {
       loadingPause = false;
-      if (paused) {
-        widget.shocker.pauseReasons.add(PauseReason.shareLink);
-      } else {
-        widget.shocker.pauseReasons.remove(PauseReason.shareLink);
+      if(error == null){
+
+        if (paused) {
+          widget.shocker.pauseReasons.add(PauseReason.shareLink);
+        } else {
+          widget.shocker.pauseReasons.remove(PauseReason.shareLink);
+        }
       }
     });
     if (error != null) {

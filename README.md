@@ -82,8 +82,8 @@ Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or
 - [x] Random shocking -> Add background task + notification (works without notification???)
 - [x] Fix alarms not sending controls when app is minimized (seems to work)
 - [ ] Live controls
-- [ ] Request permissions only when needed
-- [ ] fix reloading problems in settings after login?
+- [x] Request permissions only when needed
+- [x] fix reloading problems in settings after login?
 - [ ] (Big controls mode)
 - [x] Web support (alarms not working)
 - [x] Linux support (alarms not working)
