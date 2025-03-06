@@ -61,7 +61,10 @@ class ScreenSelectorState extends State<ScreenSelector> {
           // ToDo: make server url configurable
           removeTokenFromUrl();
           manager.loginToken(
-            "https://api.openshock.app", s.value).then((value) {
+            "https://api.openshock.app", s.value).then((value) async {
+              while(!context.mounted) {
+                await Future.delayed(Duration(milliseconds: 50));
+              }
               showDialog(context: context, builder: (context) {
                 return AlertDialog(
                   title: Text("Token login"),
