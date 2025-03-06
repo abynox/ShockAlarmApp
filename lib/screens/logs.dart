@@ -23,6 +23,7 @@ class LogScreenState extends State<LogScreen> {
   List<Shocker> shockers;
   List<ShockerLog> logs = [];
   bool initialLoading = false;
+  Function? reloadShockerLogs;
 
   LogScreenState(this.manager, this.shockers);
 
@@ -36,6 +37,9 @@ class LogScreenState extends State<LogScreen> {
           logs.addAll(manager.shockerLog[shocker.id] ?? []);
         logs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
       });
+      if(reloadShockerLogs != null) {
+        reloadShockerLogs!();
+      }
     };
     loadLogs();
   }
@@ -59,7 +63,7 @@ class LogScreenState extends State<LogScreen> {
     s.doStats();
     // ToDo: Open stats page with the stats
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => LogStatScreen(shockers: shockers, stats: s)));
+        builder: (context) => LogStatScreen(shockers: shockers, stats: s, state: this,)));
     return s;
   }
 

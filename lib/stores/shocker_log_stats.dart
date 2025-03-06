@@ -20,6 +20,7 @@ class ShockerLogStats {
   Map<String, ShockerLogStatUser> users = {};
   DateTime minDate = DateTime.now();
   DateTime maxDate = DateTime.now();
+  List<String> selectedUsers = [];
  
   ThemeData themeData;
 
@@ -29,11 +30,12 @@ class ShockerLogStats {
     this.logs.addAll(logs);
   }
 
+
   void clear() {
+    // Doesn't clear users
     logs.clear();
     shockDistribution.clear();
     entriesPerUser.clear();
-    users.clear();
     minDate = DateTime.now();
     maxDate = DateTime.now();
   }
@@ -55,7 +57,12 @@ class ShockerLogStats {
       // seperate logs into per user
       if(!users.containsKey(log.controlledBy.id)) {
         users[log.controlledBy.id] = ShockerLogStatUser(log.controlledBy.id, log.controlledBy.name, colors[users.length % colors.length]);
+        selectedUsers.add(log.controlledBy.id);
       }
+      if(!selectedUsers.contains(log.controlledBy.id)) {
+        continue;
+      }
+
       if(!entriesPerUser.containsKey(log.controlledBy.id)){
         entriesPerUser[log.controlledBy.id] = [];
       }

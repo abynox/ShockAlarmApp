@@ -107,7 +107,6 @@ class ScreenSelectorState extends State<ScreenSelector> {
         FloatingActionButton(
             onPressed: () async {
               TimeOfDay tod = TimeOfDay.fromDateTime(DateTime.now());
-              print("alarms: ${manager.getAlarms().length}");
               final newAlarm = new Alarm(
                   id: manager.getNewAlarmId(),
                   name: 'New Alarm',

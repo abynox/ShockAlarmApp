@@ -10,15 +10,34 @@ import '../services/openshock.dart';
 
 class LogStatScreen extends StatefulWidget {
   List<Shocker> shockers;
+  LogScreenState state;
   ShockerLogStats stats;
 
-  LogStatScreen({Key? key, required this.shockers, required this.stats})
+  LogStatScreen({Key? key, required this.shockers, required this.stats, required this.state})
       : super(key: key);
   @override
   _LogStatScreenState createState() => _LogStatScreenState();
 }
 
 class _LogStatScreenState extends State<LogStatScreen> {
+
+  @override void initState() {
+    // TODO: implement initState
+    widget.state.reloadShockerLogs = () {
+      rebuildStats();
+    };
+    super.initState();
+  }
+
+  void rebuildStats() {
+    widget.stats.clear();
+    for (var shocker in widget.shockers) {
+      widget.stats.addLogs(AlarmListManager.getInstance().shockerLog[shocker.id] ?? []);
+    }
+    widget.stats.doStats();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,12 +53,21 @@ class _LogStatScreenState extends State<LogStatScreen> {
         bottomNavigationBar: Container(
             child: Padding(
           padding: EdgeInsets.only(bottom: 10),
-          child: Row(
+          child: Wrap(
             spacing: 10,
-            mainAxisAlignment: MainAxisAlignment.center,
+            alignment: WrapAlignment.center,
             children: widget.stats.users.entries
                 .map((user) {
-                  return Chip(
+                  return FilterChip(
+                    selected: widget.stats.selectedUsers.contains(user.key),
+                    onSelected: (selected) {
+                      if(selected) {
+                        widget.stats.selectedUsers.add(user.key);
+                      } else {
+                        widget.stats.selectedUsers.remove(user.key);
+                      }
+                      rebuildStats();
+                    },
                       label: Text(user.value.name),
                       avatar: CircleAvatar(
                         backgroundColor: user.value.color,
@@ -110,7 +138,6 @@ class _LogStatScreenState extends State<LogStatScreen> {
               Text("Data based on ${widget.stats.logs.length} logs from ${ShockerLogEntry.formatDateTime(widget.stats.minDate, alwaysShowDate: true)} to ${ShockerLogEntry.formatDateTime(widget.stats.maxDate, alwaysShowDate: true)}", style: Theme.of(context).textTheme.headlineSmall,),
               Padding(padding: EdgeInsets.all(20)),
               ...widget.stats.shockDistribution.entries.map((controlType) {
-                print(controlType.key);
                 return Column(
                   children: [
                     Row(
@@ -124,7 +151,7 @@ class _LogStatScreenState extends State<LogStatScreen> {
                       ],
                     ),
                     AspectRatio(
-                        aspectRatio: 2 / 1,
+                        aspectRatio: 1 / 1,
                         child: Container(
                             child: BarChart(
                               key: ValueKey(DateTime.now().microsecondsSinceEpoch),
