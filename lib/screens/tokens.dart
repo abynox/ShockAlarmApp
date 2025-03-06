@@ -45,6 +45,41 @@ class TokenScreenState extends State<TokenScreen> {
         });
   }
 
+  Future showTokenLoginPopupRedirect() async {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Login to OpenShock"),
+            content: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  FilledButton(child: Text("Log in via openshock.app"), onPressed: () => {
+                    launchUrl(Uri.parse("https://openshock.app/t/?name=ShockAlarm&redirect_uri=${Uri.encodeComponent(Uri.base.toString())}?token=%25&permissions=shockers.use,shockers.pause,shockers.edit,devices.auth,devices.edit"))
+                  },),
+                  Padding(padding: EdgeInsets.all(10)),
+                  Text("Not working or want to choose another server? Try manual login below.", style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic)),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Cancel")),
+              TextButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    showTokenLoginPopup();
+                  },
+                  child: Text("Manual login"))
+            ],
+          );
+        });
+  }
+
+
   Future showTokenLoginPopup() async {
     TextEditingController serverController = TextEditingController();
     TextEditingController tokenController = TextEditingController();
@@ -92,7 +127,8 @@ class TokenScreenState extends State<TokenScreen> {
                           obscuringCharacter: "*",
                           controller: tokenController)
                     ],
-                  ))
+                  )),
+
                 ],
               ),
             ),
@@ -254,7 +290,7 @@ class TokenScreenState extends State<TokenScreen> {
               });
             };
             if (kIsWeb) {
-              showTokenLoginPopup();
+              showTokenLoginPopupRedirect();
             } else {
               showLoginPopup();
             }

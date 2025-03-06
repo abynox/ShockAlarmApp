@@ -155,6 +155,13 @@ class AlarmListManager {
     }
   }
 
+  Token? getTokenByToken(String token) {
+    for(Token t in _tokens) {
+      if(t.token == token) return t;
+    }
+    return null;
+  }
+
   void saveShareLinks() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("shareLinks", jsonEncode(shareLinks));

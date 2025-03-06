@@ -15,6 +15,7 @@ import '../services/alarm_list_manager.dart';
 import 'share_links.dart';
 import 'tokens.dart';
 import '../stores/alarm_store.dart';
+import 'dart:html' as html;
 
 class ScreenSelector extends StatefulWidget {
   final AlarmListManager manager;
@@ -34,6 +35,13 @@ class ScreenSelectorState extends State<ScreenSelector> {
   List<BottomNavigationBarItem> navigationBarItems = [];
   List<Widget?> floatingActionButtons = [];
 
+  void removeTokenFromUrl() {
+    var newUri = Uri.base;
+    newUri = newUri.replace(queryParameters: {});
+
+    html.window.history.replaceState(null, '', newUri.toString());
+  }
+
   @override
   void initState() {
     try {
@@ -46,6 +54,28 @@ class ScreenSelectorState extends State<ScreenSelector> {
       }
     } catch (e) {
       print("Error getting initial link (perhaps wrong platform): $e");
+    }
+    if(kIsWeb) {
+      for(MapEntry<String, String> s in Uri.base.queryParameters.entries) {
+        if(s.key == "token") {
+          // ToDo: make server url configurable
+          removeTokenFromUrl();
+          manager.loginToken(
+            "https://api.openshock.app", s.value).then((value) {
+              showDialog(context: context, builder: (context) {
+                return AlertDialog(
+                  title: Text("Token login"),
+                  content: Text("You have been logged in with a token as user ${manager.getTokenByToken(s.value)?.name}"),
+                  actions: [
+                    TextButton(onPressed: () {
+                      html.window.location.reload();
+                    }, child: Text("Reload page"))
+                  ],
+                );
+              });
+          },);
+        }
+      }
     }
     screens = [
       if (supportsAlarms) HomeScreen(manager: manager),

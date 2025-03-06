@@ -210,8 +210,11 @@ class Alarm {
         await prefs.reload();
         shouldContinue = prefs.getBool("alarm$id.active") ?? false;
         if(!shouldContinue) break;
-
-        await manager.sendControls(controlTimes[time]??[], customName: name, useWs: false);
+        try {
+          await manager.sendControls(controlTimes[time]??[], customName: name, useWs: false);
+        } catch (e) {
+          print("Error while sending controls: $e");
+        }
       }
 
 

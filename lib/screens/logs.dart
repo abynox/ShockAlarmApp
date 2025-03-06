@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
+import 'package:shock_alarm_app/stores/shocker_log_stats.dart';
 
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
@@ -51,6 +52,14 @@ class LogScreenState extends State<LogScreen> {
     });
   }
 
+  ShockerLogStats showStats() {
+    ShockerLogStats s = ShockerLogStats();
+    s.addLogs(logs);
+    s.doStats();
+    // ToDo: Open stats page with the stats
+    return s;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,16 +85,20 @@ class LogScreenState extends State<LogScreen> {
                         onRefresh: () async {
                           return loadLogs();
                         },
-                        child: ListView.builder(
+                        child: ListView(children: [
+                          // ToDo: Integrate button in a working fashion
+                          FilledButton(onPressed: showStats, child: Text("Show stats")),
+                          ListView.builder(
                             itemCount: logs.length,
                             itemBuilder: (context, index) {
                               final log = logs[index];
                               return ShockerLogEntry(
                                 log: log,
                                 key: ValueKey(
-                                    "${log.createdOn}-${log.type}-${log.shockerReference?.id}"),
+                                    "${log.createdOn}-${log.controlledBy.id}-${log.intensity}-${log.duration}-${log.type}-${log.shockerReference?.id}"),
                               );
-                            })))));
+                            })
+                        ],)))));
   }
 }
 
