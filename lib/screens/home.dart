@@ -71,7 +71,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
                   content: Text("You have been logged in with a token as user ${manager.getTokenByToken(s.value)?.name}"),
                   actions: [
                     TextButton(onPressed: () {
-                      html.window.location.reload();
+                      html.window.location.href = Uri.base.toString().split('?')[0];
                     }, child: Text("Reload page"))
                   ],
                 );
