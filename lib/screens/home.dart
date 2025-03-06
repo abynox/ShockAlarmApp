@@ -56,28 +56,35 @@ class ScreenSelectorState extends State<ScreenSelector> {
       print("Error getting initial link (perhaps wrong platform): $e");
     }
     if(kIsWeb) {
+      String? token;
+      String? server;
       for(MapEntry<String, String> s in Uri.base.queryParameters.entries) {
-        if(s.key == "token") {
-          // ToDo: make server url configurable
-          removeTokenFromUrl();
-          manager.loginToken(
-            "https://api.openshock.app", s.value).then((value) async {
-              while(!context.mounted) {
-                await Future.delayed(Duration(milliseconds: 50));
-              }
-              showDialog(context: context, builder: (context) {
-                return AlertDialog(
-                  title: Text("Token login"),
-                  content: Text("You have been logged in with a token as user ${manager.getTokenByToken(s.value)?.name}"),
-                  actions: [
-                    TextButton(onPressed: () {
-                      html.window.location.href = Uri.base.toString().split('?')[0];
-                    }, child: Text("Reload page"))
-                  ],
-                );
-              });
-          },);
+        if(s.key == "server") {
+          server = s.value;
         }
+        if(s.key == "token") {
+          token = s.value;
+          removeTokenFromUrl();
+        }
+      }
+      if(token != null && server != null) {
+        manager.loginToken(
+          server, token).then((value) async {
+            while(!context.mounted) {
+              await Future.delayed(Duration(milliseconds: 50));
+            }
+            showDialog(context: context, builder: (context) {
+              return AlertDialog(
+                title: Text("Token login"),
+                content: Text("You have been logged in with a token as user ${manager.getTokenByToken(token)?.name}"),
+                actions: [
+                  TextButton(onPressed: () {
+                    html.window.location.href = Uri.base.toString().split('?')[0];
+                  }, child: Text("Reload page"))
+                ],
+              );
+            });
+        },);
       }
     }
     screens = [

@@ -155,7 +155,7 @@ class AlarmListManager {
     }
   }
 
-  Token? getTokenByToken(String token) {
+  Token? getTokenByToken(String? token) {
     for(Token t in _tokens) {
       if(t.token == token) return t;
     }
