@@ -88,6 +88,7 @@ Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or
 - [x] Improved login for web (aka using token requests)
 - [x] Web support (alarms not working)
 - [x] Linux support (alarms not working)
+- [ ] Alarm support for linux and web via https://dev1.rui2015.me
 
 # Planned settings
 - [x] Hide/unhiding of the delay option

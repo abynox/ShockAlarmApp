@@ -603,6 +603,11 @@ class LoadingDialog extends StatelessWidget {
             children: [CircularProgressIndicator()]),
         actions: []);
   }
+
+  static void show(BuildContext context, String title) {
+    showDialog(
+        context: context, builder: (context) => LoadingDialog(title: title));
+  }
 }
 
 class ShockerShareEntryEditor extends StatefulWidget {

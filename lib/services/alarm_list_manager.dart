@@ -84,6 +84,8 @@ class AlarmListManager {
   OpenShockWS? ws;
   static AlarmListManager? instance;
 
+  Map<String?, List<ShockerLog>> shockerLog = {};
+
   ControlsContainer controls = ControlsContainer();
 
   AlarmListManager();
@@ -426,8 +428,16 @@ class AlarmListManager {
     return OpenShockClient().renameHub(hub, text, this);
   }
 
-  Future<List<ShockerLog>> getShockerLogs(Shocker shocker) {
-    return OpenShockClient().getShockerLogs(shocker, this);
+  Future<List<ShockerLog>> getShockerLogs(Shocker shocker, {int limit = 100}) async {
+    List<ShockerLog> logs = await OpenShockClient().getShockerLogs(shocker, this, 0, limit);
+    shockerLog.putIfAbsent(shocker.id, () => []);
+    for(ShockerLog l in logs) {
+      // only add logs which are not already in the list
+      if(shockerLog.containsKey(shocker.id) && shockerLog[shocker.id]!.indexWhere((element) => element.id == l.id) == -1) {
+        shockerLog[shocker.id]?.add(l);
+      }
+    }
+    return shockerLog[shocker.id] ?? [];
   }
 
   Future<List<OpenShockShare>> getShockerShares(Shocker shocker) {
@@ -507,7 +517,6 @@ class AlarmListManager {
     return OpenShockClient().addHub(name, this);
   }
 
-  Map<String?, List<ShockerLog>> availableShockerLogs = {};
   Function? reloadShockerLogs;
 
   Function()? reloadShareLinksMethod;
@@ -532,7 +541,7 @@ class AlarmListManager {
         WSShockerLog wslog = WSShockerLog.fromJson(shocker);
         ShockerLog log = ShockerLog.fromWs(wslog, user);
         log.shockerReference = shockers.firstWhere((element) => element.id == wslog.shocker?.id);
-        availableShockerLogs.putIfAbsent(log.shockerReference?.id, () => []).add(log);
+        shockerLog.putIfAbsent(log.shockerReference?.id, () => []).add(log);
       }
       if(reloadShockerLogs != null) {
         reloadShockerLogs!();

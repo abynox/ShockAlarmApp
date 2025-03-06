@@ -60,7 +60,7 @@ class OpenShockClient {
     return DeviceContainer(hubs, shockers);
   }
 
-  static getIconForControlType(ControlType type, {Color? color}) {
+  static getIconForControlType(ControlType type, {Color? color, double? size}) {
     IconData icon = Icons.stop;
     switch(type) {
       case ControlType.stop:
@@ -79,7 +79,7 @@ class OpenShockClient {
         icon = Icons.wifi_tethering;
         break;
     }
-    return Icon(icon, color: color);
+    return Icon(icon, color: color, size: size,);
   }
 
 
@@ -261,12 +261,12 @@ class OpenShockClient {
     return getErrorCode(response, "Failed to rename shocker");
   }
 
-  Future<List<ShockerLog>> getShockerLogs(Shocker shocker, AlarmListManager manager) async {
+  Future<List<ShockerLog>> getShockerLogs(Shocker shocker, AlarmListManager manager, int offset, int limit) async {
     Token? t = manager.getToken(shocker.apiTokenId);
     if(t == null) {
       return [];
     }
-    var response = await GetRequest(t, "/1/shockers/${shocker.id}/logs");
+    var response = await GetRequest(t, "/1/shockers/${shocker.id}/logs?offset=$offset&limit=$limit");
     if(response.statusCode == 200) {
       List<ShockerLog> logs = [];
       var data = jsonDecode(response.body);

@@ -15,7 +15,7 @@ import '../services/alarm_list_manager.dart';
 import 'share_links.dart';
 import 'tokens.dart';
 import '../stores/alarm_store.dart';
-import 'dart:html' as html;
+import 'package:universal_html/html.dart' as html;
 
 class ScreenSelector extends StatefulWidget {
   final AlarmListManager manager;

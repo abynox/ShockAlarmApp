@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
+import 'package:shock_alarm_app/screens/log_stats.dart';
 import 'package:shock_alarm_app/stores/shocker_log_stats.dart';
 
 import '../services/alarm_list_manager.dart';
@@ -32,7 +33,7 @@ class LogScreenState extends State<LogScreen> {
     manager.reloadShockerLogs = () {
       setState(() {
         for (var shocker in shockers)
-          logs.addAll(manager.availableShockerLogs[shocker.id] ?? []);
+          logs.addAll(manager.shockerLog[shocker.id] ?? []);
         logs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
       });
     };
@@ -43,7 +44,7 @@ class LogScreenState extends State<LogScreen> {
     List<ShockerLog> newLogs = [];
     for (var shocker in shockers) {
       final logs = await manager.getShockerLogs(shocker);
-      newLogs.addAll(logs);
+      newLogs.addAll(manager.shockerLog[shocker.id] ?? []);
     }
     newLogs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
     setState(() {
@@ -53,15 +54,30 @@ class LogScreenState extends State<LogScreen> {
   }
 
   ShockerLogStats showStats() {
-    ShockerLogStats s = ShockerLogStats();
+    ShockerLogStats s = ShockerLogStats(themeData: Theme.of(context));
     s.addLogs(logs);
     s.doStats();
     // ToDo: Open stats page with the stats
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => LogStatScreen(shockers: shockers, stats: s)));
     return s;
   }
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> widgets = [];
+    widgets.add(FilledButton(
+        onPressed: showStats,
+        child: Text("Show stats"),
+        key: ValueKey("stats")));
+    for (ShockerLog log in logs) {
+      widgets.add(ShockerLogEntry(
+        log: log,
+        key: ValueKey(
+            "${log.createdOn}-${log.controlledBy.id}-${log.intensity}-${log.duration}-${log.type}-${log.shockerReference?.id}"),
+      ));
+    }
+
     return Scaffold(
         appBar: AppBar(
           title: Row(
@@ -85,20 +101,9 @@ class LogScreenState extends State<LogScreen> {
                         onRefresh: () async {
                           return loadLogs();
                         },
-                        child: ListView(children: [
-                          // ToDo: Integrate button in a working fashion
-                          FilledButton(onPressed: showStats, child: Text("Show stats")),
-                          ListView.builder(
-                            itemCount: logs.length,
-                            itemBuilder: (context, index) {
-                              final log = logs[index];
-                              return ShockerLogEntry(
-                                log: log,
-                                key: ValueKey(
-                                    "${log.createdOn}-${log.controlledBy.id}-${log.intensity}-${log.duration}-${log.type}-${log.shockerReference?.id}"),
-                              );
-                            })
-                        ],)))));
+                        child: ListView(
+                          children: widgets
+                        )))));
   }
 }
 
@@ -107,11 +112,11 @@ class ShockerLogEntry extends StatelessWidget {
 
   const ShockerLogEntry({Key? key, required this.log}) : super(key: key);
 
-  String formatDateTime(DateTime dateTime) {
+  static String formatDateTime(DateTime dateTime, {bool alwaysShowDate = false}) {
     final now = DateTime.now();
     final isToday = dateTime.year == now.year &&
         dateTime.month == now.month &&
-        dateTime.day == now.day;
+        dateTime.day == now.day && !alwaysShowDate;
     final timeString =
         '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
     final dateString =
