@@ -13,15 +13,19 @@ class LogStatScreen extends StatefulWidget {
   LogScreenState state;
   ShockerLogStats stats;
 
-  LogStatScreen({Key? key, required this.shockers, required this.stats, required this.state})
+  LogStatScreen(
+      {Key? key,
+      required this.shockers,
+      required this.stats,
+      required this.state})
       : super(key: key);
   @override
   _LogStatScreenState createState() => _LogStatScreenState();
 }
 
 class _LogStatScreenState extends State<LogStatScreen> {
-
-  @override void initState() {
+  @override
+  void initState() {
     // TODO: implement initState
     widget.state.reloadShockerLogs = () {
       rebuildStats();
@@ -32,7 +36,8 @@ class _LogStatScreenState extends State<LogStatScreen> {
   void rebuildStats() {
     widget.stats.clear();
     for (var shocker in widget.shockers) {
-      widget.stats.addLogs(AlarmListManager.getInstance().shockerLog[shocker.id] ?? []);
+      widget.stats
+          .addLogs(AlarmListManager.getInstance().shockerLog[shocker.id] ?? []);
     }
     widget.stats.doStats();
     setState(() {});
@@ -59,15 +64,15 @@ class _LogStatScreenState extends State<LogStatScreen> {
             children: widget.stats.users.entries
                 .map((user) {
                   return FilterChip(
-                    selected: widget.stats.selectedUsers.contains(user.key),
-                    onSelected: (selected) {
-                      if(selected) {
-                        widget.stats.selectedUsers.add(user.key);
-                      } else {
-                        widget.stats.selectedUsers.remove(user.key);
-                      }
-                      rebuildStats();
-                    },
+                      selected: widget.stats.selectedUsers.contains(user.key),
+                      onSelected: (selected) {
+                        if (selected) {
+                          widget.stats.selectedUsers.add(user.key);
+                        } else {
+                          widget.stats.selectedUsers.remove(user.key);
+                        }
+                        rebuildStats();
+                      },
                       label: Text(user.value.name),
                       avatar: CircleAvatar(
                         backgroundColor: user.value.color,
@@ -92,14 +97,16 @@ class _LogStatScreenState extends State<LogStatScreen> {
                     showDialog(
                         context: context,
                         builder: (context) {
-                          TextEditingController controller = TextEditingController();
+                          TextEditingController controller =
+                              TextEditingController();
                           controller.text = "200";
 
                           return AlertDialog(
                             title: Text("Load more"),
                             content: SingleChildScrollView(
                                 child: Column(children: [
-                              Text("How many logs do you want to load (up to 300)?"),
+                              Text(
+                                  "How many logs do you want to load (up to 300)?"),
                               TextField(
                                 controller: controller,
                                 keyboardType: TextInputType.number,
@@ -111,31 +118,39 @@ class _LogStatScreenState extends State<LogStatScreen> {
                                     Navigator.of(context).pop();
                                   },
                                   child: Text("Close")),
-                                  TextButton(onPressed: () async {
+                              TextButton(
+                                  onPressed: () async {
                                     if (int.tryParse(controller.text) != null) {
                                       int limit = int.parse(controller.text);
                                       if (limit > 300) {
                                         limit = 300;
                                       }
                                       widget.stats.clear();
-                                      LoadingDialog.show(context, "Loading logs");
+                                      LoadingDialog.show(
+                                          context, "Loading logs");
                                       for (var shocker in widget.shockers) {
-                                        widget.stats.addLogs(await AlarmListManager.getInstance().getShockerLogs(shocker, limit: limit));
+                                        widget.stats.addLogs(
+                                            await AlarmListManager.getInstance()
+                                                .getShockerLogs(shocker,
+                                                    limit: limit));
                                       }
                                       widget.stats.doStats();
                                       setState(() {});
                                       Navigator.of(context).pop();
                                       Navigator.of(context).pop();
                                     }
-
-                                  }, child: Text("Load"))
+                                  },
+                                  child: Text("Load"))
                             ],
                           );
                         });
                   },
                   child: Text("Load more")),
               Padding(padding: EdgeInsets.all(20)),
-              Text("Data based on ${widget.stats.logs.length} logs from ${ShockerLogEntry.formatDateTime(widget.stats.minDate, alwaysShowDate: true)} to ${ShockerLogEntry.formatDateTime(widget.stats.maxDate, alwaysShowDate: true)}", style: Theme.of(context).textTheme.headlineSmall,),
+              Text(
+                "Data based on ${widget.stats.logs.length} logs from ${ShockerLogEntry.formatDateTime(widget.stats.minDate, alwaysShowDate: true)} to ${ShockerLogEntry.formatDateTime(widget.stats.maxDate, alwaysShowDate: true)}",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               Padding(padding: EdgeInsets.all(20)),
               ...widget.stats.shockDistribution.entries.map((controlType) {
                 return Column(
@@ -154,44 +169,53 @@ class _LogStatScreenState extends State<LogStatScreen> {
                         aspectRatio: 1 / 1,
                         child: Container(
                             child: BarChart(
-                              key: ValueKey(DateTime.now().microsecondsSinceEpoch),
-                              BarChartData(
-                          gridData: FlGridData(show: false),
-                          titlesData: FlTitlesData(
-                              topTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                showTitles: false,
-                              )),
-                              rightTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                showTitles: false,
-                              )),
-                              leftTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 70,
-                                getTitlesWidget: (value, meta) => Text(
-                                    value.toStringAsFixed(1).toString() + "s"),
-                              ))),
-                          barGroups:
-                              controlType.value.total.entries.map((entry) {
-                            double runningTotal = 0;
-                            List<BarChartRodStackItem> rods = [];
-                            for (var user in entry.value.users.entries) {
-                              double value = user.value.toDouble() / 1000;
-                              rods.add(BarChartRodStackItem(
-                                  runningTotal,
-                                  runningTotal + value,
-                                  widget.stats.users[user.key]!.color));
-                              runningTotal += value;
-                            }
+                                key: ValueKey(
+                                    DateTime.now().microsecondsSinceEpoch),
+                                BarChartData(
+                                  gridData: FlGridData(show: false),
+                                  titlesData: FlTitlesData(
+                                      topTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                        showTitles: false,
+                                      )),
+                                      rightTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                        showTitles: false,
+                                      )),
+                                      leftTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                        showTitles: true,
+                                        reservedSize: 70,
+                                        getTitlesWidget: (value, meta) => Text(
+                                            value
+                                                    .toStringAsFixed(1)
+                                                    .toString() +
+                                                "s"),
+                                      ))),
+                                  barGroups: controlType.value.total.entries
+                                      .map((entry) {
+                                    double runningTotal = 0;
+                                    List<BarChartRodStackItem> rods = [];
+                                    for (var user
+                                        in entry.value.users.entries) {
+                                      double value =
+                                          user.value.toDouble() / 1000;
+                                      rods.add(BarChartRodStackItem(
+                                          runningTotal,
+                                          runningTotal + value,
+                                          widget.stats.users[user.key]!.color));
+                                      runningTotal += value;
+                                    }
 
-                            return BarChartGroupData(x: entry.key, barRods: [
-                              BarChartRodData(
-                                  toY: runningTotal, rodStackItems: rods)
-                            ]);
-                          }).toList(),
-                        )))),
+                                    return BarChartGroupData(
+                                        x: entry.key,
+                                        barRods: [
+                                          BarChartRodData(
+                                              toY: runningTotal,
+                                              rodStackItems: rods)
+                                        ]);
+                                  }).toList(),
+                                )))),
                     Padding(padding: EdgeInsets.all(40)),
                   ],
                 );

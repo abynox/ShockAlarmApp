@@ -366,16 +366,11 @@ class OpenShockClient {
 
   Future<String?> redeemShareCode(String code, AlarmListManager alarmListManager) async {
     // first get a valid token
-    Token? t;
-    alarmListManager.getTokens().forEach((element) {
-      if(element.isSession) {
-        t = element;
-      }
-    });
+    Token? t = alarmListManager.getAnyUserToken();
     if(t == null) {
       return "No valid session token found";
     }
-    return getErrorCode(await PostRequest(t!, "/1/shares/code/${code}", ""), "Failed to redeem share code. Did you copy it correctly?");
+    return getErrorCode(await PostRequest(t, "/1/shares/code/${code}", ""), "Failed to redeem share code. Did you copy it correctly?");
   }
 
   Future<List<OpenShockDevice>> getDevices(Token t) async {
