@@ -73,6 +73,7 @@ Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or
 - [ ] Better desktop support (dynamic layout)
 - [x] Show 3 point menu when 1 shocker is selected
 - [ ] Share codes sometimes can't be claimed when the app is already open
+- [ ] Show loading animation when share codes are loading in after shares loaded
 - [x] Allow toggling of the captive portal
 - [x] Add alarm renaming
 - [x] Finally code weekday scheduling for alarms
