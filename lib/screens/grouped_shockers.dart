@@ -173,7 +173,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                               },
                               icon: Icon(Icons.play_arrow)),
                         if (canViewLogs())
-                          ElevatedButton(
+                          FilledButton(
                             onPressed: () {
                               List<Shocker> shockers = [];
                               for (String shockerId

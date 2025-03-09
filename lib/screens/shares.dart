@@ -26,6 +26,7 @@ class SharesScreenState extends State<SharesScreen> {
   List<OpenShockShare> shares = [];
   List<OpenShockShareCode> shareCodes = [];
   bool initialLoading = false;
+  bool loadingShareCodes = false;
   Color activeColor = Colors.green;
   Color inactiveColor = Colors.red;
   SharesScreenState(this.manager, this.shocker);
@@ -34,6 +35,7 @@ class SharesScreenState extends State<SharesScreen> {
   void initState() {
     super.initState();
     initialLoading = true;
+    loadingShareCodes = true;
     loadShares();
   }
 
@@ -42,11 +44,13 @@ class SharesScreenState extends State<SharesScreen> {
     setState(() {
       shares = newShares;
       initialLoading = false;
+      loadingShareCodes = true;
     });
 
     final newShareCodes = await manager.getShockerShareCodes(shocker);
     setState(() {
       shareCodes = newShareCodes;
+      loadingShareCodes = false;
     });
   }
 
@@ -125,6 +129,10 @@ class SharesScreenState extends State<SharesScreen> {
           });
         },
       ));
+    }
+    if(loadingShareCodes) {
+      // show loading for share codes when shares have already loaded in
+      shareEntries.add(Center(child: CircularProgressIndicator()));
     }
     if (shareEntries.isEmpty) {
       shareEntries.add(Center(
@@ -231,7 +239,7 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
         builder: (context) => AlertDialog(
               title: Text("Delete share"),
               content: Text(
-                  "Are you sure you want to delete the share with ${share.sharedWith.name}?\n\n(You can add it again later)"),
+                  "Are you sure you want to delete the share with ${share.sharedWith.name}?\n\n(You can create a new one later). If you just want their access to temporarely stop, you can pause the share instead."),
               actions: [
                 TextButton(
                     onPressed: () {

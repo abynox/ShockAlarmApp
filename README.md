@@ -73,7 +73,7 @@ Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or
 - [ ] Better desktop support (dynamic layout)
 - [x] Show 3 point menu when 1 shocker is selected
 - [ ] Share codes sometimes can't be claimed when the app is already open
-- [ ] Show loading animation when share codes are loading in after shares loaded
+- [x] Show loading animation when share codes are loading in after shares loaded
 - [x] Allow toggling of the captive portal
 - [x] Add alarm renaming
 - [x] Finally code weekday scheduling for alarms
@@ -83,6 +83,7 @@ Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or
 - [x] Random shocking -> Add background task + notification (works without notification???)
 - [x] Fix alarms not sending controls when app is minimized (seems to work)
 - [ ] Live controls
+- [ ] Allow alarm tones to be used as patterns
 - [x] Request permissions only when needed
 - [x] fix reloading problems in settings after login?
 - [ ] (Big controls mode)
