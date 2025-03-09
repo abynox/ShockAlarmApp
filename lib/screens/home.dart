@@ -68,23 +68,23 @@ class ScreenSelectorState extends State<ScreenSelector> {
         }
       }
       if(token != null && server != null) {
-        manager.loginToken(
-          server, token).then((value) async {
-            while(!context.mounted) {
-              await Future.delayed(Duration(milliseconds: 50));
-            }
-            showDialog(context: context, builder: (context) {
-              return AlertDialog(
-                title: Text("Token login"),
-                content: Text("You have been logged in with a token as user ${manager.getTokenByToken(token)?.name}"),
-                actions: [
-                  TextButton(onPressed: () {
-                    html.window.location.href = Uri.base.toString().split('?')[0];
-                  }, child: Text("Reload page"))
-                ],
-              );
-            });
-        },);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          manager.loginToken(
+            server!, token!).then((value) async {
+              showDialog(context: context, builder: (context) {
+                return AlertDialog(
+                  title: Text("Token login"),
+                  content: Text("You have been logged in with a token as user ${manager.getTokenByToken(token)?.name}"),
+                  actions: [
+                    TextButton(onPressed: () {
+                      html.window.location.href = Uri.base.toString().split('?')[0];
+                    }, child: Text("Reload page"))
+                  ],
+                );
+              });
+          },);;
+        });
+        
       }
     }
     screens = [

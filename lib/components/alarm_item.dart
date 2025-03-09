@@ -41,7 +41,10 @@ class AlarmItemState extends State<AlarmItem> {
 
   void _save() async {
     manager.saveAlarm(alarm);
-    if(manager.anyAlarmOn()) {
+    if(manager.anyAlarmOn() && isAndroid()) {
+      // The permission is only available on Android.
+      // Web and Linux will use the alarm server for scheduling.
+      // When adding a native linux alarming package this should be updated.
       await requestAlarmPermissions();
     }
     expanded = false;

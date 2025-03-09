@@ -35,7 +35,7 @@ class AlarmToneComponent {
   int duration = 1000;
   ControlType? type = ControlType.vibrate;
   int time = 0;
-
+  
   AlarmToneComponent({this.intensity = 25, this.duration = 1000, this.type = ControlType.vibrate, this.time = 0});
 
   Map<String, dynamic> toJson() {
@@ -59,6 +59,7 @@ class AlarmToneComponent {
 
 class AlarmTone {
   int id;
+  String? serverId;
   String name = "";
   List<AlarmToneComponent> components = [];
 
@@ -114,6 +115,7 @@ class AlarmShocker {
 
 class Alarm {
   int id;
+  String? serverId;
   String name;
   int hour;
   int minute;
@@ -140,6 +142,7 @@ class Alarm {
       this.friday = false,
       this.saturday = false,
       this.sunday = false,
+      this.serverId = "",
       required this.active});
 
   List<bool> get days {

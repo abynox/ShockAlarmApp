@@ -156,7 +156,7 @@ class ShockerItem extends StatefulWidget {
                   },
                   title: "Delete shocker",
                   body:
-                      "Are you sure you want to delete the shocker ${shocker.name}?\n\n(You can add it again later)"));
+                      "Are you sure you want to delete the shocker ${shocker.name}?\n\n(You can add it again later. However shares will be lost until you manually recreate them all)"));
         }),
   ];
 

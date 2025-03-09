@@ -8,6 +8,8 @@ import 'package:shock_alarm_app/services/openshockws.dart';
 import '../stores/alarm_store.dart';
 import 'dart:convert';
 
+import 'alarm_manager.dart';
+
 class Settings {
   bool showRandomDelay = true;
   bool useRangeSliderForRandomDelay = true;
@@ -88,7 +90,14 @@ class AlarmListManager {
 
   ControlsContainer controls = ControlsContainer();
 
-  AlarmListManager();
+  AlarmListManager() {
+    if(isAndroid()) {
+      alarmManager = AndroidAlarmManager();
+    }
+    if(kIsWeb) {
+      alarmManager = AlarmServerAlarmManager();
+    }
+  }
 
   Function? reloadAllMethod;
 
@@ -186,12 +195,10 @@ class AlarmListManager {
     reloadAllMethod?.call();
   }
 
+  AlarmManager? alarmManager;
+
   void rescheduleAlarms() async {
-    for (var alarm in _alarms) {
-      if (alarm.active) {
-        await alarm.schedule(this);
-      }
-    }
+    await alarmManager?.scheduleAlarms(_alarms);
   }
 
   int getNewAlarmId() {
@@ -321,6 +328,7 @@ class AlarmListManager {
 
   void deleteAlarm(Alarm alarm) {
     _alarms.removeWhere((findAlarm) => alarm.id == findAlarm.id);
+    alarmManager?.deleteAlarm(alarm);
     saveAlarms();
   }
 

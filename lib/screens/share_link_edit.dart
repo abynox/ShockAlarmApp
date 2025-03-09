@@ -294,7 +294,7 @@ class ShareLinkShockerState extends State<ShareLinkShocker> {
         builder: (context) => AlertDialog(
               title: Text("Remove shocker"),
               content: Text(
-                  "Are you sure you want to remove shocker ${widget.shocker.name} from the share link ${widget.shareLink.name}?\n\n(You can add it again later)"),
+                  "Are you sure you want to remove shocker ${widget.shocker.name} from the share link ${widget.shareLink.name}?\n\n(You can create a new one again later)"),
               actions: [
                 TextButton(
                     onPressed: () {
