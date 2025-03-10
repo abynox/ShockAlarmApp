@@ -451,6 +451,9 @@ class Alarm {
       alarm.hour = hours;
       for(String day in cronParts[5].split(",")) {
         switch(day) {
+          case "0":
+            alarm.sunday = true;
+            break;
           case "1":
             alarm.monday = true;
             break;
@@ -469,7 +472,7 @@ class Alarm {
           case "6":
             alarm.saturday = true;
             break;
-          case "0":
+          case "7":
             alarm.sunday = true;
             break;
         }
@@ -499,7 +502,7 @@ class Alarm {
     if(thursday) days.add("4");
     if(friday) days.add("5");
     if(saturday) days.add("6");
-    if(sunday) days.add("0");
+    if(sunday) days.add("7");
     cron += days.isEmpty ? "*" : days.join(",");
     return {
       "Id": serverId,

@@ -148,7 +148,7 @@ class TokenScreenState extends State<TokenScreen> {
                                 worked.value,
                                 Token(DateTime.now().microsecondsSinceEpoch,
                                     apiToken.value!,
-                                    server: server));
+                                    server: OpenShockToken.server));
                         Navigator.of(context).pop();
                         if (t.error != null) {
                           Navigator.of(context).pop();
