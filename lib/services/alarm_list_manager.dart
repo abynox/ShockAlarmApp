@@ -97,7 +97,7 @@ class AlarmListManager {
   ControlsContainer controls = ControlsContainer();
 
   AlarmListManager() {
-    if(isAndroid()) {
+    if(isAndroid() && !settings.useAlarmServer) {
       alarmManager = AndroidAlarmManager();
     }
     else {
