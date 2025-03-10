@@ -91,6 +91,7 @@ Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or
 - [x] Web support (alarms not working)
 - [x] Linux support (alarms not working)
 - [x] Alarm support for linux and web via https://dev1.rui2015.me
+- [ ] Add seperate slider for shock and vibrate intensity
 - [ ] Add Alarm tone support for AlarmServer
 
 # Planned settings
