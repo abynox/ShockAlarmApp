@@ -45,7 +45,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
 
   @override
   void initState() {
-    if(manager.settings.useAlarmServer) {
+    if(manager.settings.useAlarmServer && manager.getAlarmServerUserToken() != null) {
       supportsAlarms = true;
     }
     try {

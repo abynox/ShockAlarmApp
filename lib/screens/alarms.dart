@@ -55,6 +55,20 @@ class AlarmScreenState extends State<AlarmScreen> {
         Center(
           child: FilledButton(
               onPressed: () {
+                if(manager.settings.useAlarmServer) {
+                  showDialog(context: context, builder: (context) {
+                    return AlertDialog(
+                      title: Text("Cannot edit tones"),
+                      content: Text("You cannot edit tones when using the alarm server at this time. This will be added at a later time"),
+                      actions: [
+                        TextButton(onPressed: () {
+                          Navigator.of(context).pop();
+                        }, child: Text("Ok"))
+                      ],
+                    );
+                  });
+                  return;
+                }
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => AlarmToneScreen(manager)));
               },
