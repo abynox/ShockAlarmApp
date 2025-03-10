@@ -108,6 +108,8 @@ class AlarmServerAlarmManager implements AlarmManager {
     }
     var response = await AlarmServerClient().PostRequest(userToken, "/api/v1/alarms", jsonEncode(alarm.toAlarmServerAlarm(userToken.userId)));
     if(response.statusCode == 200) {
+      alarm.serverId = jsonDecode(response.body)["CreatedId"];
+      AlarmListManager.getInstance().saveAlarm(alarm, updateServer: false);
       return true;
     }
     return false;

@@ -187,7 +187,7 @@ class Alarm {
       this.friday = false,
       this.saturday = false,
       this.sunday = false,
-      this.serverId = "",
+      this.serverId,
       required this.active});
 
   List<bool> get days {
@@ -199,9 +199,11 @@ class Alarm {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool("alarm$id.active", true);
 
-    FlutterLocalNotificationsPlugin().show(id, name,"Your alarm is firing", NotificationDetails(android: AndroidNotificationDetails("alarms", "Alarms", enableVibration: true, priority: Priority.high, importance: Importance.max, actions: [
-      AndroidNotificationAction("stop", "Stop alarm", showsUserInterface: true)
-    ])), payload: id.toString());
+    if(isAndroid()) {
+      FlutterLocalNotificationsPlugin().show(id, name,"Your alarm is firing", NotificationDetails(android: AndroidNotificationDetails("alarms", "Alarms", enableVibration: true, priority: Priority.high, importance: Importance.max, actions: [
+        AndroidNotificationAction("stop", "Stop alarm", showsUserInterface: true)
+      ])), payload: id.toString());
+    }
     DateTime startedAt = DateTime.now();
     var maxDuration = 0;
     bool shouldContinue = true;
@@ -299,8 +301,9 @@ class Alarm {
       }
     }
 
-    FlutterLocalNotificationsPlugin().show(id, name,"Alarm stopped", NotificationDetails(android: AndroidNotificationDetails("alarms", "Alarms", enableVibration: true, priority: Priority.high, importance: Importance.max)), payload: id.toString());
-
+    if(isAndroid()) {
+      FlutterLocalNotificationsPlugin().show(id, name,"Alarm stopped", NotificationDetails(android: AndroidNotificationDetails("alarms", "Alarms", enableVibration: true, priority: Priority.high, importance: Importance.max)), payload: id.toString());
+    }
   }
 
   // Good enough for debugging for now

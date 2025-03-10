@@ -185,12 +185,18 @@ class AlarmItemState extends State<AlarmItem> {
                           ),
                           IconButton(
                             onPressed: () {
+                              alarm.onAlarmStopped(manager, needStop: true);
+                            },
+                            icon: Icon(Icons.stop),
+                          ),
+                          IconButton(
+                            onPressed: () {
                               alarm.trigger(manager, false);
                             },
                             icon: Icon(Icons.play_arrow),
                           )
                         ],
-                      ),
+                      )
                     ],
                   ),
               ],

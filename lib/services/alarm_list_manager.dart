@@ -244,7 +244,7 @@ class AlarmListManager {
     return id;
   }
 
-  saveAlarm(Alarm alarm) async {
+  saveAlarm(Alarm alarm, {bool updateServer = true}) async {
     final index =
         _alarms.indexWhere((findAlarm) => alarm.id == findAlarm.id);
     if (index == -1) {
@@ -253,7 +253,7 @@ class AlarmListManager {
     } else {
       _alarms[index] = alarm;
     }
-    alarmManager?.saveAlarm(alarm);
+    if(updateServer) alarmManager?.saveAlarm(alarm);
     rebuildAlarmShockers();
     rescheduleAlarms();
     saveAlarms();

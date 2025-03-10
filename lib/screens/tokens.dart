@@ -159,6 +159,8 @@ class TokenScreenState extends State<TokenScreen> {
                               .deleteAlarmServerToken(populatedToken.value!);
                           return;
                         }
+                        AlarmListManager.getInstance()
+                            .saveAlarmServerToken(t.value!);
                         Navigator.of(context).pop();
                         showDialog(
                             context: context,
@@ -203,6 +205,8 @@ class TokenScreenState extends State<TokenScreen> {
                               .deleteAlarmServerToken(populatedToken.value!);
                           return;
                         }
+                        AlarmListManager.getInstance()
+                            .saveAlarmServerToken(t.value!);
                         Navigator.of(context).pop();
                         showDialog(
                             context: context,
