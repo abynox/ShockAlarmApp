@@ -21,6 +21,8 @@ class Settings {
   bool allowTokenEditing = false;
   bool useHttpShocking = false;
 
+  bool useAlarmServer = false;
+
   bool useGroupedShockerSelection = true;
 
   int alarmToneRepeatDelayMs = 1500;
@@ -43,6 +45,8 @@ class Settings {
       useRangeSliderForIntensity = json["useRangeSliderForIntensity"];
     if(json["useRangeSliderForDuration"] != null)
       useRangeSliderForDuration = json["useRangeSliderForDuration"];
+    if(json["useAlarmServer"] != null)
+      useAlarmServer = json["useAlarmServer"];
     if(json["disableHubFiltering"] != null)
       disableHubFiltering = json["disableHubFiltering"];
     if(json["allowTokenEditing"] != null)
@@ -68,7 +72,8 @@ class Settings {
       "useHttpShocking": useHttpShocking,
       "useGroupedShockerSelection_1": useGroupedShockerSelection,
       "theme": theme.index,
-      "showFirmwareVersion": showFirmwareVersion
+      "showFirmwareVersion": showFirmwareVersion,
+      "useAlarmServer": useAlarmServer
     };
   }
 }
@@ -77,6 +82,7 @@ class AlarmListManager {
   final List<Alarm> _alarms = [];
   final List<Shocker> shockers = [];
   final List<Token> _tokens = [];
+  final List<Token> _alarmServerTokens = [];
   final List<Hub> hubs = [];
   final List<String> onlineHubs = [];
   final List<AlarmTone> alarmTones = [];
@@ -94,7 +100,7 @@ class AlarmListManager {
     if(isAndroid()) {
       alarmManager = AndroidAlarmManager();
     }
-    if(kIsWeb) {
+    else {
       alarmManager = AlarmServerAlarmManager();
     }
   }
@@ -117,6 +123,7 @@ class AlarmListManager {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String alarms = prefs.getString("alarms") ?? "[]";
     String tokens = prefs.getString("tokens") ?? "[]";
+    String alarmServerTokens = prefs.getString("alarmServerTokens") ?? "[]";
     String shockers = prefs.getString("shockers") ?? "[]";
     String hubs = prefs.getString("hubs") ?? "[]";
     String settings = prefs.getString("settings") ?? "{}";
@@ -124,6 +131,7 @@ class AlarmListManager {
     String shareLinks = prefs.getString("shareLinks") ?? "[]";
     List<dynamic> alarmsList = jsonDecode(alarms);
     List<dynamic> tokensList = jsonDecode(tokens);
+    List<dynamic> alarmServerTokensList = jsonDecode(alarmServerTokens);
     List<dynamic> shockersList = jsonDecode(shockers);
     List<dynamic> hubsList = jsonDecode(hubs);
     List<dynamic> alarmTonesList = jsonDecode(alarmTones);
@@ -134,8 +142,10 @@ class AlarmListManager {
       _alarms.add(Alarm.fromJson(alarm));
     }
     for (var token in tokensList) {
-      print("Adding token");
       _tokens.add(Token.fromJson(token));
+    }
+    for (var token in alarmServerTokensList) {
+      _alarmServerTokens.add(Token.fromJson(token));
     }
     for (var hub in hubsList) {
       this.hubs.add(Hub.fromJson(hub));
@@ -241,6 +251,7 @@ class AlarmListManager {
     } else {
       _alarms[index] = alarm;
     }
+    alarmManager?.saveAlarm(alarm);
     rebuildAlarmShockers();
     rescheduleAlarms();
     saveAlarms();
@@ -326,6 +337,17 @@ class AlarmListManager {
     //await _storage.writeList(_tokens.tokens);
   }
 
+  Future saveAlarmServerToken(Token token) async {
+    final index = _alarmServerTokens.indexWhere((findToken) => token.id == findToken.id);
+    if (index == -1) {
+      _alarmServerTokens.add(token);
+    } else {
+      _alarmServerTokens[index] = token;
+    }
+    await saveAlarmServerTokens();
+    //await _storage.writeList(_tokens.tokens);
+  }
+
   void deleteAlarm(Alarm alarm) {
     _alarms.removeWhere((findAlarm) => alarm.id == findAlarm.id);
     alarmManager?.deleteAlarm(alarm);
@@ -360,6 +382,10 @@ class AlarmListManager {
     return _tokens;
   }
 
+  List<Token> getAlarmServerTokens() {
+    return _alarmServerTokens;
+  }
+
   void saveShockers() async {
     updateHubList();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -377,6 +403,11 @@ class AlarmListManager {
     prefs.setString("tokens", jsonEncode(_tokens));
   }
 
+  Future saveAlarmServerTokens() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("alarmServerTokens", jsonEncode(_alarmServerTokens));
+  }
+
   Future saveAlarmTones() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("alarmTones", jsonEncode(alarmTones));
@@ -392,6 +423,11 @@ class AlarmListManager {
     _tokens.removeWhere((findToken) => token.id == findToken.id);
     await saveTokens();
     return error;
+  }
+
+  Future deleteAlarmServerToken(Token token) async {
+    _alarmServerTokens.removeWhere((findToken) => token.id == findToken.id);
+    await saveAlarmServerTokens();
   }
 
   Token? getToken(int id) {
@@ -425,6 +461,14 @@ class AlarmListManager {
       await saveToken(session);
     }
     return session != null;
+  }
+
+  Future<ErrorContainer<Token>> alarmServerLogin(String serverAddress, String username, String password, bool register) async {
+    ErrorContainer<Token> session = await AlarmServerClient().loginOrRegister(serverAddress, username, password, register);
+    if(session.value != null) {
+      await saveAlarmServerToken(session.value!);
+    }
+    return session;
   }
 
   Future<String?> editShocker(Shocker shocker, OpenShockShocker edit) {
@@ -724,5 +768,28 @@ class AlarmListManager {
       }
     }
     return false;
+  }
+
+  Token? getAlarmServerUserToken() {
+    for(var token in _alarmServerTokens) {
+      if(token.invalidSession) continue;
+      if(token.name.isNotEmpty) {
+        return token;
+      }
+    }
+    return null;
+  }
+
+  Future addAlarmServerAlarms() async {
+    ErrorContainer<List<Alarm>> alarms = await alarmManager?.getAlarms() ?? ErrorContainer([], null);
+    if(alarms.error != null) {
+      return;
+    }
+    for(var alarm in alarms.value!) {
+      if(alarm.id == -1) {
+        alarm.id = getNewAlarmId();
+      }
+      await saveAlarm(alarm);
+    }
   }
 }

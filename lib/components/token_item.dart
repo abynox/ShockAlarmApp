@@ -25,25 +25,32 @@ class TokenItemState extends State<TokenItem> {
 
   void _delete() async {
     deleting = true;
-    String? error = await manager.deleteToken(token);
-    await manager.updateShockerStore();
-    if(error != null) {
-      deleting = false;
-      showDialog(context: context, builder: (context) => AlertDialog(
-        title: Text("Failed to sign out"),
-        content: Text(error),
-        actions: [
-          TextButton(onPressed: () {
-            Navigator.of(context).pop();
-          }, child: Text("Ok"))
-        ],
-      ));
+    if(token.tokenType == TokenType.openshock) {
+      String? error = await manager.deleteToken(token);
+      await manager.updateShockerStore();
+      if(error != null) {
+        deleting = false;
+        showDialog(context: context, builder: (context) => AlertDialog(
+          title: Text("Failed to sign out"),
+          content: Text(error),
+          actions: [
+            TextButton(onPressed: () {
+              Navigator.of(context).pop();
+            }, child: Text("Ok"))
+          ],
+        ));
+      }
+    } else if(token.tokenType == TokenType.alarmserver) {
+      await manager.deleteAlarmServerToken(token);
     }
     onRebuild();
   }
 
   void _save() {
-    manager.saveToken(token);
+    if(token.tokenType == TokenType.openshock)
+      manager.saveToken(token);
+    else if(token.tokenType == TokenType.alarmserver)
+      manager.saveAlarmServerToken(token);
     expanded = false;
     onRebuild();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -97,7 +104,8 @@ class TokenItemState extends State<TokenItem> {
                       Text(
                         token.name,
                         style: t.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                      )
+                      ),
+                      Text(token.tokenType==TokenType.openshock? "OpenShock" : "AlarmServer")
                     ],
                   ),
                   Column(children: [

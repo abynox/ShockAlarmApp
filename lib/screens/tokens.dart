@@ -6,8 +6,11 @@ import 'package:shock_alarm_app/components/shock_disclamer.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
+import 'package:shock_alarm_app/services/alarm_manager.dart';
+import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../components/token_item.dart';
+import '../stores/alarm_store.dart';
 import 'shares.dart';
 import 'tools.dart';
 
@@ -40,6 +43,173 @@ class TokenScreenState extends State<TokenScreen> {
                     Navigator.of(context).pop();
                   },
                   child: Text("Ok"))
+            ],
+          );
+        });
+  }
+
+  Future doAlarmServerLogin(String server, String username, String password, bool register) async {
+    
+    showDialog(
+          context: context,
+          builder: (context) =>
+              LoadingDialog(title: register ? "Registering" : "Logging in"));
+      ErrorContainer<Token> worked = await manager.alarmServerLogin(
+          server, username, password, register);
+
+      AlarmListManager.getInstance().reloadAllMethod = () {
+        setState(() {
+          
+        });
+      };
+      if (worked.error == null) {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        AlarmListManager.getInstance().reloadAllMethod!();
+      } else {
+        Navigator.of(context).pop();
+        showErrorDialog(
+            "Login failed", worked.error!);
+        return;
+      }
+
+      ErrorContainer<Token> populatedToken = await AlarmServerClient().populateTokenForAccount(worked.value);
+      if(populatedToken.error != null || populatedToken.value == null) {
+        showErrorDialog("Login failed", populatedToken.error!);
+        return;
+      }
+      if(populatedToken.value?.userId != "" ) {
+        // We already have a token, just save it
+        AlarmListManager.getInstance().saveAlarmServerToken(populatedToken.value!);
+        AlarmListManager.getInstance().reloadAllMethod!();
+        showDialog(context: context, builder: (context) => AlertDialog(
+          title: Text("Success"),
+          content: Text("You are now logged in to the AlarmServer (ShockAlarmWeb). An OpenShock token has already been found on your AlarmServer account. It has therefor been choosen.\n\nIf you wish to choose another token, visit the AlarmServer website, delete all tokens and add only the one you want."),
+          actions: [
+            TextButton(onPressed: () {
+              Navigator.of(context).pop();
+            }, child: Text("Ok"))
+          ],
+        ));
+        return;
+      }
+      Token? OpenShockToken = AlarmListManager.getInstance().getAnyUserToken();
+      if(OpenShockToken == null) {
+        showErrorDialog("Login failed", "No OpenShock token found. Please log in to OpenShock first.");
+        AlarmListManager.getInstance().deleteAlarmServerToken(populatedToken.value!);
+        return;
+      }
+      if(OpenShockToken.isSession) {
+        // Ask whether to create a new token
+        showDialog(context: context, builder: (context) => AlertDialog(
+          title: Text("No token found"),
+          content: Text("You are logged in to OpenShock, but no token was found on your AlarmServer account. Do you want to create a new token on your AlarmServer account with the token found on your OpenShock account?"),
+          actions: [
+            TextButton(onPressed: () async {
+              Navigator.of(context).pop();
+            }, child: Text("Yes (ToDo)")),
+            TextButton(onPressed: () {
+              Navigator.of(context).pop();
+              AlarmListManager.getInstance().deleteAlarmServerToken(populatedToken.value!);
+            }, child: Text("No"))
+          ],
+        ));
+      } else {
+        // Ask whether to use the token
+        showDialog(context: context, builder: (context) => AlertDialog(
+          title: Text("Use OpenShock token?"),
+          content: Text("You are logged in to OpenShock. Do you want to use the token found on your OpenShock account to log in to the AlarmServer (ShockAlarmWeb)?\n\nIf you choose no, your account will be removed from ShockAlarm. Add a token on the AlarmServer website manually and then log in again.\n\nIf you choose yes, your token will be transmitted to the AlarmServer and will be stored on your account there. It will then be able to trigger the alarms."),
+          actions: [
+            TextButton(onPressed: () async {
+              LoadingDialog.show(context, "Adding token to account");
+              ErrorContainer<Token> t = await AlarmServerClient().addOpenShockTokenToAccount(worked.value, OpenShockToken);
+              Navigator.of(context).pop();
+              if(t.error != null) {
+                showErrorDialog("Failed to add token", t.error!);
+                AlarmListManager.getInstance().deleteAlarmServerToken(populatedToken.value!);
+                return;
+              }
+                Navigator.of(context).pop();
+              showDialog(context: context, builder: (context) => AlertDialog(
+                title: Text("Success"),
+                content: Text("Token added to account. You can now create alarms."),
+                actions: [
+                  TextButton(onPressed: () {
+                    Navigator.of(context).pop();
+                    AlarmListManager.getInstance().reloadAllMethod!();
+                  }, child: Text("Ok"))
+                ],
+              ));
+            }, child: Text("Yes")),
+            TextButton(onPressed: () {
+              Navigator.of(context).pop();
+              AlarmListManager.getInstance().deleteAlarmServerToken(populatedToken.value!);
+            }, child: Text("No"))
+          ],
+        ));
+      }
+  }
+
+  @override
+  void initState() {
+    manager.reloadAllMethod = rebuild;
+    super.initState();
+  }
+
+  Future showAlarmServerTokenLoginPopup() async {
+    TextEditingController serverController = TextEditingController();
+    TextEditingController usernameController = TextEditingController();
+    TextEditingController passwordController = TextEditingController();
+    serverController.text = "https://dev1.rui2015.me";
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Login to ShockAlarmWeb"),
+            content: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  TextField(
+                    decoration: InputDecoration(labelText: "Server"),
+                    controller: serverController,
+                  ),
+                  AutofillGroup(
+                      child: Column(
+                    children: [
+                      TextField(
+                          decoration: InputDecoration(labelText: "Username"),
+                          autofillHints: [AutofillHints.username],
+                          controller: usernameController),
+                      TextField(
+                          decoration: InputDecoration(labelText: "Password"),
+                          autofillHints: [AutofillHints.password],
+                          obscureText: true,
+                          obscuringCharacter: "*",
+                          controller: passwordController)
+                    ],
+                  ))
+
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Cancel")),
+              TextButton(
+                child: Text("Register"),
+                onPressed: () {
+                  doAlarmServerLogin(serverController.text, usernameController.text, passwordController.text, true);
+                },
+              ),
+              TextButton(
+                onPressed: () async {
+                  doAlarmServerLogin(serverController.text, usernameController.text, passwordController.text, false);
+                  
+                },
+                child: Text("Login"))
             ],
           );
         });
@@ -274,31 +444,74 @@ class TokenScreenState extends State<TokenScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(10),
                   child: Text(
-                      "You are not logged in, please log in to access your devices",
+                      "You are not logged in to OpenShock, log in to access your devices",
                       style: t.textTheme.headlineSmall),
                 ),
               ),
           ],
         ),
-        FilledButton(
-          onPressed: () async {
-            await showDialog(
-                context: context, builder: (context) => ShockDisclaimer());
-            AlarmListManager.getInstance().reloadAllMethod = () {
-              setState(() {
-                
-              });
-            };
-            if (kIsWeb) {
-              showTokenLoginPopupRedirect();
-            } else {
-              showLoginPopup();
-            }
-          },
-          child: Text("Log in to OpenShock",
-              style: TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),
+
+        if(AlarmListManager.getInstance().settings.useAlarmServer) ...[
+          Column(
+            spacing: 10,
+            children: [
+              for (var token in manager.getAlarmServerTokens())
+                TokenItem(
+                    token: token,
+                    manager: manager,
+                    onRebuild: rebuild,
+                    key: ValueKey(token.id)),
+              if (manager.getAlarmServerTokens().isEmpty)
+                Card(
+                  color: t.colorScheme.onInverseSurface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text(
+                        "You are not logged into an AlarmServer. Log in to one to schedule alarms on Web an Linux",
+                        textAlign: TextAlign.center,
+                        style: t.textTheme.headlineSmall),
+                  ),
+                ),
+            ],
+          ),
+        ],
+        Padding(padding: EdgeInsets.all(10)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
+          spacing: 10,
+          children: [
+            if (manager.getTokens().isEmpty) FilledButton(
+              onPressed: () async {
+                await showDialog(
+                    context: context, builder: (context) => ShockDisclaimer());
+                AlarmListManager.getInstance().reloadAllMethod = () {
+                  setState(() {
+                    
+                  });
+                };
+                if (kIsWeb) {
+                  showTokenLoginPopupRedirect();
+                } else {
+                  showLoginPopup();
+                }
+              },
+              child: Text("Log in to OpenShock",
+                  style: TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),
+            ),
+            if (manager.getAlarmServerTokens().isEmpty && manager.settings.useAlarmServer) FilledButton(
+              onPressed: () async {
+                showAlarmServerTokenLoginPopup();
+              },
+              child: Text("Log in to AlarmServer",
+                  style: TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),
+            ),
+          ],
         ),
-        Padding(padding: EdgeInsets.all(5)),
+
+
+
+        Padding(padding: EdgeInsets.all(10)),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -350,6 +563,7 @@ class TokenScreenState extends State<TokenScreen> {
             Text("Show option for random delay"),
             Switch(
                 value: manager.settings.showRandomDelay,
+                key: ValueKey("showRandomDelay"),
                 onChanged: (value) {
                   setState(() {
                     manager.settings.showRandomDelay = value;
@@ -364,6 +578,7 @@ class TokenScreenState extends State<TokenScreen> {
             Text("Use grouped shocker controlling"),
             Switch(
                 value: manager.settings.useGroupedShockerSelection,
+                key: ValueKey("useGroupedShockerSelection"),
                 onChanged: (value) {
                   setState(() {
                     manager.settings.useGroupedShockerSelection = value;
@@ -378,6 +593,7 @@ class TokenScreenState extends State<TokenScreen> {
             Text("Use range slider for random delay"),
             Switch(
                 value: manager.settings.useRangeSliderForRandomDelay,
+                key: ValueKey("useRangeSliderForRandomDelay"),
                 onChanged: (value) {
                   setState(() {
                     manager.settings.useRangeSliderForRandomDelay = value;
@@ -392,6 +608,7 @@ class TokenScreenState extends State<TokenScreen> {
             Text("Use range slider for intensity"),
             Switch(
                 value: manager.settings.useRangeSliderForIntensity,
+                key: ValueKey("useRangeSliderForIntensity"),
                 onChanged: (value) {
                   setState(() {
                     manager.settings.useRangeSliderForIntensity = value;
@@ -406,6 +623,7 @@ class TokenScreenState extends State<TokenScreen> {
             Text("Use range slider for duration"),
             Switch(
                 value: manager.settings.useRangeSliderForDuration,
+                key: ValueKey("useRangeSliderForDuration"),
                 onChanged: (value) {
                   setState(() {
                     manager.settings.useRangeSliderForDuration = value;
@@ -420,6 +638,7 @@ class TokenScreenState extends State<TokenScreen> {
             Text("Disable hub filtering"),
             Switch(
                 value: manager.settings.disableHubFiltering,
+                key: ValueKey("disableHubFiltering"),
                 onChanged: (value) {
                   setState(() {
                     manager.settings.disableHubFiltering = value;
@@ -434,6 +653,7 @@ class TokenScreenState extends State<TokenScreen> {
             Text("Show hub firmware version"),
             Switch(
                 value: manager.settings.showFirmwareVersion,
+                key: ValueKey("showFirmwareVersion"),
                 onChanged: (value) {
                   setState(() {
                     manager.settings.showFirmwareVersion = value;
@@ -448,9 +668,25 @@ class TokenScreenState extends State<TokenScreen> {
             Text("Use http instead of ws for shocking"),
             Switch(
                 value: manager.settings.useHttpShocking,
+                key: ValueKey("useHttpShocking"),
                 onChanged: (value) {
                   setState(() {
                     manager.settings.useHttpShocking = value;
+                    manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Use Alarm Server for alarms (requires restart)"),
+            Switch(
+                value: manager.settings.useAlarmServer,
+                key: ValueKey("useAlarmServer"),
+                onChanged: (value) {
+                  setState(() {
+                    manager.settings.useAlarmServer = value;
                     manager.saveSettings();
                   });
                 })

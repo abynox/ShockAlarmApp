@@ -12,6 +12,7 @@ import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:uni_links5/uni_links.dart';
 import '../components/alarm_item.dart';
 import '../services/alarm_list_manager.dart';
+import 'alarms.dart';
 import 'share_links.dart';
 import 'tokens.dart';
 import '../stores/alarm_store.dart';
@@ -44,6 +45,9 @@ class ScreenSelectorState extends State<ScreenSelector> {
 
   @override
   void initState() {
+    if(manager.settings.useAlarmServer) {
+      supportsAlarms = true;
+    }
     try {
       if (isAndroid()) {
         getInitialLink().then((String? url) {
@@ -88,7 +92,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       }
     }
     screens = [
-      if (supportsAlarms) HomeScreen(manager: manager),
+      if (supportsAlarms) AlarmScreen(manager: manager),
       ShareLinksScreen(),
       ShockScreenSelector(manager: manager),
       TokenScreen(manager: manager),
@@ -114,9 +118,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
                   minute: tod.minute,
                   active: false);
               await manager.saveAlarm(newAlarm);
-              setState(() {
-                
-              });
+              manager.reloadAllMethod!();
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text('Alarm added'),
                 duration: Duration(seconds: 3),
@@ -197,9 +199,6 @@ class ScreenSelectorState extends State<ScreenSelector> {
   @override
   Widget build(BuildContext context) {
     manager.startAnyWS();
-    manager.reloadAllMethod = () {
-      setState(() {});
-    };
     return Scaffold(
         body: KeyboardListener(
             autofocus: true,
@@ -243,14 +242,6 @@ class ScreenSelectorState extends State<ScreenSelector> {
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  final AlarmListManager manager;
-
-  const HomeScreen({Key? key, required this.manager}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => HomeScreenState(manager);
-}
 
 class PagePadding extends StatefulWidget {
   final Widget child;
@@ -268,50 +259,6 @@ class PagePaddingState extends State<PagePadding> {
     return Padding(
       padding: EdgeInsets.all(10),
       child: widget.child,
-    );
-  }
-}
-
-class HomeScreenState extends State<HomeScreen> {
-  final AlarmListManager manager;
-
-  HomeScreenState(this.manager);
-
-  void rebuild() {
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    manager.context = context;
-    ThemeData t = Theme.of(context);
-    List<Widget> alarms = manager.getAlarms().map((x) {
-      return AlarmItem(
-          alarm: x, manager: manager, onRebuild: rebuild, key: ValueKey(x.id));
-    }).toList();
-
-    return ListView(
-      children: [
-        Text(
-          'Your alarms',
-          style: t.textTheme.headlineMedium,
-          textAlign: TextAlign.center,
-        ),
-        Text(
-          "Alarms are currently semi working",
-          style: t.textTheme.headlineSmall,
-          textAlign: TextAlign.center,
-        ),
-        Center(
-          child: FilledButton(
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => AlarmToneScreen(manager)));
-              },
-              child: Text("Edit Tones")),
-        ),
-        ...alarms,
-      ],
     );
   }
 }
