@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
+import 'package:shock_alarm_app/services/alarm_manager.dart';
 import '../stores/alarm_store.dart';
 import 'dart:convert';
 import '../main.dart';
@@ -135,6 +136,16 @@ class OpenShockClient {
       manager.reloadAllMethod!();
     }
     return getErrorCode(response, "Failed to set pause state");
+  }
+
+  Future<ErrorContainer<String>> createApiToken(Token? t, OpenShockApiToken toCreate) async {
+    if(t == null) return ErrorContainer(null, "Token not found");
+    var response = await PostRequest(t, "/1/tokens", jsonEncode(toCreate.toJson()));
+    if(response.statusCode != 200) {
+      return ErrorContainer(null, getErrorCode(response, "Failed to create token"));
+    }
+    String? token = jsonDecode(response.body)["token"];
+    return ErrorContainer(token, null);
   }
 
   Future<bool> sendControls(Token t, List<Control> list, AlarmListManager manager, {String customName = "ShockAlarm", bool useWs = true}) async {
@@ -569,6 +580,28 @@ class OpenShockClient {
       await AlarmListManager.getInstance().startWS(t);
     }
     return await AlarmListManager.getInstance().ws?.setCaptivePortal(hub, enable);
+  }
+}
+
+class OpenShockApiToken {
+  String name = "";
+  List<String> permissions = [];
+  String? validUntil;
+
+  OpenShockApiToken(this.name, this.permissions, this.validUntil);
+
+  toJson() {
+    return {
+      "name": name,
+      "permissions": permissions,
+      "validUntil": validUntil
+    };
+  }
+
+  OpenShockApiToken.fromJson(Map<String, dynamic> json) {
+    name = json["name"];
+    permissions = List<String>.from(json["permissions"]);
+    validUntil = json["validUntil"];
   }
 }
 

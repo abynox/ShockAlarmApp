@@ -103,15 +103,43 @@ class TokenScreenState extends State<TokenScreen> {
         // Ask whether to create a new token
         showDialog(context: context, builder: (context) => AlertDialog(
           title: Text("No token found"),
-          content: Text("You are logged in to OpenShock, but no token was found on your AlarmServer account. Do you want to create a new token on your AlarmServer account with the token found on your OpenShock account?"),
+          content: Text("You are logged in to OpenShock, but no token was found on your AlarmServer account. Do you want to create a new OpenShock api token for your AlarmServer account? By default the api token will be valid forever. If you do not want to create a token, you can add one manually on the AlarmServer website and then log in here."),
           actions: [
-            TextButton(onPressed: () async {
-              Navigator.of(context).pop();
-            }, child: Text("Yes (ToDo)")),
             TextButton(onPressed: () {
               Navigator.of(context).pop();
               AlarmListManager.getInstance().deleteAlarmServerToken(populatedToken.value!);
-            }, child: Text("No"))
+            }, child: Text("No")),
+            TextButton(onPressed: () async {
+              LoadingDialog.show(context, "Adding token to account");
+              ErrorContainer<String> apiToken = await OpenShockClient().createApiToken(OpenShockToken, OpenShockApiToken("ShockAlarm-AlarmServer-${Uri.parse(server).host}", ["shockers.use"], null));
+              
+              if(apiToken.error != null) {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                showErrorDialog("Failed to create api token, you have been logged out of the AlarmServer", apiToken.error!);
+                AlarmListManager.getInstance().deleteAlarmServerToken(populatedToken.value!);
+                return;
+              }
+              ErrorContainer<Token> t = await AlarmServerClient().addOpenShockTokenToAccount(worked.value, Token(DateTime.now().microsecondsSinceEpoch, apiToken.value!, server: server));
+              Navigator.of(context).pop();
+              if(t.error != null) {
+                Navigator.of(context).pop();
+                showErrorDialog("Failed to add token, you have been logged out of the AlarmServer", t.error!);
+                AlarmListManager.getInstance().deleteAlarmServerToken(populatedToken.value!);
+                return;
+              }
+              Navigator.of(context).pop();
+              showDialog(context: context, builder: (context) => AlertDialog(
+                title: Text("Success"),
+                content: Text("Token added to account. You can now create alarms."),
+                actions: [
+                  TextButton(onPressed: () {
+                    Navigator.of(context).pop();
+                    AlarmListManager.getInstance().reloadAllMethod!();
+                  }, child: Text("Ok"))
+                ],
+              ));
+            }, child: Text("Yes")),
           ],
         ));
       } else {
