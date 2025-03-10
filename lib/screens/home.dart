@@ -47,7 +47,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
     if(manager.settings.useAlarmServer && manager.getAlarmServerUserToken() != null) {
       supportsAlarms = true;
     } else {
-      supportsAlarms = false;
+      supportsAlarms = isAndroid();
     }
     
     
