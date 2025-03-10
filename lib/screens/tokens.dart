@@ -81,6 +81,7 @@ class TokenScreenState extends State<TokenScreen> {
       AlarmListManager.getInstance()
           .saveAlarmServerToken(populatedToken.value!);
       AlarmListManager.getInstance().reloadAllMethod!();
+      AlarmListManager.getInstance().pageSelectorReloadMethod!();
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -171,6 +172,7 @@ class TokenScreenState extends State<TokenScreen> {
                                           Navigator.of(context).pop();
                                           AlarmListManager.getInstance()
                                               .reloadAllMethod!();
+                                          AlarmListManager.getInstance().pageSelectorReloadMethod!();
                                         },
                                         child: Text("Ok"))
                                   ],
@@ -214,6 +216,8 @@ class TokenScreenState extends State<TokenScreen> {
                                           Navigator.of(context).pop();
                                           AlarmListManager.getInstance()
                                               .reloadAllMethod!();
+                                          
+                                          AlarmListManager.getInstance().pageSelectorReloadMethod!();
                                         },
                                         child: Text("Ok"))
                                   ],
@@ -774,7 +778,7 @@ class TokenScreenState extends State<TokenScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Use Alarm Server for alarms (requires restart)"),
+            Text("Use AlarmServer for alarms"),
             Switch(
                 value: manager.settings.useAlarmServer,
                 key: ValueKey("useAlarmServer"),
@@ -782,6 +786,7 @@ class TokenScreenState extends State<TokenScreen> {
                   setState(() {
                     manager.settings.useAlarmServer = value;
                     manager.saveSettings();
+                    manager.pageSelectorReloadMethod!();
                   });
                 })
           ],

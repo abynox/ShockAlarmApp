@@ -43,54 +43,14 @@ class ScreenSelectorState extends State<ScreenSelector> {
     html.window.history.replaceState(null, '', newUri.toString());
   }
 
-  @override
-  void initState() {
+  void redoLayout(bool initialReload) {
     if(manager.settings.useAlarmServer && manager.getAlarmServerUserToken() != null) {
       supportsAlarms = true;
+    } else {
+      supportsAlarms = false;
     }
-    try {
-      if (isAndroid()) {
-        getInitialLink().then((String? url) {
-          if (url != null) {
-            onProtocolUrlReceived(url);
-          }
-        });
-      }
-    } catch (e) {
-      print("Error getting initial link (perhaps wrong platform): $e");
-    }
-    if(kIsWeb) {
-      String? token;
-      String? server;
-      for(MapEntry<String, String> s in Uri.base.queryParameters.entries) {
-        if(s.key == "server") {
-          server = s.value;
-        }
-        if(s.key == "token") {
-          token = s.value;
-          removeTokenFromUrl();
-        }
-      }
-      if(token != null && server != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          manager.loginToken(
-            server!, token!).then((value) async {
-              showDialog(context: context, builder: (context) {
-                return AlertDialog(
-                  title: Text("Token login"),
-                  content: Text("You have been logged in with a token as user ${manager.getTokenByToken(token)?.name}"),
-                  actions: [
-                    TextButton(onPressed: () {
-                      html.window.location.href = Uri.base.toString().split('?')[0];
-                    }, child: Text("Reload page"))
-                  ],
-                );
-              });
-          },);;
-        });
-        
-      }
-    }
+    
+    
     screens = [
       if (supportsAlarms) AlarmScreen(manager: manager),
       ShareLinksScreen(),
@@ -133,6 +93,65 @@ class ScreenSelectorState extends State<ScreenSelector> {
       }),
       null,
     ];
+    if(!initialReload) {
+      _selectedIndex = min(_selectedIndex, screens.length);
+      setState(() {
+        
+      });
+      if(mounted) _tap(_selectedIndex);
+    }
+  }
+
+  @override
+  void initState() {
+    try {
+      if (isAndroid()) {
+        getInitialLink().then((String? url) {
+          if (url != null) {
+            onProtocolUrlReceived(url);
+          }
+        });
+      }
+    } catch (e) {
+      print("Error getting initial link (perhaps wrong platform): $e");
+    }
+    if(kIsWeb) {
+      String? token;
+      String? server;
+      for(MapEntry<String, String> s in Uri.base.queryParameters.entries) {
+        if(s.key == "server") {
+          server = s.value;
+        }
+        if(s.key == "token") {
+          token = s.value;
+          removeTokenFromUrl();
+        }
+      }
+      if(token != null && server != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          manager.loginToken(
+            server!, token!).then((value) async {
+              showDialog(context: context, builder: (context) {
+                return AlertDialog(
+                  title: Text("Token login"),
+                  content: Text("You have been logged in with a token as user ${manager.getTokenByToken(token)?.name}"),
+                  actions: [
+                    TextButton(onPressed: () {
+                      html.window.location.href = Uri.base.toString().split('?')[0];
+                    }, child: Text("Reload page"))
+                  ],
+                );
+              });
+          },);
+        });
+        
+      }
+    }
+
+    redoLayout(true);
+    manager.pageSelectorReloadMethod = () {
+      redoLayout(false);
+    };
 
     manager.getPageIndex().then((index) {
       if (index != -1) {

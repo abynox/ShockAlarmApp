@@ -107,6 +107,8 @@ class AlarmListManager {
 
   Function? reloadAllMethod;
 
+  Function? pageSelectorReloadMethod;
+
   BuildContext? context;
 
   List<String> selectedShockers = [];
