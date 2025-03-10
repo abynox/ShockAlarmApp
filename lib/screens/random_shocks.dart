@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
+import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/grouped_shocker_selector.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:shock_alarm_app/components/tone_item.dart';
@@ -94,7 +95,7 @@ class RandomShocksState extends State<RandomShocks> {
         title: Text('Random shocks'),
       ),
       body: PagePadding(
-          child: Column(
+          child: ConstrainedContainer(child: Column(
         children: <Widget>[
           GroupedShockerSelector(
             onChanged: () {
@@ -196,7 +197,7 @@ class RandomShocksState extends State<RandomShocks> {
             ],
           )
         ],
-      )),
+      ))),
     );
   }
 }

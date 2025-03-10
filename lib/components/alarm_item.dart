@@ -146,6 +146,7 @@ class AlarmItemState extends State<AlarmItem> {
                         alarm: this.alarm,
                         onRebuild: onRebuild,
                       ),
+                      if(!manager.settings.useAlarmServer)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

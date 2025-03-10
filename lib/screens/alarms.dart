@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 import 'package:shock_alarm_app/stores/alarm_store.dart';
 
@@ -37,10 +37,14 @@ class AlarmScreenState extends State<AlarmScreen> {
     ThemeData t = Theme.of(context);
     List<Widget> alarms = manager.getAlarms().map((x) {
       return AlarmItem(
-          alarm: x, manager: manager, onRebuild: rebuild, key: ValueKey(x.getId()));
+          alarm: x,
+          manager: manager,
+          onRebuild: rebuild,
+          key: ValueKey(x.getId()));
     }).toList();
 
-    return ListView(
+    return ConstrainedContainer(
+        child: ListView(
       children: [
         Text(
           'Your alarms',
@@ -55,18 +59,23 @@ class AlarmScreenState extends State<AlarmScreen> {
         Center(
           child: FilledButton(
               onPressed: () {
-                if(manager.settings.useAlarmServer) {
-                  showDialog(context: context, builder: (context) {
-                    return AlertDialog(
-                      title: Text("Cannot edit tones"),
-                      content: Text("You cannot edit tones when using the alarm server at this time. This will be added at a later time"),
-                      actions: [
-                        TextButton(onPressed: () {
-                          Navigator.of(context).pop();
-                        }, child: Text("Ok"))
-                      ],
-                    );
-                  });
+                if (manager.settings.useAlarmServer) {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text("Cannot edit tones"),
+                          content: Text(
+                              "You cannot edit tones when using the alarm server at this time. This will be added at a later time"),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("Ok"))
+                          ],
+                        );
+                      });
                   return;
                 }
                 Navigator.of(context).push(MaterialPageRoute(
@@ -74,16 +83,17 @@ class AlarmScreenState extends State<AlarmScreen> {
               },
               child: Text("Edit Tones")),
         ),
-        if(manager.settings.useAlarmServer)
-          DesktopMobileRefreshIndicator(onRefresh: () async {
-            await manager.addAlarmServerAlarms();
-            setState(() {
-              
-            });
-          }, child: Column(children: alarms,)),
-        if(!manager.settings.useAlarmServer)
-          ...alarms,
+        if (manager.settings.useAlarmServer)
+          DesktopMobileRefreshIndicator(
+              onRefresh: () async {
+                await manager.addAlarmServerAlarms();
+                setState(() {});
+              },
+              child: Column(
+                children: alarms,
+              )),
+        if (!manager.settings.useAlarmServer) ...alarms,
       ],
-    );
+    ));
   }
 }

@@ -1,0 +1,3 @@
+**Changelog:**
+- Fixed alarms not updating when creating a new one
+- Added AlarmServer support (You can finally shock your friends on time even on Web or when your phone is off)
