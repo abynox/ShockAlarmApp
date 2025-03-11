@@ -32,10 +32,12 @@ class LogScreenState extends State<LogScreen> {
     super.initState();
     initialLoading = true;
     manager.reloadShockerLogs = () {
+      List<ShockerLog> newLogs = [];
+      for (var shocker in shockers)
+        newLogs.addAll(manager.shockerLog[shocker.id] ?? []);
+      newLogs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
       setState(() {
-        for (var shocker in shockers)
-          logs.addAll(manager.shockerLog[shocker.id] ?? []);
-        logs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
+        logs = newLogs;
       });
       if(reloadShockerLogs != null) {
         reloadShockerLogs!();
@@ -74,11 +76,11 @@ class LogScreenState extends State<LogScreen> {
         onPressed: showStats,
         child: Text("Show stats"),
         key: ValueKey("stats")));
-    for (ShockerLog log in logs) {
+    for (ShockerLog log in logs.toList()) {
       widgets.add(ShockerLogEntry(
         log: log,
         key: ValueKey(
-            "${log.createdOn}-${log.controlledBy.id}-${log.intensity}-${log.duration}-${log.type}-${log.shockerReference?.id}"),
+            log.id),
       ));
     }
 
@@ -105,9 +107,24 @@ class LogScreenState extends State<LogScreen> {
                         onRefresh: () async {
                           return loadLogs();
                         },
-                        child: ListView(
-                          children: widgets
-                        )))));
+                        child: ListView.builder(
+                  itemCount: logs.length + 1, // +1 for the button
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return FilledButton(
+                        onPressed: showStats,
+                        child: Text("Show stats"),
+                        key: ValueKey("stats"),
+                      );
+                    }
+
+                    final log = logs[index - 1]; // Adjust index since 0 is the button
+                    return ShockerLogEntry(
+                      log: log,
+                      key: ValueKey(log.id),
+                    );
+                  },
+                ),))));
   }
 }
 

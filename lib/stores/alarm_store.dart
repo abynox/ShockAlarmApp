@@ -178,7 +178,7 @@ class AlarmShocker {
       ..shockerId = shocker["ShockerId"]
       ..intensity = shocker["Intensity"]
       ..duration = shocker["Duration"]
-      ..type = ControlType.values[shocker["ControlType"]]
+      ..type = shocker["ControlType"] != -1 ? ControlType.values[shocker["ControlType"]] : null
       ..enabled = shocker["Enabled"];
     if(shocker["ToneId"] != null) {
       s.serverToneId = shocker["ToneId"];
@@ -200,6 +200,7 @@ class AlarmShocker {
         break;
       }
     }
+    if(toneId == null) serverToneId = null;
     return {
       "ShockerId": shockerId,
       "Intensity": intensity,
