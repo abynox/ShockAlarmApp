@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/tone_item.dart';
+import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 
 import '../stores/alarm_store.dart';
@@ -28,18 +30,16 @@ class AlarmToneScreenState extends State<AlarmToneScreen> {
     return
     Scaffold(
       appBar: AppBar(
-        title: Text('Alarm tones'),
+        title: Text('Tones'),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(8),
-        child: Column(children: [
+      body: PagePadding(child: ConstrainedContainer(child: Column(children: [
           Text(
-            'Alarm tones',
+            'Tones',
             style: t.textTheme.headlineMedium,
           ),
           if(manager.alarmTones.isEmpty)
             Text(
-                "No alarm tones found",
+                "No tones found",
                 style: t.textTheme.headlineSmall
             ),
           Flexible(
@@ -53,7 +53,7 @@ class AlarmToneScreenState extends State<AlarmToneScreen> {
               ],)
           )
         ],),
-      ),
+      )),
       floatingActionButton: FloatingActionButton(onPressed: () {
         final newTone = new AlarmTone(
             id: manager.getNewToneId(),
@@ -65,6 +65,6 @@ class AlarmToneScreenState extends State<AlarmToneScreen> {
           content: Text('Tone added'),
           duration: Duration(seconds: 3),
         ));
-      }, child: Icon(Icons.add)),);
+      }, child: Icon(Icons.add)));
   }
 }
