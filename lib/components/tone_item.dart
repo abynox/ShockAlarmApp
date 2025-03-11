@@ -62,6 +62,7 @@ class ToneItemState extends State<ToneItem> {
       onTap: () => {
         setState(() {
           expanded = !expanded;
+          if(!expanded) _save();
         })
       },
       child: Card(
@@ -134,6 +135,7 @@ class ToneItemState extends State<ToneItem> {
                           manager: manager,
                           onRebuild: onRebuild,
                           onDelete: onDeleteComponent,
+                          key: ValueKey(component.getId()),
                         );
                       }).toList()),
                       Row(
@@ -232,11 +234,11 @@ class ToneComponentItemState extends State<ToneComponentItem> {
                         });
                       }),
                   SecondTextField(
-                    timeMs: widget.component.duration,
+                    timeMs: widget.component.time,
                     label: "Time",
                     onSet: (value) {
                       setState(() {
-                        widget.component.duration = value;
+                        widget.component.time = value;
                       });
                     },
                   ),

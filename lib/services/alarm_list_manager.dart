@@ -644,7 +644,7 @@ class AlarmListManager {
     }
   }
 
-  void saveTone(AlarmTone tone) {
+  Future saveTone(AlarmTone tone, {bool updateServer = true}) async {
     // sort components by time
     tone.components.sort((a, b) => a.time.compareTo(b.time));
     final index = alarmTones.indexWhere((findTone) => tone.id == findTone.id);
@@ -653,11 +653,13 @@ class AlarmListManager {
     } else {
       alarmTones[index] = tone;
     }
+    if(updateServer) alarmManager?.saveTone(tone);
     saveAlarmTones();
   }
 
   void deleteTone(AlarmTone tone) {
     alarmTones.removeWhere((findTone) => tone.id == findTone.id);
+    alarmManager?.deleteTone(tone);
     saveAlarmTones();
   }
 
@@ -782,9 +784,33 @@ class AlarmListManager {
     return null;
   }
 
+  void dialogError(String title, String body) {
+    showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog(title: Text(title),
+      content: Text(body),
+      actions: [
+        TextButton(onPressed: () {
+          Navigator.of(context).pop();
+        }, child: Text("Ok"))
+      ],
+    ));
+  }
+
   Future addAlarmServerAlarms() async {
+    ErrorContainer<List<AlarmTone>> tones = await alarmManager?.getAlarmTones() ?? ErrorContainer([], null);
+    if(tones.error != null) {
+      dialogError("Failed to get alarm tones", tones.error!);
+      return;
+    }
+    for(var tone in tones.value!) {
+      if(tone.id == -1) {
+        tone.id = getNewToneId();
+      }
+      await saveTone(tone);
+    }
+
     ErrorContainer<List<Alarm>> alarms = await alarmManager?.getAlarms() ?? ErrorContainer([], null);
     if(alarms.error != null) {
+      dialogError("Failed to get alarms", tones.error!);
       return;
     }
     for(var alarm in alarms.value!) {

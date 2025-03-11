@@ -47,7 +47,7 @@ class AlarmToneScreenState extends State<AlarmToneScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: manager.alarmTones.map((tone) {
-                    return ToneItem(tone: tone, manager: manager, onRebuild: onRebuild);
+                    return ToneItem(tone: tone, manager: manager, onRebuild: onRebuild, key: ValueKey(tone.id));
                   }).toList()
                 )
               ],)

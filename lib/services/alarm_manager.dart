@@ -8,10 +8,12 @@ import '../stores/alarm_store.dart';
 abstract class AlarmManager {
   AlarmManagerType? type;
   Future deleteAlarm(Alarm alarm);
+  Future deleteTone(AlarmTone tone);
   Future scheduleAlarms(List<Alarm> alarms);
   Future<ErrorContainer<List<Alarm>>> getAlarms();
-  Future<ErrorContainer<List<AlarmTone>>> getAlarmsTones();
+  Future<ErrorContainer<List<AlarmTone>>> getAlarmTones();
   Future<bool> saveAlarm(Alarm alarm);
+  Future<bool> saveTone(AlarmTone tone);
 }
 
 class AndroidAlarmManager implements AlarmManager {
@@ -37,12 +39,6 @@ class AndroidAlarmManager implements AlarmManager {
     return ErrorContainer([], null);
   }
 
-  
-  @override
-  Future<ErrorContainer<List<AlarmTone>>> getAlarmTones() async {
-    return ErrorContainer([], null);
-  }
-
   @override
   Future<bool> saveAlarm(Alarm alarm) async {
     // Alarms are saved automatically, nothing has to be done here
@@ -50,9 +46,18 @@ class AndroidAlarmManager implements AlarmManager {
   }
   
   @override
-  Future<ErrorContainer<List<AlarmTone>>> getAlarmsTones() async {
-    // TODO: implement getAlarmsTones
+  Future<ErrorContainer<List<AlarmTone>>> getAlarmTones() async {
     return ErrorContainer([], null);
+  }
+  
+  @override
+  Future<bool> saveTone(AlarmTone tone) async {
+    return true;
+  }
+  
+  @override
+  Future deleteTone(AlarmTone tone) async{
+
   }
 }
 
@@ -76,6 +81,18 @@ class AlarmServerAlarmManager implements AlarmManager {
       return;
     }
   }
+  
+  @override
+  Future deleteTone(AlarmTone tone) async {
+    Token? userToken = AlarmListManager.getInstance().getAlarmServerUserToken();
+    if(userToken == null) {
+      return;
+    }
+    var response = await AlarmServerClient().DeleteRequest(userToken, "/api/v1/tones/", jsonEncode(tone.toAlarmServerJson()));
+    if(response.statusCode == 200) {
+      return;
+    }
+  }
 
   @override
   Future<ErrorContainer<List<Alarm>>> getAlarms() async {
@@ -84,20 +101,17 @@ class AlarmServerAlarmManager implements AlarmManager {
       return ErrorContainer([], "Token is invalid.");
     }
     ErrorContainer<List<Alarm>> alarms = await AlarmServerClient().getAlarms(userToken);
-    // ToDo: Decide on where to put the alarm syncing with server. Also make sure alarms are uploaded correctly
     return alarms;
   }
 
   @override
-  Future<ErrorContainer<List<AlarmTone>>> getAlarmsTones() async {
+  Future<ErrorContainer<List<AlarmTone>>> getAlarmTones() async {
     Token? userToken = AlarmListManager.getInstance().getAlarmServerUserToken();
     if(userToken == null) {
       return ErrorContainer([], "Token is invalid.");
     }
-
-     AlarmServerClient().getAlarms(userToken);
-    // ToDo: Get alarm tones from the server
-    return ErrorContainer([], null);
+    ErrorContainer<List<AlarmTone>> alarms = await AlarmServerClient().getAlarmTones(userToken);
+    return alarms;
   }
 
   @override
@@ -110,6 +124,21 @@ class AlarmServerAlarmManager implements AlarmManager {
     if(response.statusCode == 200) {
       alarm.serverId = jsonDecode(response.body)["CreatedId"];
       AlarmListManager.getInstance().saveAlarm(alarm, updateServer: false);
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  Future<bool> saveTone(AlarmTone tone) async {
+    Token? userToken = AlarmListManager.getInstance().getAlarmServerUserToken();
+    if(userToken == null) {
+      return false;
+    }
+    var response = await AlarmServerClient().PostRequest(userToken, "/api/v1/tones", jsonEncode(tone.toAlarmServerJson()));
+    if(response.statusCode == 200) {
+      tone.serverId = jsonDecode(response.body)["CreatedId"];
+      AlarmListManager.getInstance().saveTone(tone, updateServer: false);
       return true;
     }
     return false;
@@ -175,7 +204,6 @@ class AlarmServerClient {
   }
 
   Future<ErrorContainer<List<Alarm>>> getAlarms(Token? t) async {
-    print("FUCK");
     if(t == null) {
       return ErrorContainer<List<Alarm>>(null, "Token is invalid.");
     }
@@ -191,6 +219,25 @@ class AlarmServerClient {
       decodedAlarms.add(Alarm.fromAlarmServerAlarm(a));
     }
     return ErrorContainer(decodedAlarms, null);
+  }
+
+
+  Future<ErrorContainer<List<AlarmTone>>> getAlarmTones(Token t) async {
+    if(t == null) {
+      return ErrorContainer<List<AlarmTone>>(null, "Token is invalid.");
+    }
+    var response = await GetRequest(t, "/api/v1/tones");
+    if(response.statusCode != 200) {
+      return ErrorContainer(null, response.body);
+    }
+    print(response.body);
+    var alarms = jsonDecode(response.body);
+    List<AlarmTone> decodedAlarmTones = [];
+    for(var a in alarms) {
+      // now decode every single alarm
+      decodedAlarmTones.add(AlarmTone.fromAlarmServerJson(a));
+    }
+    return ErrorContainer(decodedAlarmTones, null);
   }
 
   Future<http.Response> GetRequest(Token t, String path) {

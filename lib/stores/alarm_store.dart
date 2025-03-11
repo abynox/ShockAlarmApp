@@ -64,6 +64,31 @@ class AlarmToneComponent {
       time: component["time"]
     );
   }
+  
+  static T? cast<T>(x) => x is T ? x : null;
+
+
+  static AlarmToneComponent fromAlarmServerJson(e) {
+    return AlarmToneComponent(
+      intensity: e["Intensity"],
+      duration: e["Duration"],
+      type: e["ControlType"] == -1 ? null : ControlType.values[e["ControlType"]],
+      time: (cast<double>(e["TriggerSeconds"]) ?? 0 * 1000.0).toInt()
+    );
+  }
+
+  Map<String, dynamic> toAlarmServerJson() {
+    return {
+      "Intensity": intensity,
+      "Duration": duration,
+      "ControlType": type?.index ?? -1,
+      "TriggerSeconds": time / 1000.0
+    };
+  }
+
+  getId() {
+    return "$intensity-$duration-${type?.index}-$time";
+  }
 }
 
 class AlarmTone {
@@ -90,6 +115,29 @@ class AlarmTone {
     if(tone["components"] != null)
       t.components = (tone["components"] as List).map((e) => AlarmToneComponent.fromJson(e)).toList();
     return t;
+  }
+
+  static AlarmTone fromAlarmServerJson(tone) {
+    AlarmTone t = AlarmTone(id: -1, name: tone["Name"]);
+    for(AlarmTone existing in AlarmListManager.getInstance().alarmTones) {
+      if(existing.serverId == t.serverId) {
+        t.id = existing.id;
+        break;
+      }
+    }
+    if(tone["Id"] != null)
+      t.serverId = tone["Id"];
+    if(tone["Components"] != null)
+      t.components = (tone["Components"] as List).map((e) => AlarmToneComponent.fromAlarmServerJson(e)).toList();
+    return t;
+  }
+
+  Map<String, dynamic>? toAlarmServerJson() {
+    return {
+      "Id": serverId,
+      "Name": name,
+      "Components": components.map((e) => e.toAlarmServerJson()).toList()
+    };
   }
 }
 
@@ -146,6 +194,12 @@ class AlarmShocker {
   }
   
   Map<String, dynamic>? toAlarmServerShocker(String apiTokenId) {
+    for(AlarmTone tone in AlarmListManager.getInstance().alarmTones) {
+      if(tone.id == toneId) {
+        serverToneId = tone.serverId;
+        break;
+      }
+    }
     return {
       "ShockerId": shockerId,
       "Intensity": intensity,
