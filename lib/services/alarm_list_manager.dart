@@ -95,6 +95,7 @@ class AlarmListManager {
   Settings settings = Settings();
   OpenShockWS? ws;
   static AlarmListManager? instance;
+  AlarmTone? selectedTone;
 
   Map<String?, List<ShockerLog>> shockerLog = {};
 

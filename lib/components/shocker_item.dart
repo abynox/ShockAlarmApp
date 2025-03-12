@@ -565,10 +565,10 @@ class ShockingControlsState extends State<ShockingControls>
   void realAction(ControlType type) async {
     
     if (type != ControlType.stop) {
-      if(selectedTone != null) {
+      if(AlarmListManager.getInstance().selectedTone != null) {
         int timeTillNow = 0;
         int timeDiff = 0;
-        ControlList controls = PatternGenerator.GenerateFromTone(selectedTone!);
+        ControlList controls = PatternGenerator.GenerateFromTone(AlarmListManager.getInstance().selectedTone!);
 
         setState(() {
           actionDuration = controls.duration;
@@ -673,10 +673,8 @@ class ShockingControlsState extends State<ShockingControls>
     delayVibrationController!.forward();
   }
 
-  AlarmTone? selectedTone;
-
   void onToneSelected(int? id) {
-    selectedTone = widget.manager.getTone(id);
+    AlarmListManager.getInstance().selectedTone = widget.manager.getTone(id);
   }
 
   @override
@@ -689,20 +687,20 @@ class ShockingControlsState extends State<ShockingControls>
                               return DropdownMenuEntry(
                                   label: tone.name, value: tone.id);
                             }));
-
+    if(!widget.manager.settings.allowTonesForControls) AlarmListManager.getInstance().selectedTone = null;
     return Column(
       children: [
         if(widget.manager.settings.allowTonesForControls)
           DropdownMenu<int?>(
                           dropdownMenuEntries: dme,
-                          initialSelection: selectedTone?.id,
+                          initialSelection: AlarmListManager.getInstance().selectedTone?.id,
                           onSelected: (value) {
                             setState(() {
                               onToneSelected(value);
                             });
                           },
                         ),
-        if(selectedTone == null)
+        if(AlarmListManager.getInstance().selectedTone == null)
           IntensityDurationSelector(
             controlsContainer: widget.controlsContainer,
             maxDuration: widget.durationLimit,
@@ -774,7 +772,7 @@ class ShockingControlsState extends State<ShockingControls>
 
         if (progressCircularController == null &&
             delayVibrationController == null)
-          selectedTone == null ?
+          AlarmListManager.getInstance().selectedTone == null ?
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
@@ -836,7 +834,7 @@ class ShockingControlsState extends State<ShockingControls>
               spacing: 10,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("${selectedTone == null ? "Executing @ $selectedIntensity" : "Playing Tone"}... ${(actionDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
+                Text("${AlarmListManager.getInstance().selectedTone == null ? "Executing @ $selectedIntensity" : "Playing Tone"}... ${(actionDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
                 CircularProgressIndicator(
                   value: progressCircularController == null
                       ? 0
