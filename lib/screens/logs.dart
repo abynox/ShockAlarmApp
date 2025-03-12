@@ -49,8 +49,7 @@ class LogScreenState extends State<LogScreen> {
   Future<void> loadLogs() async {
     List<ShockerLog> newLogs = [];
     for (var shocker in shockers) {
-      final logs = await manager.getShockerLogs(shocker);
-      newLogs.addAll(manager.shockerLog[shocker.id] ?? []);
+      newLogs.addAll(await manager.getShockerLogs(shocker));
     }
     newLogs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
     setState(() {

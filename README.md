@@ -8,7 +8,7 @@
 
 A powerfull app for controling [OpenShock](https://openshock.org/) shockers and setting alarms with custom tones.
 
-A lite web version can be found [here](https://computerelite.github.io/ShockAlarmApp/)
+A web version (for IOS, Windows, ...) can be found [here](https://computerelite.github.io/ShockAlarmApp/).
 
 # Features
 ShockAlarm is a powerful tool for controlling your Shockers via OpenShock. It allows you to fully manage your shockers, logs, shares, hubs, and share links.
@@ -83,7 +83,7 @@ Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or
 - [x] Random shocking -> Add background task + notification (works without notification???)
 - [x] Fix alarms not sending controls when app is minimized (seems to work)
 - [ ] Live controls
-- [ ] Allow alarm tones to be used as patterns
+- [x] Allow alarm tones to be used as patterns
 - [x] Request permissions only when needed
 - [x] fix reloading problems in settings after login?
 - [ ] (Big controls mode)
@@ -96,7 +96,7 @@ Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or
 - [x] Add info about alarm server
 - [x] Code cleanup, add multiple predefined dialogs
 - [x] Add online indicator for hubs on web
-- [ ] Investiage WS on web
+- [ ] Fix WS on web
 
 # Planned settings
 - [x] Hide/unhiding of the delay option

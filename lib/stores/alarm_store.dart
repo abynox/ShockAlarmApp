@@ -4,6 +4,7 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shock_alarm_app/services/PatternGenerator.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../main.dart';
@@ -250,7 +251,6 @@ class Alarm {
   }
 
   void trigger(AlarmListManager manager, bool disableIfApplicable) async {
-    // ToDo: show notification
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool("alarm$id.active", true);
 
@@ -269,21 +269,9 @@ class Alarm {
         if(shocker.toneId != null) {
           var tone = manager.getTone(shocker.toneId!);
           if(tone != null) {
-            for (var component in tone.components) {
-              int executionTime = component.time + component.duration;
-              if (executionTime > maxDuration) {
-                maxDuration = executionTime;
-              }
-              if(!controlTimes.containsKey(component.time)) {
-                controlTimes[component.time] = [];
-              }
-              Control control = Control();
-              control.type = component.type!;
-              control.intensity = component.intensity;
-              control.duration = component.duration;
-              control.id = shocker.shockerId;
-              control.apiTokenId = shocker.shockerReference!.apiTokenId;
-              controlTimes[component.time]!.add(control);
+            ControlList l = PatternGenerator.GenerateFromTone(tone, shocker: shocker);
+            if(l.duration > maxDuration) {
+              maxDuration = l.duration;
             }
           }
         } else {

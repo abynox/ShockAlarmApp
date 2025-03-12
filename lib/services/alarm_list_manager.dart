@@ -32,6 +32,7 @@ class Settings {
   ThemeMode theme = ThemeMode.system;
 
   bool showFirmwareVersion = false;
+  bool allowTonesForControls = false;
 
 
   Settings();
@@ -59,6 +60,8 @@ class Settings {
       theme = ThemeMode.values[json["theme"]];
     if(json["showFirmwareVersion"] != null)
       showFirmwareVersion = json["showFirmwareVersion"];
+    if(json["allowTonesForControls"] != null)
+      allowTonesForControls = json["allowTonesForControls"];
   }
 
   Map<String, dynamic> toJson() {
@@ -73,7 +76,8 @@ class Settings {
       "useGroupedShockerSelection_1": useGroupedShockerSelection,
       "theme": theme.index,
       "showFirmwareVersion": showFirmwareVersion,
-      "useAlarmServer": useAlarmServer
+      "useAlarmServer": useAlarmServer,
+      "allowTonesForControls": allowTonesForControls
     };
   }
 }
@@ -678,7 +682,8 @@ class AlarmListManager {
     saveAlarmTones();
   }
 
-  AlarmTone? getTone(int id) {
+  AlarmTone? getTone(int? id) {
+    if(id == null) return null;
     for(var tone in alarmTones) {
       if(tone.id == id) {
         return tone;

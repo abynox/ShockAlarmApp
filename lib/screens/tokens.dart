@@ -8,6 +8,7 @@ import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
 import 'package:shock_alarm_app/dialogs/LoadingDialog.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/home.dart';
+import 'package:shock_alarm_app/screens/tones.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
@@ -757,6 +758,21 @@ class TokenScreenState extends State<TokenScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Text("Allow choosing tones for controls"),
+            Switch(
+                value: manager.settings.allowTonesForControls,
+                key: ValueKey("allowTonesForControls"),
+                onChanged: (value) {
+                  setState(() {
+                    manager.settings.allowTonesForControls = value;
+                    manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Row(children: [
             Text("Use AlarmServer for alarms"),
             IconButton(onPressed: () {
@@ -775,13 +791,21 @@ class TokenScreenState extends State<TokenScreen> {
                 })
           ],
         ),
-        Center(
-          child: FilledButton(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 10,
+          children: [
+            FilledButton(
               onPressed: () {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => ToolsScreen()));
               },
               child: Text("More tools")),
+            if(manager.settings.allowTonesForControls) FilledButton(onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AlarmToneScreen(manager)));
+              }, child: Text("Edit Tones"))
+          ]
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
