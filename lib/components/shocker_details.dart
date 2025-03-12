@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
 
 import '../services/openshock.dart';
 
@@ -81,20 +82,8 @@ class ShockerDetailsState extends State<ShockerDetails> {
       }
       widget.shocker.rfId = proposedValue;
     } catch (e) {
-      showDialog(context: context, builder: (context) {
-        return AlertDialog(
-          title: Text("Invalid RF ID"),
-          content: Text("The RF ID must be a number between 0 and 65535"),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("OK"),
-            )
-          ],
-        );
-      });
+      ErrorDialog.show("Invalid RF ID",
+          "The RF ID must be a number between 0 and 65535");
     }
   }
 }

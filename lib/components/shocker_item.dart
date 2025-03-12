@@ -3,6 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/delete_dialog.dart';
 import 'package:shock_alarm_app/components/shocker_details.dart';
+import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
+import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
+import 'package:shock_alarm_app/dialogs/LoadingDialog.dart';
 import '../screens/logs.dart';
 import '../screens/shares.dart';
 import '../stores/alarm_store.dart';
@@ -28,27 +31,13 @@ class ShockerItem extends StatefulWidget {
         icon: Icon(Icons.edit),
         onClick: (AlarmListManager manager, Shocker shocker,
             BuildContext context, Function onRebuild) async {
-
-          showDialog(context: context, builder: (context) {
-            return LoadingDialog(title: "Loading details");
-          });
+            
+          LoadingDialog.show("Loading details");
           List<OpenShockDevice> devices = await manager.getDevices();
           OpenShockShocker? s = await OpenShockClient().getShockerDetails(shocker);
           Navigator.of(context).pop();
           if (s == null) {
-            showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                      title: Text("Failed to get shocker details"),
-                      content: Text("Failed to get shocker details"),
-                      actions: [
-                        TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text("Ok"))
-                      ],
-                    ));
+            ErrorDialog.show("Failed to get shocker details", "Failed to get shocker details");
             return;
           }
           TextEditingController controller = TextEditingController();
@@ -66,27 +55,12 @@ class ShockerItem extends StatefulWidget {
                           child: Text("Cancel")),
                       TextButton(
                           onPressed: () async {
-                            showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    LoadingDialog(title: "Saving shocker"));
+                            LoadingDialog.show("Saving shocker");
                             String? errorMessage = await manager.editShocker(
                                 shocker, s);
                             Navigator.of(context).pop();
                             if (errorMessage != null) {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                        title: Text(errorMessage),
-                                        content: Text(errorMessage),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: Text("Ok"))
-                                        ],
-                                      ));
+                              ErrorDialog.show("Failed to save shocker", errorMessage);
                               return;
                             }
                             Navigator.of(context).pop();
@@ -128,26 +102,11 @@ class ShockerItem extends StatefulWidget {
               context: context,
               builder: (context) => DeleteDialog(
                   onDelete: () async {
-                    showDialog(
-                        context: context,
-                        builder: (context) =>
-                            LoadingDialog(title: "Deleting shocker"));
+                    LoadingDialog.show("Deleting shocker");
                     String? errorMessage = await manager.deleteShocker(shocker);
                     Navigator.of(context).pop();
                     if (errorMessage != null) {
-                      showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                                title: Text("Failed to delete shocker"),
-                                content: Text(errorMessage),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text("Ok"))
-                                ],
-                              ));
+                      ErrorDialog.show("Failed to delete shocker", errorMessage);
                       return;
                     }
                     Navigator.of(context).pop();
@@ -178,12 +137,7 @@ class ShockerItem extends StatefulWidget {
                           child: Text("Cancel")),
                       TextButton(
                           onPressed: () async {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return LoadingDialog(
-                                      title: "Unlinking shocker");
-                                });
+                            LoadingDialog.show("Unlinking shocker");
                             String? errorMessage;
                             Token? token = manager.getToken(shocker.apiTokenId);
                             if (token == null)
@@ -197,20 +151,7 @@ class ShockerItem extends StatefulWidget {
                             }
                             if (errorMessage != null) {
                               Navigator.of(context).pop();
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                        title: Text("Failed to delete share"),
-                                        content: Text(
-                                            errorMessage ?? "Unknown error"),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: Text("Ok"))
-                                        ],
-                                      ));
+                              ErrorDialog.show("Failed to delete share", errorMessage);
                               return;
                             }
                             await manager.updateShockerStore();
@@ -267,19 +208,7 @@ class ShockerItemState extends State<ShockerItem>
       loadingPause = false;
     });
     if (error != null) {
-      showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-                title: Text("Failed to pause shocker"),
-                content: Text(error),
-                actions: [
-                  TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text("Ok"))
-                ],
-              ));
+      ErrorDialog.show("Failed to pause shocker", error);
       return;
     }
   }
@@ -365,21 +294,9 @@ class ShockerItemState extends State<ShockerItem>
                                   color: t.colorScheme.error,
                                 )),
                             onTap: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                        title: Text("Shocker is paused"),
-                                        content: Text(shocker.isOwn
+                              InfoDialog.show("Shocker is paused", shocker.isOwn
                                             ? "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by pressing the play button."
-                                            : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: Text("Ok"))
-                                        ],
-                                      ));
+                                            : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it.");
                             },
                           ),
                         if (!shocker.paused)
@@ -812,20 +729,7 @@ class ShockingControlsState extends State<ShockingControls>
                   Icons.info,
                 ),
                 onTap: () {
-                  showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                            title: Text("Delay options"),
-                            content: Text(
-                                "Here you can add a random delay when pressing a button by selecting a range. If you enable the switch before the slider you can send a vibration before the actual action happens."),
-                            actions: [
-                              TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("Ok"))
-                            ],
-                          ));
+                  InfoDialog.show("Delay options", "Here you can add a random delay when pressing a button by selecting a range. If you enable the switch before the slider you can send a vibration before the actual action happens.");
                 },
               ),
             ],

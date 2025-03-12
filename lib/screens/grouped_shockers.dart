@@ -7,6 +7,7 @@ import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart
 import 'package:shock_alarm_app/components/grouped_shocker_selector.dart';
 import 'package:shock_alarm_app/components/hub_item.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
+import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
 import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/screens/logs.dart';
 import 'package:sticky_headers/sticky_headers.dart';
@@ -73,19 +74,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
       OpenShockClient().setPauseStateOfShocker(s, manager, pause).then((error) {
         completedShockers++;
         if (error != null) {
-          showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                    title: Text("Failed to pause shocker"),
-                    content: Text(error),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("Ok"))
-                    ],
-                  ));
+          ErrorDialog.show("Failed to pause shocker", error);
           return;
         }
       });

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
 import '../stores/alarm_store.dart';
 import '../services/alarm_list_manager.dart';
 
@@ -29,16 +30,10 @@ class TokenItemState extends State<TokenItem> {
       String? error = await manager.deleteToken(token);
       await manager.updateShockerStore();
       if(error != null) {
-        deleting = false;
-        showDialog(context: context, builder: (context) => AlertDialog(
-          title: Text("Failed to sign out"),
-          content: Text(error),
-          actions: [
-            TextButton(onPressed: () {
-              Navigator.of(context).pop();
-            }, child: Text("Ok"))
-          ],
-        ));
+        setState(() {
+          deleting = false;
+        });
+        ErrorDialog.show("Failed to sign out", error);
       }
     } else if(token.tokenType == TokenType.alarmserver) {
       await manager.deleteAlarmServerToken(token);

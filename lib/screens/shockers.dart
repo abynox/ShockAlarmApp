@@ -6,6 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 import 'package:shock_alarm_app/components/shocker_details.dart';
+import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
+import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
+import 'package:shock_alarm_app/dialogs/LoadingDialog.dart';
 import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/screens/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
@@ -50,21 +53,7 @@ class ShockerScreen extends StatefulWidget {
                   onPressed: () async {
                     String code = codeController.text;
                     if (code.isEmpty) {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text("Invalid code"),
-                              content: Text("The code cannot be empty"),
-                              actions: <Widget>[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text("Ok"))
-                              ],
-                            );
-                          });
+                      ErrorDialog.show("Invalid code", "The code cannot be empty");
                       return;
                     }
                     if (await redeemShareCode(code, context, manager)) {
@@ -82,29 +71,11 @@ class ShockerScreen extends StatefulWidget {
 
   static Future<bool> redeemShareCode(
       String code, BuildContext context, AlarmListManager manager) async {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return LoadingDialog(title: "Redeeming code");
-        });
+    LoadingDialog.show("Redeeming code");
     String? error = await manager.redeemShareCode(code);
     if (error != null) {
       Navigator.of(context).pop();
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text("Error"),
-              content: Text(error),
-              actions: <Widget>[
-                TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text("Ok"))
-              ],
-            );
-          });
+      ErrorDialog.show("Error", error);
       return false;
     }
     await AlarmListManager.getInstance().updateShockerStore();
@@ -135,46 +106,14 @@ class ShockerScreen extends StatefulWidget {
                   onPressed: () async {
                     String name = nameController.text;
                     if (name.isEmpty) {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text("Invalid name"),
-                              content: Text("The name cannot be empty"),
-                              actions: <Widget>[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text("Ok"))
-                              ],
-                            );
-                          });
+                      ErrorDialog.show("Invalid name", "The name cannot be empty");
                       return;
                     }
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return LoadingDialog(title: "Creating hub");
-                        });
+                    LoadingDialog.show("Creating hub");
                     CreatedHub? hub = await manager.addHub(name);
                     if (hub.error != null || hub.hubId == null) {
                       Navigator.of(context).pop();
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text("Error"),
-                              content: Text(hub.error ?? "Unknown error"),
-                              actions: <Widget>[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text("Ok"))
-                              ],
-                            );
-                          });
+                      ErrorDialog.show("Error", hub.error ?? "Unknown error");
                       return;
                     }
                     Navigator.of(context).pop();
@@ -192,13 +131,8 @@ class ShockerScreen extends StatefulWidget {
         });
   }
 
-  static startPairShocker(AlarmListManager manager, BuildContext context,
-      Function reloadState) async {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return LoadingDialog(title: "Loading devices");
-        });
+  static startPairShocker(AlarmListManager manager, BuildContext context, Function reloadState) async {
+    LoadingDialog.show("Loading devices");
     List<OpenShockDevice> devices = await manager.getDevices();
     Navigator.of(context).pop();
     Navigator.of(context).pop();
@@ -220,29 +154,11 @@ class ShockerScreen extends StatefulWidget {
                   onPressed: () async {
                     String name = newShocker.name;
                     if (name.isEmpty) {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text("Invalid name"),
-                              content: Text("The name cannot be empty"),
-                              actions: <Widget>[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text("Ok"))
-                              ],
-                            );
-                          });
+                      ErrorDialog.show("Invalid name", "The name cannot be empty");
                       return;
                     }
                     int rfId = newShocker.rfId ?? 0;
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return LoadingDialog(title: "Adding shocker");
-                        });
+                    LoadingDialog.show("Adding shocker");
                     OpenShockDevice? device;
                     for (OpenShockDevice d in devices) {
                       if (d.id == newShocker.device) {
@@ -254,41 +170,12 @@ class ShockerScreen extends StatefulWidget {
                         name, rfId, newShocker.model ?? "CaiXianlin", device);
                     Navigator.of(context).pop();
                     if (error != null) {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text("Error"),
-                              content: Text(error),
-                              actions: <Widget>[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text("Ok"))
-                              ],
-                            );
-                          });
+                      ErrorDialog.show("Error", error);
                       return;
                     }
                     Navigator.of(context).pop();
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: Text("Almost done"),
-                            content: Text(
-                                "Your shocker was created successfully. To pair it with your hub hold down the on/off button until it beeps a few times. Then press the vibrate button in the app to pair it."),
-                            actions: <Widget>[
-                              TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("Ok"))
-                            ],
-                          );
-                        });
-                    
+                    InfoDialog.show("Almost done",
+                        "Your shocker was created successfully. To pair it with your hub hold down the on/off button until it beeps a few times. Then press the vibrate button in the app to pair it.");
                     await manager.updateShockerStore();
                     reloadState();
                   },

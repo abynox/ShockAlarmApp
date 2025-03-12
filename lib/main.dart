@@ -149,22 +149,6 @@ class MyAppState extends State<MyApp> {
     super.dispose();
   }
 
-  @override
-  void onProtocolUrlReceived(String url) {
-    print("Received protocol url: $url");
-    showDialog(context: context, builder: (context) {
-      return AlertDialog(
-        title: Text("Received protocol url"),
-        content: Text(url),
-        actions: [
-          TextButton(onPressed: () {
-            Navigator.of(context).pop();
-          }, child: Text("Close"))
-        ],
-      );
-    });
-  }
-
   void setThemeMode(ThemeMode themeMode) {
     AlarmListManager.getInstance().settings.theme = themeMode;
     AlarmListManager.getInstance().saveSettings();

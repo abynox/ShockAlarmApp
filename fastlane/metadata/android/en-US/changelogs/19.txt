@@ -1,0 +1,3 @@
+**Changelog:**
+- Internal code cleanup regarding pop ups
+- Updated a few error messages

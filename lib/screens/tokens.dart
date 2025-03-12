@@ -3,6 +3,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/shock_disclamer.dart';
+import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
+import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
+import 'package:shock_alarm_app/dialogs/LoadingDialog.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
@@ -30,30 +33,8 @@ class TokenScreenState extends State<TokenScreen> {
     setState(() {});
   }
 
-  Future showErrorDialog(String title, String message) async {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: <Widget>[
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text("Ok"))
-            ],
-          );
-        });
-  }
-
-  Future doAlarmServerLogin(
-      String server, String username, String password, bool register) async {
-    showDialog(
-        context: context,
-        builder: (context) =>
-            LoadingDialog(title: register ? "Registering" : "Logging in"));
+  Future doAlarmServerLogin(String server, String username, String password, bool register) async {
+    LoadingDialog.show(register ? "Registering" : "Logging in");
     ErrorContainer<Token> worked =
         await manager.alarmServerLogin(server, username, password, register);
 
@@ -66,14 +47,14 @@ class TokenScreenState extends State<TokenScreen> {
       AlarmListManager.getInstance().reloadAllMethod!();
     } else {
       Navigator.of(context).pop();
-      showErrorDialog("Login failed", worked.error!);
+      ErrorDialog.show("Login failed", worked.error!);
       return;
     }
 
     ErrorContainer<Token> populatedToken =
         await AlarmServerClient().populateTokenForAccount(worked.value);
     if (populatedToken.error != null || populatedToken.value == null) {
-      showErrorDialog("Login failed", populatedToken.error!);
+      ErrorDialog.show("Login failed", populatedToken.error!);
       return;
     }
     if (populatedToken.value?.userId != "") {
@@ -100,7 +81,7 @@ class TokenScreenState extends State<TokenScreen> {
     }
     Token? OpenShockToken = AlarmListManager.getInstance().getAnyUserToken();
     if (OpenShockToken == null) {
-      showErrorDialog("Login failed",
+      ErrorDialog.show("Login failed",
           "No OpenShock token found. Please log in to OpenShock first.");
       AlarmListManager.getInstance()
           .deleteAlarmServerToken(populatedToken.value!);
@@ -124,7 +105,7 @@ class TokenScreenState extends State<TokenScreen> {
                       child: Text("No")),
                   TextButton(
                       onPressed: () async {
-                        LoadingDialog.show(context, "Adding token to account");
+                        LoadingDialog.show("Adding token to account");
                         ErrorContainer<String> apiToken =
                             await OpenShockClient().createApiToken(
                                 OpenShockToken,
@@ -136,7 +117,7 @@ class TokenScreenState extends State<TokenScreen> {
                         if (apiToken.error != null) {
                           Navigator.of(context).pop();
                           Navigator.of(context).pop();
-                          showErrorDialog(
+                          ErrorDialog.show(
                               "Failed to create api token, you have been logged out of the AlarmServer",
                               apiToken.error!);
                           AlarmListManager.getInstance()
@@ -152,7 +133,7 @@ class TokenScreenState extends State<TokenScreen> {
                         Navigator.of(context).pop();
                         if (t.error != null) {
                           Navigator.of(context).pop();
-                          showErrorDialog(
+                          ErrorDialog.show(
                               "Failed to add token, you have been logged out of the AlarmServer",
                               t.error!);
                           AlarmListManager.getInstance()
@@ -194,13 +175,13 @@ class TokenScreenState extends State<TokenScreen> {
                 actions: [
                   TextButton(
                       onPressed: () async {
-                        LoadingDialog.show(context, "Adding token to account");
+                        LoadingDialog.show("Adding token to account");
                         ErrorContainer<Token> t = await AlarmServerClient()
                             .addOpenShockTokenToAccount(
                                 worked.value, OpenShockToken);
                         Navigator.of(context).pop();
                         if (t.error != null) {
-                          showErrorDialog("Failed to add token", t.error!);
+                          ErrorDialog.show("Failed to add token", t.error!);
                           AlarmListManager.getInstance()
                               .deleteAlarmServerToken(populatedToken.value!);
                           return;
@@ -417,10 +398,7 @@ class TokenScreenState extends State<TokenScreen> {
               ),
               TextButton(
                   onPressed: () async {
-                    showDialog(
-                        context: context,
-                        builder: (context) =>
-                            LoadingDialog(title: "Logging in"));
+                    LoadingDialog.show("Logging in");
                     bool worked = await manager.loginToken(
                         serverController.text, tokenController.text);
                     if (worked) {
@@ -429,7 +407,7 @@ class TokenScreenState extends State<TokenScreen> {
                       AlarmListManager.getInstance().reloadAllMethod!();
                     } else {
                       Navigator.of(context).pop();
-                      showErrorDialog(
+                      ErrorDialog.show(
                           "Login failed", "Check server, email and password");
                     }
                   },
@@ -491,10 +469,7 @@ class TokenScreenState extends State<TokenScreen> {
               ),
               TextButton(
                   onPressed: () async {
-                    showDialog(
-                        context: context,
-                        builder: (context) =>
-                            LoadingDialog(title: "Logging in"));
+                    LoadingDialog.show("Logging in");
                     bool worked = await manager.login(serverController.text,
                         usernameController.text, passwordController.text);
                     if (worked) {
@@ -503,7 +478,7 @@ class TokenScreenState extends State<TokenScreen> {
                       AlarmListManager.getInstance().reloadAllMethod!();
                     } else {
                       Navigator.of(context).pop();
-                      showErrorDialog(
+                      ErrorDialog.show(
                           "Login failed", "Check server, email and password");
                     }
                   },
@@ -782,7 +757,12 @@ class TokenScreenState extends State<TokenScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Row(children: [
             Text("Use AlarmServer for alarms"),
+            IconButton(onPressed: () {
+              InfoDialog.show("What is a Alarm Server?",
+              "An Alarm Server is an Open Source server which allows for scheduling of alarms. These alarms can be edited via this app but are then stored on the server. Your alarms will be tied to a user account of your choice which you will have to create.\n\nIn order for the Alarm Server to be able to send alarms (control your shockers) it also needs access to your OpenShock account. This is done via Api Tokens. You can therefore revoke access to your OpenShock account by simply deleting the Api token at any time.\n\n\nThis feature was added so ShockAlarm users can also create alarms which will be triggered even when their device is off. On Android this feature is not needed as alarms work on device as long as you use the app.");
+            }, icon: Icon(Icons.info))],),
             Switch(
                 value: manager.settings.useAlarmServer,
                 key: ValueKey("useAlarmServer"),

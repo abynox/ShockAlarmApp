@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/delete_dialog.dart';
+import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
+import 'package:shock_alarm_app/dialogs/LoadingDialog.dart';
 import 'package:shock_alarm_app/screens/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
@@ -29,30 +32,15 @@ class HubItem extends StatefulWidget {
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: Text("Cancel")),
+                    child: Text("Close")),
                 TextButton(
                     onPressed: () async {
-                      showDialog(
-                          context: context,
-                          builder: (context) =>
-                              LoadingDialog(title: "Getting pair code"));
+                      LoadingDialog.show("Getting pair code");
                       PairCode pairCode = await manager.getPairCode(hubId);
                       Navigator.of(context).pop();
                       if (pairCode.error != null || pairCode.code == null) {
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                  title: Text("Failed to get pair code"),
-                                  content:
-                                      Text(pairCode.error ?? "Unknown error"),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("Ok"))
-                                  ],
-                                ));
+                        ErrorDialog.show("Failed to get pair code",
+                            pairCode.error ?? "Unknown error");
                         return;
                       }
                       Navigator.of(context).pop();
@@ -116,27 +104,12 @@ class HubItemState extends State<HubItem> {
                     child: Text("Cancel")),
                 TextButton(
                     onPressed: () async {
-                      showDialog(
-                          context: context,
-                          builder: (context) =>
-                              LoadingDialog(title: "Renaming hub"));
+                      LoadingDialog.show("Renaming hub");
                       String? errorMessage =
                           await manager.renameHub(hub, controller.text);
                       Navigator.of(context).pop();
                       if (errorMessage != null) {
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                  title: Text("Failed to rename hub"),
-                                  content: Text(errorMessage),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("Ok"))
-                                  ],
-                                ));
+                        ErrorDialog.show("Failed to rename hub", errorMessage);
                         return;
                       }
                       Navigator.of(context).pop();
@@ -150,47 +123,19 @@ class HubItemState extends State<HubItem> {
   void deleteHub() {
     showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-              title: Text("Delete hub"),
-              content: Text(
-                  "Are you sure you want to delete this hub? This will also delete all shockers associated with this hub. This action cannot be undone!"),
-              actions: [
-                TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text("Cancel")),
-                TextButton(
-                    onPressed: () async {
-                      showDialog(
-                          context: context,
-                          builder: (context) =>
-                              LoadingDialog(title: "Deleting hub"));
-                      String? errorMessage = await manager.deleteHub(hub);
-                      Navigator.of(context).pop();
-                      if (errorMessage != null) {
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                  title: Text("Failed to delete hub"),
-                                  content: Text(errorMessage),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("Ok"))
-                                  ],
-                                ));
-                        return;
-                      }
-                      Navigator.of(context).pop();
-                      await manager.updateShockerStore();
-                      onRebuild();
-                    },
-                    child: Text("Delete"))
-              ],
-            ));
+        builder: (context) => DeleteDialog(onDelete: () async {
+          LoadingDialog.show("Deleting hub");
+          String? errorMessage = await manager.deleteHub(hub);
+          Navigator.of(context).pop();
+          if (errorMessage != null) {
+            ErrorDialog.show("Failed to delete hub", errorMessage);
+            return;
+          }
+          Navigator.of(context).pop();
+          await manager.updateShockerStore();
+          onRebuild();
+        }, title: "Delete hub", body: "Are you sure you want to delete this hub? This will also delete all shockers and shares associated with this hub. This action cannot be undone!")
+    );
   }
 
   void captivePortal() {
@@ -219,26 +164,11 @@ class HubItemState extends State<HubItem> {
   }
 
   void setEnable(BuildContext context, bool enable) async {
-    showDialog(
-        context: context,
-        builder: (context) =>
-            LoadingDialog(title: "${enable ? "Enabling" : "Disabling"} captive portal"));
+    LoadingDialog.show("${enable ? "Enabling" : "Disabling"} captive portal");
     String? errorMessage = await manager.setCaptivePortal(hub, enable);
     Navigator.of(context).pop();
     if (errorMessage != null) {
-      showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text("Failed to ${enable ? "enable" : "disable"}  captive portal"),
-            content: Text(errorMessage),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text("Ok"))
-            ],
-          ));
+      ErrorDialog.show("Failed to ${enable ? "enable" : "disable"} captive portal", errorMessage);
       return;
     }
     Navigator.of(context).pop();

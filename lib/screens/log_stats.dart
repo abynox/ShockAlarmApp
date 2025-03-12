@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/dialogs/LoadingDialog.dart';
 import 'package:shock_alarm_app/screens/logs.dart';
 import 'package:shock_alarm_app/screens/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
@@ -126,8 +127,7 @@ class _LogStatScreenState extends State<LogStatScreen> {
                                         limit = 300;
                                       }
                                       widget.stats.clear();
-                                      LoadingDialog.show(
-                                          context, "Loading logs");
+                                      LoadingDialog.show("Loading logs");
                                       for (var shocker in widget.shockers) {
                                         widget.stats.addLogs(
                                             await AlarmListManager.getInstance()

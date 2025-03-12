@@ -5,6 +5,9 @@ import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
+import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
+import 'package:shock_alarm_app/dialogs/LoadingDialog.dart';
 
 import '../services/alarm_list_manager.dart';
 import '../services/openshock.dart';
@@ -99,44 +102,16 @@ class ShareLinkEditScreenState extends State<ShareLinkEditScreen> {
                 TextButton(
                     onPressed: () async {
                       if (selectedShocker == null) {
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                  title: Text("Error"),
-                                  content:
-                                      Text("Please select a shocker to add"),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("Ok"))
-                                  ],
-                                ));
+                        ErrorDialog.show("Error", "Please select a shocker to add");
                         return;
                       }
-                      showDialog(
-                          context: context,
-                          builder: (context) =>
-                              LoadingDialog(title: "Adding shocker"));
+                      LoadingDialog.show("Adding shocker");
 
                       String? error = await AlarmListManager.getInstance()
                           .addShockerToShareLink(selectedShocker, shareLink!);
                       if (error != null) {
                         Navigator.of(context).pop();
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                  title: Text("Error"),
-                                  content: Text(error!),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("Ok"))
-                                  ],
-                                ));
+                        ErrorDialog.show("Error adding shocker", error);
                         return;
                       }
                       error = await OpenShockClient()
@@ -144,19 +119,7 @@ class ShareLinkEditScreenState extends State<ShareLinkEditScreen> {
                               shareLink!, selectedShocker!, limits);
                       Navigator.of(context).pop();
                       if (error != null) {
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                  title: Text("Error"),
-                                  content: Text(error!),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("Ok"))
-                                  ],
-                                ));
+                        ErrorDialog.show("Error setting limits", error);
                         return;
                       }
                       Navigator.of(context).pop();
@@ -313,19 +276,7 @@ class ShareLinkShockerState extends State<ShareLinkShocker> {
                         setState(() {
                           deleting = false;
                         });
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                  title: Text(errorMessage),
-                                  content: Text(errorMessage),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("Ok"))
-                                  ],
-                                ));
+                        ErrorDialog.show("Error removing shocker", errorMessage);
                         return;
                       }
                       Navigator.of(context).pop();
@@ -368,19 +319,7 @@ class ShareLinkShockerState extends State<ShareLinkShocker> {
                               .setLimitsOfShareLinkShocker(
                                   widget.shareLink, widget.shocker, limits);
                           if (error != null) {
-                            showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                      title: Text("Error"),
-                                      content: Text(error),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text("Ok"))
-                                      ],
-                                    ));
+                            ErrorDialog.show("Error saving limits", error);
                             return;
                           }
                           setState(() {
@@ -485,20 +424,8 @@ class ShareLinkShockerState extends State<ShareLinkShocker> {
                         unpauseInstructions += " on the shockers page";
                       }
                       unpauseInstructions += ".";
-                      showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                                title: Text("Shocker is paused"),
-                                content: Text(
-                                    "The shocker ${widget.shocker.name} is paused on ${widget.shocker.getPausedLevels()} Level. This means ${widget.shareLink.name} cannot interact with this shocker at all. $unpauseInstructions"),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text("Ok"))
-                                ],
-                              ));
+                      InfoDialog.show("Shocker is paused",
+                          "The shocker ${widget.shocker.name} is paused on ${widget.shocker.getPausedLevels()} Level. This means ${widget.shareLink.name} cannot interact with this shocker at all. $unpauseInstructions");
                     },
                   ),
               ],
@@ -562,20 +489,9 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                       ),
                       IconButton(
                           onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                      title: Text("Unclaimed share code"),
-                                      content: Text(
-                                          "You created this share. No user has claimed it yet. You can use the share button to share the code with your friend. When they claim the code they will have access to your shocker."),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text("Ok"))
-                                      ],
-                                    ));
+                            InfoDialog.show(
+                                "Unclaimed share code",
+                                "You created this share. No user has claimed it yet. You can use the share button to share the code with your friend. When they claim the code they will have access to your shocker.");
                           },
                           icon: Icon(Icons.info))
                     ],
@@ -594,20 +510,10 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                               String? error =
                                   await manager.deleteShareCode(shareCode);
                               if (error != null) {
-                                deleting = false;
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                          title: Text("Error"),
-                                          content: Text(error),
-                                          actions: [
-                                            TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: Text("Ok"))
-                                          ],
-                                        ));
+                                setState(() {
+                                  deleting = false;
+                                });
+                                ErrorDialog.show("Error deleting share code", error);
                                 return;
                               }
                               onDeleted();
@@ -626,23 +532,5 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
             ],
           ),
         ));
-  }
-}
-
-class LoadingDialog extends StatelessWidget {
-  final String title;
-  const LoadingDialog({
-    required this.title,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-        title: Text(title),
-        content: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [CircularProgressIndicator()]),
-        actions: []);
   }
 }

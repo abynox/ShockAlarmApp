@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
+import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
@@ -151,23 +152,10 @@ class ShockerChipState extends State<ShockerChip> {
                 color: t!.colorScheme.error,
               ),
               onTap: () {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text("Shocker is paused"),
-                        content: Text(shocker.isOwn
+                InfoDialog.show("Shocker is paused",
+                shocker.isOwn
                             ? "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by selecting the shocker and pressing unpause selected."
-                            : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it."),
-                        actions: [
-                          TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text("Close"))
-                        ],
-                      );
-                    });
+                            : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it.");
               },
             )
         ],

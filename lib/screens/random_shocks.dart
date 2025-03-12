@@ -6,6 +6,7 @@ import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/grouped_shocker_selector.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:shock_alarm_app/components/tone_item.dart';
+import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 
@@ -106,20 +107,8 @@ class RandomShocksState extends State<RandomShocks> {
             spacing: 10,
             children: [
               IconButton(onPressed: () {
-                showDialog(context: context, builder: (context) {
-                  return AlertDialog(
-                    title: Text("Random shocks"),
-                    content: Text(
-                        "This tool will do random shocks with the selected shockers. You can set the intensity and duration range, the delay between the shocks and the type of control to use randomly.\n\nNote: This feature might only work while the app is open in the background. Closing it on android may stop this feature."),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("Close"))
-                    ],
-                  );
-                });
+                InfoDialog.show("Random shocks",
+                    "This tool will do random shocks with the selected shockers. You can set the intensity and duration range, the delay between the shocks and the type of control to use randomly.\n\nNote: This feature might only work while the app is open in the background. Closing it on android or changing to another window on web may stop this feature temporarely.");
               }, icon: Icon(Icons.info)),
               IntensityDurationSelector(
                   controlsContainer: controlsContainer,

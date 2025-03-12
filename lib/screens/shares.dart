@@ -4,6 +4,10 @@ import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
+import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
+import 'package:shock_alarm_app/dialogs/LoadingDialog.dart';
+import 'package:shock_alarm_app/main.dart';
 
 import '../components/qr_card.dart';
 import '../services/alarm_list_manager.dart';
@@ -69,28 +73,13 @@ class SharesScreenState extends State<SharesScreen> {
                     child: Text("Cancel")),
                 TextButton(
                     onPressed: () async {
-                      showDialog(
-                          context: context,
-                          builder: (context) =>
-                              LoadingDialog(title: "Creating share"));
+                      LoadingDialog.show("Creating share");
 
                       String? error = await OpenShockClient()
                           .addShare(shocker, limits, manager);
                       Navigator.of(context).pop();
                       if (error != null) {
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                  title: Text("Error"),
-                                  content: Text(error),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("Ok"))
-                                  ],
-                                ));
+                        ErrorDialog.show("Failed to create share", error);
                         return;
                       }
                       Navigator.of(context).pop();
@@ -256,19 +245,7 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
                         setState(() {
                           deleting = false;
                         });
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                  title: Text("Failed to delete share"),
-                                  content: Text(errorMessage),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("Ok"))
-                                  ],
-                                ));
+                        ErrorDialog.show("Failed to delete share", errorMessage);
                         return;
                       }
                       Navigator.of(context).pop();
@@ -328,20 +305,7 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
                                     saving = false;
                                   });
                                   if (error != null) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                              title: Text("Error"),
-                                              content: Text(error),
-                                              actions: [
-                                                TextButton(
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    },
-                                                    child: Text("Ok"))
-                                              ],
-                                            ));
+                                    ErrorDialog.show("Failed to save limits", error);
                                     return;
                                   }
                                   setState(() {
@@ -430,20 +394,8 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
                               color: t.colorScheme.error,
                             )),
                         onTap: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                    title: Text("Share is paused"),
-                                    content: Text(
-                                        "You paused the share for ${share.sharedWith.name}. This means they cannot interact with this shocker at all. You can resume it by pressing the play button."),
-                                    actions: [
-                                      TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Text("Ok"))
-                                    ],
-                                  ));
+                          InfoDialog.show("Share is paused",
+                            "You paused the share for ${share.sharedWith.name}. This means they cannot interact with this shocker at all. You can resume it by pressing the play button.");
                         },
                       ),
                   ],
@@ -507,20 +459,8 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                       ),
                       IconButton(
                           onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                      title: Text("Unclaimed share code"),
-                                      content: Text(
-                                          "You created this share. No user has claimed it yet. You can use the share button to share the code with your friend. When they claim the code they will have access to your shocker."),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text("Ok"))
-                                      ],
-                                    ));
+                            InfoDialog.show("Unclaimed share code",
+                                "This share code has not been claimed yet. You can share it with your friend by pressing the share button. When they claim the code they will have access to your shocker.");
                           },
                           icon: Icon(Icons.info))
                     ],
@@ -539,20 +479,10 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                               String? error =
                                   await manager.deleteShareCode(shareCode);
                               if (error != null) {
-                                deleting = false;
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                          title: Text("Error"),
-                                          content: Text(error),
-                                          actions: [
-                                            TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: Text("Ok"))
-                                          ],
-                                        ));
+                                setState(() {
+                                  deleting = false;
+                                });
+                                ErrorDialog.show("Failed to delete share code", error);
                                 return;
                               }
                               onDeleted();
@@ -592,29 +522,6 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
             ],
           ),
         ));
-  }
-}
-
-class LoadingDialog extends StatelessWidget {
-  final String title;
-  const LoadingDialog({
-    required this.title,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-        title: Text(title),
-        content: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [CircularProgressIndicator()]),
-        actions: []);
-  }
-
-  static void show(BuildContext context, String title) {
-    showDialog(
-        context: context, builder: (context) => LoadingDialog(title: title));
   }
 }
 
@@ -773,20 +680,7 @@ class ShockerShareEntryPermissionEditorState
             OpenShockClient.getIconForControlType(type),
             IconButton(
                 onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                            title: Text(names[type] ?? "Unknown control type"),
-                            content: Text(
-                                descriptions[type] ?? "Unknown control type"),
-                            actions: [
-                              TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("Ok"))
-                            ],
-                          ));
+                  InfoDialog.show(names[type] ?? "Unknown control type", descriptions[type] ?? "Unknown control type");
                 },
                 icon: Icon(Icons.info))
           ],

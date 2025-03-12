@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
+import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../stores/alarm_store.dart';
@@ -78,7 +79,6 @@ class AlarmItemState extends State<AlarmItem> {
                       children: <Widget>[
                         TextButton(
                           onPressed: () async {
-                            String newName = "";
                             TextEditingController controller =
                                 TextEditingController(text: alarm.name);
                             await showDialog(
@@ -283,23 +283,10 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                                   color: t.colorScheme.error,
                                 )),
                             onTap: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                        title: Text("Shocker is paused"),
-                                        content: Text(alarmShocker
-                                                    .shockerReference!.isOwn ??
-                                                false
-                                            ? "This shocker was pause by you. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. Unpause it so it can be triggered."
-                                            : "This shocker was paused by the owner. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. It needs to be unpaused so it can be triggered."),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: Text("Ok"))
-                                        ],
-                                      ));
+                              InfoDialog.show ("Shocker is paused",
+                              alarmShocker.shockerReference?.isOwn ?? false
+                              ? "This shocker was pause by you. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. Unpause it so it can be triggered."
+                              : "This shocker was paused by the owner. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. It needs to be unpaused so it can be triggered.");
                             },
                           ),
                         Switch(
