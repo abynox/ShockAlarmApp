@@ -581,6 +581,40 @@ class OpenShockClient {
     }
     return await AlarmListManager.getInstance().ws?.setCaptivePortal(hub, enable);
   }
+
+  Future<OpenShockLCGResponse?> getHubStatus(Hub hub) async {
+    Token? t = AlarmListManager.getInstance().getToken(hub.apiTokenId);
+    if(t == null) return null;
+    var response = await GetRequest(t, "/1/devices/${hub.id}/lcg");
+    if(response.statusCode == 200) {
+      return OpenShockLCGResponse.fromJson(jsonDecode(response.body)["data"])..online = true;
+    }
+    if(response.statusCode == 412) {
+      return OpenShockLCGResponse()..online = true;
+    }
+    // 404 and internal server error means offline
+    return OpenShockLCGResponse()..online = false;
+  }
+}
+
+class OpenShockLCGResponse {
+  String? gateway;
+  String? country;
+  bool online = false;
+
+  OpenShockLCGResponse();
+
+  OpenShockLCGResponse.fromJson(Map<String, dynamic> json) {
+    gateway = json["gateway"];
+    country = json["country"];
+  }
+
+  toJson() {
+    return {
+      "gateway": gateway,
+      "country": country
+    };
+  }
 }
 
 class OpenShockApiToken {
@@ -952,6 +986,7 @@ class Hub {
 
   getIdentifier(AlarmListManager manager) {
     online = manager.onlineHubs.contains(this.id);
+    
     return "$id-$apiTokenId-$isOwn-$online";
   }
 }

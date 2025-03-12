@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
@@ -357,6 +358,12 @@ class ShockerScreenState extends State<ShockerScreen> {
 
   void rebuild() {
     setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if(kIsWeb) AlarmListManager.getInstance().updateHubStatusViaHttp();
   }
 
   ShockerScreenState(this.manager);

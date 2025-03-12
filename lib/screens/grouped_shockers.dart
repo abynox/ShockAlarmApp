@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
@@ -26,6 +27,12 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
   AlarmListManager manager;
 
   GroupedShockerScreenState(this.manager);
+
+  @override
+  void initState() {
+    super.initState();
+    if(kIsWeb) AlarmListManager.getInstance().updateHubStatusViaHttp();
+  }
 
   void onRebuild() {
     setState(() {});
@@ -150,6 +157,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
           children: [
             GroupedShockerSelector(
               onChanged: onRebuild,
+              key: ValueKey(DateTime.now().microsecondsSinceEpoch),
             ),
             if (manager.selectedShockers.length > 0)
               ConstrainedContainer(

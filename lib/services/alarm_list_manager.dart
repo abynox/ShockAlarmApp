@@ -313,6 +313,7 @@ class AlarmListManager {
     if(tokenExpired) {
       showSessionExpired();
     }
+    if(kIsWeb) updateHubStatusViaHttp();
     return !tokenExpired;
   }
 
@@ -577,6 +578,21 @@ class AlarmListManager {
 
   Function()? onRefresh;
 
+  Future updateHubStatusViaHttp() async {
+    for(var hub in hubs) {
+      OpenShockClient().getHubStatus(hub).then((OpenShockLCGResponse? res) {
+        hub.online = res?.online ?? false;
+
+        if(hub.online && !onlineHubs.contains(hub.id)) {
+          onlineHubs.add(hub.id);
+        } else {
+          onlineHubs.remove(hub.id);
+        }
+        reloadAllMethod!();
+      });
+    }
+  }
+
   Future startWS(Token t, {bool stopExisting = true}) async {
     if(ws != null) {
       if(!stopExisting) return;
@@ -618,7 +634,6 @@ class AlarmListManager {
         onlineHubs.remove(d.device);
       }
     }
-    print(onlineHubs);
     reloadAllMethod!();
   }
 
