@@ -108,12 +108,11 @@ class _UpdateHubScreenState extends State<UpdateHubScreen> {
                             : Color(0xFFF01414),
                         size: 20,
                       ),
-                      Text(widget.hub.name, style: t.textTheme.headlineLarge),
-                      Text("@", style: t.textTheme.headlineLarge),
-                      Text(widget.hub.firmwareVersion,
-                          style: t.textTheme.headlineLarge)
+                      Text(widget.hub.name, style: t.textTheme.headlineMedium),
                     ],
-                  )
+                  ),
+                      Text(widget.hub.firmwareVersion,
+                          style: t.textTheme.labelLarge)
                 ],
               )),
               Padding(padding: EdgeInsets.all(15)),
