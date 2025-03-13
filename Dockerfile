@@ -3,42 +3,35 @@ FROM debian:latest AS build-env
 
 # Start Install Depends
 RUN apt-get update
-RUN apt-get install -y curl git unzip wget
+RUN apt-get install -y curl unzip git
 # End Install Depends
 
 # Start Define Variables
-ARG FLUTTER_SDK=/usr/local/flutter
-ARG FLUTTER_VERSION=3.29.1
 ARG APP=/ShockAlarmApp
+#change to main for latest git version
 ARG SHOCK_VERSION=0.0.19
 # End Define Variables
 
 
+# Start Download source code
+RUN git clone https://github.com/ComputerElite/ShockAlarmApp.git --branch $SHOCK_VERSION
+RUN git config --global --add safe.directory $HOME/.cache/flutter_sdk
+RUN git config --global --add safe.directory /root/development/flutter
+RUN git config --global --add safe.directory $APP
+# End Download source code
 
-## Start Install Flutter
-RUN git clone https://github.com/flutter/flutter.git $FLUTTER_SDK
-
-# Start Selected Flutter Version Install
-RUN cd $FLUTTER_SDK && git fetch && git checkout $FLUTTER_VERSION
-# End Selected Flutter Version Install
+# Start Flutter Install
+RUN cd $APP/flutter && git submodule update --init --recursive
+# End Flutter Install
 
 # Start add flutter to path
-ENV PATH="$FLUTTER_SDK/bin:$FLUTTER_SDK/bin/cache/dart-sdk/bin:${PATH}"
+ENV PATH="$APP/flutter/bin:$APP/flutter/bin/cache/dart-sdk/bin:${PATH}"
 # End add flutter to path
 
 # Start run Flutter commands
 RUN flutter doctor -v
 # End run Flutter commands
 ## End install Flutter
-
-# Start Download source code
-RUN wget https://github.com/ComputerElite/ShockAlarmApp/archive/refs/tags/$SHOCK_VERSION.tar.gz
-RUN tar xfvz $SHOCK_VERSION.tar.gz
-RUN mv ShockAlarmApp-$SHOCK_VERSION ShockAlarmApp
-RUN git config --global --add safe.directory $HOME/.cache/flutter_sdk
-RUN git config --global --add safe.directory /root/development/flutter
-RUN git config --global --add safe.directory $APP
-# End Download source code
 
 # Start Set Working Directory
 WORKDIR $APP
