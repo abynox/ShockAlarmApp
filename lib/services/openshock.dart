@@ -595,6 +595,46 @@ class OpenShockClient {
     // 404 and internal server error means offline
     return OpenShockLCGResponse()..online = false;
   }
+
+  Future<List<OpenShockOTAUpdate>> getOTAUpdateHistory(Hub hub)async {
+    Token? t = AlarmListManager.getInstance().getToken(hub.apiTokenId);
+    if(t == null) return [];
+    var response = await GetRequest(t, "/1/devices/${hub.id}/ota");
+    List<OpenShockOTAUpdate> updates = [];
+    if(response.statusCode == 200) {
+      jsonDecode(response.body)["data"].forEach((element) {
+        updates.add(OpenShockOTAUpdate.fromJson(element));
+      });
+    }
+    return updates;
+  }
+}
+
+class OTAInstallProgress {
+  String hubId = "";
+  int id = 0;
+  int step = 0;
+  double progress = 0;
+}
+
+class OpenShockOTAUpdate {
+  int id = 0;
+  String? message;
+  DateTime startedAt = DateTime.now();
+  String status = "Unknown status";
+  String version = "unknown version";
+
+  OpenShockOTAUpdate.fromJson(Map<String, dynamic> json) {
+    id = json["id"];
+    message = json["message"];
+    startedAt = DateTime.parse(json["startedAt"]);
+    version = json["version"];
+    status = json["status"];
+  }
+}
+
+enum OpenShockOtaUpdateStatus {
+  Started, Running, Finished, Error, Timeout
 }
 
 class OpenShockLCGResponse {

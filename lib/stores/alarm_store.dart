@@ -555,6 +555,7 @@ class Alarm {
       "Name": name,
       "Enabled": active,
       "ApiTokenId": apiTokenId,
+      "DisableAfterFirstTrigger": days.isEmpty,
       "TimeZone": DateTime.now().timeZoneName,
       "Cron": cron,
       "Shockers": shockers.map((e) => e.toAlarmServerShocker(apiTokenId)).toList()

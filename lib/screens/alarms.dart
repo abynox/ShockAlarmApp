@@ -24,6 +24,7 @@ class AlarmScreenState extends State<AlarmScreen> {
   @override
   void initState() {
     manager.reloadAllMethod = rebuild;
+    manager.addAlarmServerAlarms();
     super.initState();
   }
 

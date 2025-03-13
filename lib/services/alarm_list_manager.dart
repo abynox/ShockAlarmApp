@@ -582,6 +582,12 @@ class AlarmListManager {
   Function()? reloadShareLinksMethod;
 
   Function()? onRefresh;
+  Function(OTAInstallProgress)? onOtaInstallProgress;
+  Function()? otaInstallSucceeded;
+  
+  static bool supportsWs() {
+    return !kIsWeb;
+  }
 
   Future updateHubStatusViaHttp() async {
     for(var hub in hubs) {
@@ -620,6 +626,21 @@ class AlarmListManager {
       }
       if(reloadShockerLogs != null) {
         reloadShockerLogs!();
+      }
+    });
+    ws?.addMessageHandler("OtaInstallProgress", (List<dynamic>? list) {
+      OTAInstallProgress progress = OTAInstallProgress();
+      progress.hubId = list![0];
+      progress.id = AlarmToneComponent.cast<int>(list[1]) ?? 0;
+      progress.step = AlarmToneComponent.cast<int>(list[2]) ?? 0;
+      progress.progress = AlarmToneComponent.cast<double>(list[3]) ?? 0.0;
+      if(onOtaInstallProgress != null) {
+        onOtaInstallProgress!(progress);
+      }
+    });
+    ws?.addMessageHandler("OtaInstallSucceeded", (List<dynamic>? list) {
+      if(otaInstallSucceeded != null) {
+        otaInstallSucceeded!();
       }
     });
   }
@@ -840,5 +861,15 @@ class AlarmListManager {
       }
       await saveAlarm(alarm);
     }
+  }
+
+  // {"arguments":["5ff90a57-711a-45f8-8952-6eb2f961a251","1.4.0"],"invocationId":"1","target":"OtaInstall","type":1}
+
+  Future startHubUpdate(Hub hub, String version) async {
+    await startAnyWS();
+    await ws?.connection?.invoke('OtaInstall', args: [
+        hub.id,
+        version
+      ]);
   }
 }

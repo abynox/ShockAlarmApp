@@ -96,6 +96,7 @@ Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or
 - [x] Add info about alarm server
 - [x] Code cleanup, add multiple predefined dialogs
 - [x] Add online indicator for hubs on web
+- [x] Add OTA Updates
 - [ ] Fix WS on web
 
 # Planned settings

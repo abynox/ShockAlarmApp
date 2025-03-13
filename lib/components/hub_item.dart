@@ -7,6 +7,7 @@ import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 
 import '../main.dart';
+import '../screens/update_hub.dart';
 
 class HubItem extends StatefulWidget {
   Hub hub;
@@ -175,6 +176,11 @@ class HubItemState extends State<HubItem> {
     onRebuild();
   }
 
+  void updateHub() {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => UpdateHubScreen(hub: hub)));
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
@@ -233,6 +239,18 @@ class HubItemState extends State<HubItem> {
                                   Text("Pair hub")
                                 ],
                               )),
+                          if(AlarmListManager.supportsWs()) PopupMenuItem(
+                              value: "update",
+                              child: Row(
+                                spacing: 10,
+                                children: [
+                                  Icon(
+                                    Icons.upgrade,
+                                    color: t.colorScheme.onSurfaceVariant,
+                                  ),
+                                  Text("OTA Update")
+                                ],
+                              )),
                           PopupMenuItem(
                               value: "captive",
                               child: Row(
@@ -262,6 +280,9 @@ class HubItemState extends State<HubItem> {
                       onSelected: (String value) {
                         if (value == "rename") {
                           startRenameHub();
+                        }
+                        if (value == "update") {
+                          updateHub();
                         }
                         if (value == "delete") {
                           deleteHub();

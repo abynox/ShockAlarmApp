@@ -29,21 +29,18 @@ class OpenShockWS {
   Future startConnection() async {
     try {
       final httpClient = _HttpClient(headers: {
-        'OpenShockSession': this.t.token,
+        'OpenShockSession': t.token,
         'User-Agent': GetUserAgent(),
       });
-      String server = this.t.server.replaceAll("http", "ws");
-      print(server);
       connection = HubConnectionBuilder()
-          .withAutomaticReconnect()
           .withUrl(
-              server + '/1/hubs/user',
+              '${t.server}/1/hubs/user',
               HttpConnectionOptions(
                   logging: (level, message) => print(message),
                   client: httpClient,
                   skipNegotiation: true,
-                  transport: HttpTransportType.webSockets,
-                  logMessageContent: true))
+                  transport: HttpTransportType.webSockets))
+          .withAutomaticReconnect([0, 1000, 2000, 5000, 10000, 10000, 15000, 30000, 60000])
           .build();
 
       await connection!.start();
