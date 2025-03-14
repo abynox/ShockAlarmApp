@@ -51,7 +51,7 @@ jobs:
       - name: Build Windows
         shell: bash
         run: |
-          cat windws/ShockAlarmSetup.iss
+          cat windows/ShockAlarmSetup.iss
           flutter build windows
 
       - name: Download Visual C++ Redistributable
