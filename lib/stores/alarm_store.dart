@@ -120,14 +120,14 @@ class AlarmTone {
 
   static AlarmTone fromAlarmServerJson(tone) {
     AlarmTone t = AlarmTone(id: -1, name: tone["Name"]);
+    if(tone["Id"] != null)
+      t.serverId = tone["Id"];
     for(AlarmTone existing in AlarmListManager.getInstance().alarmTones) {
       if(existing.serverId == t.serverId) {
         t.id = existing.id;
         break;
       }
     }
-    if(tone["Id"] != null)
-      t.serverId = tone["Id"];
     if(tone["Components"] != null)
       t.components = (tone["Components"] as List).map((e) => AlarmToneComponent.fromAlarmServerJson(e)).toList();
     return t;
