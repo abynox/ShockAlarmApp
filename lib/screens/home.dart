@@ -9,7 +9,6 @@ import 'package:shock_alarm_app/screens/shock_screen_selector.dart';
 import 'package:shock_alarm_app/screens/shockers.dart';
 import 'package:shock_alarm_app/screens/tones.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
-import 'package:uni_links5/uni_links.dart';
 import '../components/alarm_item.dart';
 import '../services/alarm_list_manager.dart';
 import 'alarms.dart';
@@ -104,16 +103,17 @@ class ScreenSelectorState extends State<ScreenSelector> {
 
   @override
   void initState() {
-    try {
-      if (isAndroid()) {
-        getInitialLink().then((String? url) {
-          if (url != null) {
-            onProtocolUrlReceived(url);
+    if (isAndroid()) {
+      const platform = MethodChannel('shock-alarm/protocol');
+      try {
+        platform.setMethodCallHandler((MethodCall call) async {
+          if (call.method == 'onProtocolUrlReceived') {
+            onProtocolUrlReceived(call.arguments);
           }
         });
+      } catch (e) {
+        print("Could not init method channel : ${e.toString()}");
       }
-    } catch (e) {
-      print("Error getting initial link (perhaps wrong platform): $e");
     }
     if(kIsWeb) {
       String? token;
