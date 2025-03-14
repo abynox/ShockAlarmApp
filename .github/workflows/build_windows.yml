@@ -43,11 +43,14 @@ jobs:
         run: flutter config --no-cli-animations
 
       - run: flutter pub get
+      - name: Add version
+        shell: pwsh
+        run: |
+          ./generate_iss.ps1
 
       - name: Build Windows
         shell: bash
         run: |
-          bash generate_iss.sh
           cat windws/ShockAlarmSetup.iss
           flutter build windows
 
