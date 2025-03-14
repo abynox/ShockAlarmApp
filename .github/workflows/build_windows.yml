@@ -47,8 +47,7 @@ jobs:
       - name: Build Windows
         shell: bash
         run: |
-          flutter build windows \
-            --dart-define=DIRTY=$DIRTY
+          flutter build windows
         env:
           DIRTY: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
@@ -75,7 +74,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Saber-Windows
+          name: ShockAlarmApp-WindowsSetup
           path: installers/${{ steps.rename.outputs.installerName }}
 
       - name: Upload to GitHub release
