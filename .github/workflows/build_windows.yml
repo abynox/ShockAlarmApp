@@ -70,8 +70,9 @@ jobs:
         run: |
           export LC_ALL=en_US.utf8
           buildName=$(git describe --tags $(git rev-list --tags --max-count=1))
-          installerName="ShockAlarmApp-Setup_${buildName}.exe"
+          installerName="ShockAlarmApp.Windows.Setup.${buildName}.exe"
           echo "installerName=$installerName" >> $GITHUB_OUTPUT
+          echo "buildName=$buildName" >> $GITHUB_OUTPUT
 
           mv windows/Output/ShockAlarmApp-Setup.exe windows/$installerName
 
@@ -80,6 +81,16 @@ jobs:
         with:
           name: ShockAlarmApp-WindowsSetup
           path: windows/${{ steps.rename.outputs.installerName }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShockAlarmApp-WindowsPortable
+          path: build\windows\x64\runner\Release\
+          
+      - name: Compress zip
+        run: |
+          
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath ShockAlarmApp.Windows.Portable.${{steps.rename.outputs.buildName}}.zip
 
       - name: Upload to GitHub release
         uses: svenstaro/upload-release-action@v2
@@ -87,3 +98,10 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: windows/${{ steps.rename.outputs.installerName }}
+      
+      - name: Upload to GitHub release
+        uses: svenstaro/upload-release-action@v2
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ShockAlarmApp.Windows.Portable.${{steps.rename.outputs.buildName}}.zip
