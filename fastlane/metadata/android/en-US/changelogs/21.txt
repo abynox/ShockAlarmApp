@@ -1,0 +1,2 @@
+**Changelog:**
+- Fixed Alarm tones duplicating with AlarmServer
