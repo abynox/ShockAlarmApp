@@ -9,7 +9,7 @@ RUN apt-get install -y curl unzip git
 # Start Define Variables
 ARG APP=/ShockAlarmApp
 #change to main for latest git version
-ARG SHOCK_VERSION=0.0.19
+ARG SHOCK_VERSION=main
 # End Define Variables
 
 
