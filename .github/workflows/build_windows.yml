@@ -47,6 +47,8 @@ jobs:
       - name: Build Windows
         shell: bash
         run: |
+          bash generate_iss.sh
+          cat windws/ShockAlarmSetup.iss
           flutter build windows
         env:
           DIRTY: ${{ !startsWith(github.ref, 'refs/tags/') }}
@@ -54,7 +56,6 @@ jobs:
       - name: Download Visual C++ Redistributable
         shell: bash
         run: |
-          bash generate_iss.sh
           curl -L -o windows/vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe
 
       - name: Build Windows Installer
