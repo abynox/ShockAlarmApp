@@ -30,9 +30,9 @@ jobs:
         with:
           path: |
             build
-          key: ${{ runner.OS }}-saber-${{ hashFiles('**/pubspec.lock') }}-${{ hashFiles('**/*.dart') }}
+          key: ${{ runner.OS }}-shockalarmapp-${{ hashFiles('**/pubspec.lock') }}-${{ hashFiles('**/*.dart') }}
           restore-keys: |
-            ${{ runner.OS }}-saber-
+            ${{ runner.OS }}-shockalarmapp-
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -73,7 +73,7 @@ jobs:
           installerName="ShockAlarmApp-Setup_${buildName}.exe"
           echo "installerName=$installerName" >> $GITHUB_OUTPUT
 
-          mv windows\Output\ShockAlarmApp-Setup.exe windows/$installerName
+          mv windows/Output/ShockAlarmApp-Setup.exe windows/$installerName
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
