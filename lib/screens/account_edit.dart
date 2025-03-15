@@ -88,6 +88,13 @@ class _AccountEditState extends State<AccountEdit> {
                                       Text(
                                           "last used: ${ShockerLogEntry.formatDateTime(token.lastUsed, fallback: "Never")}",
                                           style: t.textTheme.labelLarge),
+
+                                      Text(
+                                          "valid until: ${ShockerLogEntry.formatDateTime(token.validUntil, fallback: "forever")}",
+                                          style: t.textTheme.labelLarge),
+                                      Text(
+                                          "created: ${ShockerLogEntry.formatDateTime(token.createdOn, fallback: "Unknown")}",
+                                          style: t.textTheme.labelLarge),
                                       Wrap(
                                         spacing: 5,
                                         crossAxisAlignment:
@@ -106,19 +113,6 @@ class _AccountEditState extends State<AccountEdit> {
                                 Row(
                                   spacing: 10,
                                   children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                            "valid until: ${ShockerLogEntry.formatDateTime(token.validUntil, fallback: "forever")}",
-                                            style: t.textTheme.labelLarge),
-                                        Text(
-                                            "created: ${ShockerLogEntry.formatDateTime(token.createdOn, fallback: "Unknown")}",
-                                            style: t.textTheme.labelLarge),
-                                      ],
-                                    ),
                                     IconButton(
                                         onPressed: () async {
                                           await showDialog(
@@ -199,25 +193,18 @@ class _AccountEditState extends State<AccountEdit> {
                                       Text(
                                           "last used: ${ShockerLogEntry.formatDateTime(session.lastUsed, fallback: "Never")}",
                                           style: t.textTheme.labelLarge),
+                                      Text(
+                                          "expires: ${ShockerLogEntry.formatDateTime(session.expires, fallback: "forever")}",
+                                          style: t.textTheme.labelLarge),
+                                      Text(
+                                          "created: ${ShockerLogEntry.formatDateTime(session.created, fallback: "Unknown")}",
+                                          style: t.textTheme.labelLarge),
                                     ],
                                   ),
                                 ),
                                 Row(
                                   spacing: 10,
                                   children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                            "expires: ${ShockerLogEntry.formatDateTime(session.expires, fallback: "forever")}",
-                                            style: t.textTheme.labelLarge),
-                                        Text(
-                                            "created: ${ShockerLogEntry.formatDateTime(session.created, fallback: "Unknown")}",
-                                            style: t.textTheme.labelLarge),
-                                      ],
-                                    ),
                                     IconButton(
                                         onPressed: () async {
                                           showDialog(
