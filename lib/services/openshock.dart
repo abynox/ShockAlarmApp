@@ -140,7 +140,7 @@ class OpenShockClient {
 
   Future<ErrorContainer<String>> createApiToken(Token? t, OpenShockApiToken toCreate) async {
     if(t == null) return ErrorContainer(null, "Token not found");
-    var response = await PostRequest(t, "/1/tokens", jsonEncode(toCreate.toJson()));
+    var response = await PostRequest(t, "/1/tokens", jsonEncode(toCreate.toJson(getValidUntil: true)));
     if(response.statusCode != 200) {
       return ErrorContainer(null, getErrorCode(response, "Failed to create token"));
     }
@@ -608,6 +608,54 @@ class OpenShockClient {
     }
     return updates;
   }
+
+  Future<List<OpenShockApiToken>> getApiTokens(Token token)async {
+    var response = await GetRequest(token, "/1/tokens");
+    List<OpenShockApiToken> updates = [];
+    if(response.statusCode == 200) {
+      jsonDecode(response.body).forEach((element) {
+        updates.add(OpenShockApiToken.fromJson(element));
+      });
+    }
+    return updates;
+  }
+
+  Future<ErrorContainer<bool>> deleteApiToken(Token t, OpenShockApiToken apiToken) async {
+    var response = await DeleteRequest(t, "/1/tokens/${apiToken.id}", "");
+    if(response.statusCode == 200) {
+      return ErrorContainer(true, null);
+    }
+    return ErrorContainer(null, getErrorCode(response, "Failed to delete token"));
+  }
+
+  Future<ErrorContainer<bool>> updateApiToken(Token token, OpenShockApiToken apiToken) async {
+    print(jsonEncode(apiToken.toJson()));
+    var response = await PatchRequest(token, "/1/tokens/${apiToken.id}", jsonEncode(apiToken.toJson()));
+    if(response.statusCode == 200) {
+      return ErrorContainer(true, null);
+    }
+    return ErrorContainer(null, getErrorCode(response, "Failed to update token"));
+  }
+
+  Future<ErrorContainer<bool>> deleteSession(Token token, OpenShockUserSession session) async {
+    var response = await DeleteRequest(token, "/1/sessions/${session.id}", "");
+    if(response.statusCode == 200) {
+      return ErrorContainer(true, null);
+    }
+    return ErrorContainer(null, getErrorCode(response, "Failed to delete session"));
+  }
+
+  Future<ErrorContainer<List<OpenShockUserSession>>> getSessions(Token token) async {
+    var response = await GetRequest(token, "/1/sessions/");
+    if(response.statusCode == 200) {
+      List<OpenShockUserSession> sessions = [];
+      jsonDecode(response.body).forEach((element) {
+        sessions.add(OpenShockUserSession.fromJson(element));
+      });
+      return ErrorContainer(sessions, null);
+    }
+    return ErrorContainer(null, getErrorCode(response, "Failed to get session"));
+  }
 }
 
 class OTAInstallProgress {
@@ -632,6 +680,10 @@ class OpenShockOTAUpdate {
     status = json["status"];
   }
 }
+
+List<String> availableApiTokenPermissions = [
+  "shockers.use","shockers.pause","shockers.edit","devices.auth","devices.edit"
+];
 
 enum OpenShockOtaUpdateStatus {
   Started, Running, Finished, Error, Timeout
@@ -658,24 +710,49 @@ class OpenShockLCGResponse {
 }
 
 class OpenShockApiToken {
+  String? id;
   String name = "";
   List<String> permissions = [];
-  String? validUntil;
+  DateTime? validUntil;
+  DateTime? lastUsed;
+  DateTime? createdOn;
 
   OpenShockApiToken(this.name, this.permissions, this.validUntil);
 
-  toJson() {
+  toJson({bool getValidUntil = false}) {
+    // only contains things which can be updated
     return {
       "name": name,
       "permissions": permissions,
-      "validUntil": validUntil
+      if(getValidUntil) "validUntil": validUntil?.toIso8601String()
     };
   }
 
   OpenShockApiToken.fromJson(Map<String, dynamic> json) {
     name = json["name"];
     permissions = List<String>.from(json["permissions"]);
-    validUntil = json["validUntil"];
+    validUntil = json["validUntil"] == null ? null : DateTime.parse(json["validUntil"]);
+    lastUsed = json["lastUsed"] == null ? null : DateTime.parse(json["lastUsed"]);
+    createdOn = json["createdOn"] == null ? null : DateTime.parse(json["createdOn"]);
+    id = json["id"];
+  }
+}
+
+class OpenShockUserSession {
+  DateTime? created;
+  DateTime? expires;
+  String? id;
+  String? ip;
+  DateTime? lastUsed;
+  String? userAgent;
+
+  OpenShockUserSession.fromJson(Map<String, dynamic> json) {
+    created = DateTime.parse(json["created"]);
+    expires = DateTime.parse(json["expires"]);
+    id = json["id"];
+    ip = json["ip"];
+    lastUsed = DateTime.parse(json["lastUsed"]);
+    userAgent = json["userAgent"];
   }
 }
 

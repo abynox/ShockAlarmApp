@@ -1,8 +1,8 @@
 import 'dart:math';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/grouped_shockers.dart';
 import 'package:shock_alarm_app/screens/shock_screen_selector.dart';
@@ -101,6 +101,8 @@ class ScreenSelectorState extends State<ScreenSelector> {
     }
   }
 
+  static bool addedKeyboardListener = false;
+
   @override
   void initState() {
     if (isAndroid()) {
@@ -148,6 +150,13 @@ class ScreenSelectorState extends State<ScreenSelector> {
       }
     }
 
+    if(!addedKeyboardListener) {
+      addedKeyboardListener = true;
+      print("registering keyboard listener");
+      ServicesBinding.instance.keyboard.addHandler(_onKey);
+    }
+
+
     redoLayout(true);
     manager.pageSelectorReloadMethod = () {
       redoLayout(false);
@@ -163,7 +172,19 @@ class ScreenSelectorState extends State<ScreenSelector> {
       setState(() {});
       _tap(_selectedIndex);
     });
+    manager.updateShockerStore();
     super.initState();
+  }
+
+  bool _onKey(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      switch (event.logicalKey) {
+        case LogicalKeyboardKey.f5:
+          if (manager.onRefresh != null) manager.onRefresh!();
+          break;
+      }
+    }
+    return false;
   }
 
   @override
@@ -219,25 +240,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
   Widget build(BuildContext context) {
     manager.startAnyWS();
     return Scaffold(
-        body: KeyboardListener(
-            autofocus: true,
-            onKeyEvent: (KeyEvent event) {
-              if (event is KeyDownEvent) {
-                switch (event.logicalKey) {
-                  case LogicalKeyboardKey.arrowLeft:
-                    _tap(_selectedIndex - 1);
-                    break;
-                  case LogicalKeyboardKey.arrowRight:
-                    _tap(_selectedIndex + 1);
-                    break;
-                  case LogicalKeyboardKey.f5:
-                    if (manager.onRefresh != null) manager.onRefresh!();
-                    break;
-                }
-              }
-            },
-            focusNode: focusNode,
-            child: Padding(
+        body:  Padding(
               padding: const EdgeInsets.only(
                 bottom: 15,
                 left: 15,
@@ -249,7 +252,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
                 onPageChanged: _tap,
                 controller: pageController,
               ),
-            )),
+            ),
         appBar: null,
         floatingActionButton: floatingActionButtons.elementAt(_selectedIndex),
         bottomNavigationBar: BottomNavigationBar(

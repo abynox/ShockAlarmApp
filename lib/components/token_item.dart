@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
+import '../screens/account_edit.dart';
 import '../stores/alarm_store.dart';
 import '../services/alarm_list_manager.dart';
 
@@ -103,18 +104,26 @@ class TokenItemState extends State<TokenItem> {
                       Text(token.tokenType==TokenType.openshock? "OpenShock" : "AlarmServer")
                     ],
                   ),
-                  Column(children: [
+                  Row(children: [
                     if(manager.settings.allowTokenEditing)
                       IconButton(onPressed: () {setState(() {
                         expanded = !expanded;
                       });}, icon: Icon(expanded ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded)),
                     if(!manager.settings.allowTokenEditing && deleting)
                       CircularProgressIndicator(),
-                    if(!manager.settings.allowTokenEditing && !deleting)
+                    if(token.tokenType == TokenType.openshock && token.isSession)
                       IconButton(
-                        icon: Icon(Icons.logout),
-                        onPressed: askLogout,
+                        icon: Icon(Icons.edit),
+                        onPressed: () async {
+                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => AccountEdit(token: token)));
+                          onRebuild();
+                        },
                       ),
+                  if(!manager.settings.allowTokenEditing && !deleting)
+                    IconButton(
+                      icon: Icon(Icons.logout),
+                      onPressed: askLogout,
+                    ),
                   ],)
                 ],
               ),

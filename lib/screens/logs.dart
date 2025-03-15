@@ -132,7 +132,10 @@ class ShockerLogEntry extends StatelessWidget {
 
   const ShockerLogEntry({Key? key, required this.log}) : super(key: key);
 
-  static String formatDateTime(DateTime dateTime, {bool alwaysShowDate = false}) {
+  static String formatDateTime(DateTime? dateTime, {bool alwaysShowDate = false, String fallback = "Unknown"}) {
+    if(dateTime == null) {
+      return fallback;
+    }
     final now = DateTime.now();
     final isToday = dateTime.year == now.year &&
         dateTime.month == now.month &&

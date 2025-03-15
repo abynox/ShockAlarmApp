@@ -303,7 +303,7 @@ class TokenScreenState extends State<TokenScreen> {
                     child: Text("Log in via openshock.app"),
                     onPressed: () => {
                       launchUrl(Uri.parse(
-                          "https://openshock.app/t/?name=ShockAlarm&redirect_uri=${Uri.encodeComponent(Uri.base.toString())}${Uri.encodeComponent("?server=https://api.openshock.app&token=%")}&permissions=shockers.use,shockers.pause,shockers.edit,devices.auth,devices.edit"))
+                          "https://openshock.app/t/?name=ShockAlarm&redirect_uri=${Uri.encodeComponent(Uri.base.toString())}${Uri.encodeComponent("?server=https://api.openshock.app&token=%")}&permissions=${availableApiTokenPermissions.join(",")}"))
                     },
                   ),
                   Padding(padding: EdgeInsets.all(10)),

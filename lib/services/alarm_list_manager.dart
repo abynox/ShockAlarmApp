@@ -314,7 +314,7 @@ class AlarmListManager {
     updateHubList();
     rebuildAlarmShockers();
     updateShareLinks();
-    reloadAllMethod!();
+    if(reloadAllMethod != null) reloadAllMethod!();
     if(tokenExpired) {
       showSessionExpired();
     }
