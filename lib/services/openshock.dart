@@ -197,7 +197,8 @@ class OpenShockClient {
       "password": password,
       "email": email
     }), headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      'User-Agent': GetUserAgent(),
     });
     Token? token;
     if(response.statusCode == 200) {
@@ -747,11 +748,11 @@ class OpenShockUserSession {
   String? userAgent;
 
   OpenShockUserSession.fromJson(Map<String, dynamic> json) {
-    created = DateTime.parse(json["created"]);
-    expires = DateTime.parse(json["expires"]);
+    created = json["created"] == null ? null : DateTime.parse(json["created"]);
+    expires = json["expires"] == null ? null : DateTime.parse(json["expires"]);
     id = json["id"];
     ip = json["ip"];
-    lastUsed = DateTime.parse(json["lastUsed"]);
+    lastUsed = json["lastUsed"] == null ? null : DateTime.parse(json["lastUsed"]);
     userAgent = json["userAgent"];
   }
 }
