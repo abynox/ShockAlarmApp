@@ -104,7 +104,9 @@ class TokenItemState extends State<TokenItem> {
                       Text(token.tokenType==TokenType.openshock? "OpenShock" : "AlarmServer")
                     ],
                   ),
-                  Row(children: [
+                  Row(
+                    spacing: 10,
+                    children: [
                     if(manager.settings.allowTokenEditing)
                       IconButton(onPressed: () {setState(() {
                         expanded = !expanded;

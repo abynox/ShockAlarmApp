@@ -56,13 +56,11 @@ class _AccountEditState extends State<AccountEdit> {
                 child: DesktopMobileRefreshIndicator(
                     onRefresh: updateData,
                     child: ListView(children: [
-                      PaddedCard(
-                        child: Center(
-                          child: Text(
-                            "Account Settings for ${widget.token.name}",
-                            style: t.textTheme.headlineSmall,
-                          ),
-                        ),
+                      
+                      Text(
+                        'Account of ${widget.token.name}',
+                        textAlign: TextAlign.center,
+                        style: t.textTheme.headlineMedium,
                       ),
                       Padding(padding: EdgeInsets.all(15)),
                       Text(
