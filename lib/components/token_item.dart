@@ -115,7 +115,7 @@ class TokenItemState extends State<TokenItem> {
                       CircularProgressIndicator(),
                     if(token.tokenType == TokenType.openshock && token.isSession)
                       IconButton(
-                        icon: Icon(Icons.edit),
+                        icon: Icon(Icons.person),
                         onPressed: () async {
                           Navigator.of(context).push(MaterialPageRoute(builder: (context) => AccountEdit(token: token)));
                           onRebuild();
