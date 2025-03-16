@@ -41,6 +41,13 @@ Install the apk file from the [releases](https://github.com/ComputerElite/ShockA
 ## Through the AUR
 Use your favorite aur helper like [paru](https://github.com/Morganamilo/paru) or [yay](https://github.com/Jguer/yay) and install `shock-alarm`. [link to aur](https://aur.archlinux.org/packages/shock-alarm)
 
+# Installation on Windows
+## Installer
+You can download a Windows installer from the [releases](https://github.com/ComputerElite/ShockAlarmApp/releases/latest) and then execute it.
+
+## Portable
+You can download a Portable version (zip file) from the [releases](https://github.com/ComputerElite/ShockAlarmApp/releases/latest), unzip and then execute it.
+
 # Screenshots
 ![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/1.png)
 ![ShockAlarm](fastlane/metadata/android/en-US/images/phoneScreenshots/2.png)
