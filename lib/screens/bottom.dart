@@ -190,7 +190,7 @@ class BottomScreenState extends State<BottomScreen>
                                       )
                                     : Expanded(
                                         flex: 4,
-                                        child: ElevatedButton(
+                                        child: FilledButton(
                                           onPressed: eStop,
                                           child: pausingShockers
                                               ? Row(
