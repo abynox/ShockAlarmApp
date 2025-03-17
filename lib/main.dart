@@ -101,6 +101,7 @@ Future requestAlarmPermissions() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   AlarmListManager manager = AlarmListManager();
   await manager.loadAllFromStorage();
 

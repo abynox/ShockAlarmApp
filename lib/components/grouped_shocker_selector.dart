@@ -17,6 +17,8 @@ class GroupedShockerSelector extends StatefulWidget {
 }
 
 class GroupedShockerSelectorState extends State<GroupedShockerSelector> {
+  static ScrollController _scrollController = ScrollController();
+
   void onRebuild() {
     setState(() {});
   }
@@ -43,60 +45,74 @@ class GroupedShockerSelectorState extends State<GroupedShockerSelector> {
         groupedShockers[hub] = [];
       }
     }
+    List<Widget> children = [
+      for (MapEntry<Hub?, List<Shocker>> hubContainer
+          in groupedShockers.entries)
+        StickyHeader(
+          header: HubItem(
+            hub: hubContainer.key ?? Hub(),
+            manager: AlarmListManager.getInstance(),
+            onRebuild: onRebuild,
+            key: ValueKey(hubContainer.key
+                ?.getIdentifier(AlarmListManager.getInstance())),
+          ),
+          content: Card(
+            color: t.colorScheme.onInverseSurface,
+            child: Padding(
+                padding: EdgeInsets.all(15),
+                child:
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Expanded(
+                      child: Wrap(
+                    spacing: 5,
+                    children: hubContainer.value.isEmpty
+                        ? [Text("No shockers")]
+                        : [
+                            for (Shocker s in hubContainer.value)
+                              ShockerChip(
+                                shocker: s,
+                                manager: AlarmListManager.getInstance(),
+                                onSelected: (bool b) {
+                                  setState(() {
+                                    if (b) {
+                                      AlarmListManager.getInstance()
+                                          .selectedShockers
+                                          .add(s.id);
+                                    } else {
+                                      AlarmListManager.getInstance()
+                                          .selectedShockers
+                                          .remove(s.id);
+                                    }
+                                  });
+                                  widget.onChanged();
+                                },
+                                key: ValueKey(s.getIdentifier()),
+                              )
+                          ],
+                  ))
+                ])),
+          ),
+        )
+    ];
     return Flexible(
-      child: ConstrainedContainer(
-        child: ListView(
-          children: groupedShockers.isEmpty ? [
-            Text(AlarmListManager.getInstance().hasValidAccount() ? "No shockers assosciated with account. Create them!" : "You're not logged in", style: t.textTheme.headlineMedium,textAlign: TextAlign.center,)
-          ] : [
-            for (MapEntry<Hub?, List<Shocker>> hubContainer
-                in groupedShockers.entries)
-              StickyHeader(
-                header: HubItem(
-                  hub: hubContainer.key ?? Hub(),
-                  manager: AlarmListManager.getInstance(),
-                  onRebuild: onRebuild,
-                  key: ValueKey(hubContainer.key?.getIdentifier(AlarmListManager.getInstance())),
-                ),
-                content: Card(
-                  color: t.colorScheme.onInverseSurface,
-                  child: Padding(
-                      padding: EdgeInsets.all(15),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                                child: Wrap(
-                              spacing: 5,
-                              children: hubContainer.value.isEmpty ? [Text("No shockers")] : [
-                                for (Shocker s in hubContainer.value)
-                                  ShockerChip(
-                                    shocker: s,
-                                    manager: AlarmListManager.getInstance(),
-                                    onSelected: (bool b) {
-                                      setState(() {
-                                        if (b) {
-                                          AlarmListManager.getInstance().selectedShockers.add(s.id);
-                                        } else {
-                                          AlarmListManager.getInstance().selectedShockers.remove(s.id);
-                                        }
-                                      });
-                                      widget.onChanged();
-                                    },
-                                    key: ValueKey(s.getIdentifier()),
-                                  )
-                              ],
-                            ))
-                          ])),
-                ),
-              )
-          ],
-        ),
-      ),
-    );
+        child: ConstrainedContainer(
+      child: groupedShockers.isEmpty
+          ? Text(
+              AlarmListManager.getInstance().hasValidAccount()
+                  ? "No shockers assosciated with account. Create them!"
+                  : "You're not logged in",
+              style: t.textTheme.headlineMedium,
+              textAlign: TextAlign.center,
+            )
+          : ListView.builder(
+              itemBuilder: (context, index) {
+                return children[index];
+              },
+              itemCount: children.length,
+            ),
+    ));
   }
 }
-
 
 class ShockerChip extends StatefulWidget {
   final AlarmListManager manager;
@@ -152,10 +168,11 @@ class ShockerChipState extends State<ShockerChip> {
                 color: t!.colorScheme.error,
               ),
               onTap: () {
-                InfoDialog.show("Shocker is paused",
-                shocker.isOwn
-                            ? "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by selecting the shocker and pressing unpause selected."
-                            : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it.");
+                InfoDialog.show(
+                    "Shocker is paused",
+                    shocker.isOwn
+                        ? "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by selecting the shocker and pressing unpause selected."
+                        : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it.");
               },
             )
         ],

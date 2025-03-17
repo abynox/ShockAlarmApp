@@ -32,7 +32,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
   @override
   void initState() {
     super.initState();
-    if(kIsWeb) AlarmListManager.getInstance().updateHubStatusViaHttp();
+    if (kIsWeb) AlarmListManager.getInstance().updateHubStatusViaHttp();
   }
 
   void onRebuild() {
@@ -142,11 +142,11 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
           await manager.updateShockerStore();
           setState(() {});
         },
-        child: Column(
+        child: Flex(
+          direction: Axis.vertical,
           children: [
             GroupedShockerSelector(
               onChanged: onRebuild,
-              key: ValueKey(DateTime.now().microsecondsSinceEpoch),
             ),
             if (manager.selectedShockers.length > 0)
               ConstrainedContainer(
@@ -189,30 +189,32 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                             },
                             child: Text("View logs"),
                           ),
-                          if(manager.selectedShockers.length == 1) PopupMenuButton(
-                          iconColor: t.colorScheme.onSurfaceVariant,
-                          itemBuilder: (context) {
-                            return [
-                              for (ShockerAction a in actions)
-                                PopupMenuItem(
-                                    value: a.name,
-                                    child: Row(
-                                      spacing: 10,
-                                      children: [a.icon, Text(a.name)],
-                                    )),
-                            ];
-                          },
-                          onSelected: (String value) {
-                              Shocker shocker = manager.shockers
-                                  .firstWhere((x) => x.id == manager.selectedShockers[0]);
-                            for (ShockerAction a in actions) {
-                              if (a.name == value) {
-                                a.onClick(manager, shocker, context, onRebuild);
-                                return;
+                        if (manager.selectedShockers.length == 1)
+                          PopupMenuButton(
+                            iconColor: t.colorScheme.onSurfaceVariant,
+                            itemBuilder: (context) {
+                              return [
+                                for (ShockerAction a in actions)
+                                  PopupMenuItem(
+                                      value: a.name,
+                                      child: Row(
+                                        spacing: 10,
+                                        children: [a.icon, Text(a.name)],
+                                      )),
+                              ];
+                            },
+                            onSelected: (String value) {
+                              Shocker shocker = manager.shockers.firstWhere(
+                                  (x) => x.id == manager.selectedShockers[0]);
+                              for (ShockerAction a in actions) {
+                                if (a.name == value) {
+                                  a.onClick(
+                                      manager, shocker, context, onRebuild);
+                                  return;
+                                }
                               }
-                            }
-                          },
-                        ),
+                            },
+                          ),
                       ],
                     ),
                     ShockingControls(

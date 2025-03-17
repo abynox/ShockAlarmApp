@@ -263,7 +263,6 @@ class AlarmListManager {
     rescheduleAlarms();
     saveAlarms();
   }
-
   
   Future<bool> updateShockerStore() async {
     List<Shocker> shockers = [];
@@ -643,7 +642,20 @@ class AlarmListManager {
         otaInstallSucceeded!();
       }
     });
+    ws?.addMessageHandler("DeviceUpdate", (List<dynamic>? list) {
+      if(list == null) return;
+      if(list.length < 1) return;
+      String deviceId = list[0];
+      if(queuedUpdate) return;
+      queuedUpdate= true;
+      Future.delayed(Duration(milliseconds: 500), () {
+        queuedUpdate = false;
+        updateShockerStore();
+      });
+    });
   }
+
+  bool queuedUpdate = false;
 
   void deviceStatusHandler(List<dynamic> args) {
     for(var arg in args[0]) {
