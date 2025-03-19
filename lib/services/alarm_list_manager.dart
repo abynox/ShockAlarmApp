@@ -4,6 +4,7 @@ import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../stores/alarm_store.dart';
 import 'dart:convert';
@@ -321,6 +322,31 @@ class AlarmListManager {
     return !tokenExpired;
   }
 
+  Map<String, LiveControlWS> liveControlGatewayConnections = {};
+
+  Future disconnectFromLiveControlGateway(Hub hub) async {
+    // close connection if still open and remove from map
+    if(liveControlGatewayConnections.containsKey(hub.id)) {
+      await liveControlGatewayConnections[hub.id]?.dispose();
+      liveControlGatewayConnections.remove(hub.id);
+    }
+  }
+
+  Future<ErrorContainer<bool>> connectToLiveControlGateway(Hub hub) async {
+    OpenShockLCGResponse? lcg = await OpenShockClient().getLCGInfo(hub);
+    if(lcg == null) {
+      return ErrorContainer(false, "Couldn't fetch live control gateway information for hub");
+    }
+    if(lcg.gateway == null) {
+      return ErrorContainer(false, "Couldn't find live control gateway for hub");
+    }
+    LiveControlWS ws = LiveControlWS(lcg?.gateway, hub, (hub) {
+      disconnectFromLiveControlGateway(hub);
+    });
+    
+    return ErrorContainer(true, null);
+  }
+
   void showSessionExpired() {
     showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog(title: Text("Session expired"),
       content: Text("Your session has expired. To continue using the app log in again in the settings page."),
@@ -590,7 +616,7 @@ class AlarmListManager {
 
   Future updateHubStatusViaHttp() async {
     for(var hub in hubs) {
-      OpenShockClient().getHubStatus(hub).then((OpenShockLCGResponse? res) {
+      OpenShockClient().getLCGInfo(hub).then((OpenShockLCGResponse? res) {
         hub.online = res?.online ?? false;
 
         if(hub.online && !onlineHubs.contains(hub.id)) {

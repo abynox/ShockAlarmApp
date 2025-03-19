@@ -583,7 +583,7 @@ class OpenShockClient {
     return await AlarmListManager.getInstance().ws?.setCaptivePortal(hub, enable);
   }
 
-  Future<OpenShockLCGResponse?> getHubStatus(Hub hub) async {
+  Future<OpenShockLCGResponse?> getLCGInfo(Hub hub) async {
     Token? t = AlarmListManager.getInstance().getToken(hub.apiTokenId);
     if(t == null) return null;
     var response = await GetRequest(t, "/1/devices/${hub.id}/lcg");

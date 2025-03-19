@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:signalr_core/signalr_core.dart';
 import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/web_socket_channel.dart';
 import '../main.dart';
 import '../stores/alarm_store.dart';
 import 'openshock.dart';
@@ -117,5 +120,77 @@ class OpenShockWS {
       return "Failed to set captive portal";
     }
     return null;
+  }
+}
+
+class LiveControlWS {
+  WebSocketChannel? channel;
+  List<int> latency = [];
+  Function(Hub) onError;
+  Hub hub;
+
+  LiveControlWS(String? host, this.hub, this.onError) {
+    if(host == null) return;
+    channel = WebSocketChannel.connect(Uri.parse('ws://$host'));
+
+    channel?.stream.listen((data) {
+      print(data);
+      // Handle ping event
+      // check if data is string and if so parse the json
+      if(data is String) {
+        Map<String, dynamic> json = jsonDecode(data);
+        if(json["ResponseType"] == "ResponseType") {
+          // just echo back
+          channel?.sink.add(jsonEncode({"RequestType": "Pong", "Data": json["Data"]}));
+        }
+        if(json["ResponseType"] == "LatencyAnnounce") {
+          latency.insert(0, json["Data"]["OwnLatency"]);
+          // only keep history of 50 latencies
+          if(latency.length > 50) {
+            latency.removeLast();
+          }
+        }
+      }
+    }, onError: (error) {
+      print("Error during websocket connection, disconnecting: $error");
+      onError(hub);
+    });
+  }
+
+  int getLatency() {
+    if(latency.isEmpty) return 0;
+    return latency[0];
+  }
+
+  Future dispose() async {
+    await channel?.sink.close();
+  }
+
+  void sendControl(Shocker s, ControlType type, int intensity) {
+    if(channel == null) return;
+    channel?.sink.add(jsonEncode({
+      "RequestType": "Frame",
+      "Data": {
+        "Shocker": s.id,
+        "Type": getControl(type),
+        "Intensity": intensity
+      }
+    }));
+  }
+
+  String getControl(ControlType type) {
+    switch(type) {
+      case ControlType.shock:
+        return "shock";
+      case ControlType.vibrate:
+        return "vibrate";
+      case ControlType.sound:
+        return "sound";
+      case ControlType.stop:
+        return "stop";
+      case ControlType.live:
+        return "live";
+    }
+    return "stop";
   }
 }
