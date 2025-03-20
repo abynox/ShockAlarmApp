@@ -203,6 +203,7 @@ class HubItemState extends State<HubItem> {
                               ? Color(0xFF14F014)
                               : Color(0xFFF01414),
                           size: 10,
+
                         ),
                         Text("${hub.name}${hub.firmwareVersion != "" && manager.settings.showFirmwareVersion ? " (v. ${hub.firmwareVersion})" : ""}",
                             overflow: TextOverflow.ellipsis,

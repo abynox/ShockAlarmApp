@@ -10,7 +10,8 @@ import 'hub_item.dart';
 
 class GroupedShockerSelector extends StatefulWidget {
   Function onChanged;
-  GroupedShockerSelector({Key? key, required this.onChanged}) : super(key: key);
+  bool onlyLive = false;
+  GroupedShockerSelector({Key? key, required this.onChanged, this.onlyLive = false}) : super(key: key);
 
   @override
   GroupedShockerSelectorState createState() => GroupedShockerSelectorState();
@@ -27,7 +28,9 @@ class GroupedShockerSelectorState extends State<GroupedShockerSelector> {
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     List<Shocker> filteredShockers =
-        AlarmListManager.getInstance().shockers.toList();
+        AlarmListManager.getInstance().shockers.where((x) {
+          return !widget.onlyLive || x.liveAllowed;
+        }).toList();
     Map<Hub?, List<Shocker>> groupedShockers = {};
     for (Shocker shocker in filteredShockers) {
       if (!groupedShockers.containsKey(shocker.hubReference)) {
@@ -66,7 +69,7 @@ class GroupedShockerSelectorState extends State<GroupedShockerSelector> {
                       child: Wrap(
                     spacing: 5,
                     children: hubContainer.value.isEmpty
-                        ? [Text("No shockers")]
+                        ? [Text("No shockers${widget.onlyLive ? " with live control permission" : ""}")]
                         : [
                             for (Shocker s in hubContainer.value)
                               ShockerChip(

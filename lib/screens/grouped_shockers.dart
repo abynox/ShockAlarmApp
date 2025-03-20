@@ -29,6 +29,8 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
 
   GroupedShockerScreenState(this.manager);
 
+  bool liveEnabled = false;
+
   @override
   void initState() {
     super.initState();
@@ -145,9 +147,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
         child: Flex(
           direction: Axis.vertical,
           children: [
-            GroupedShockerSelector(
-              onChanged: onRebuild,
-            ),
+            GroupedShockerSelector(onChanged: onRebuild, onlyLive: liveEnabled),
             if (manager.selectedShockers.length > 0)
               ConstrainedContainer(
                 child: Column(
@@ -189,11 +189,11 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                             },
                             child: Text("View logs"),
                           ),
-                        if (manager.selectedShockers.length == 1)
-                          PopupMenuButton(
-                            iconColor: t.colorScheme.onSurfaceVariant,
-                            itemBuilder: (context) {
-                              return [
+                        PopupMenuButton<String>(
+                          iconColor: t.colorScheme.onSurfaceVariant,
+                          itemBuilder: (context) {
+                            return [
+                              if (manager.selectedShockers.length == 1)
                                 for (ShockerAction a in actions)
                                   PopupMenuItem(
                                       value: a.name,
@@ -201,20 +201,30 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                                         spacing: 10,
                                         children: [a.icon, Text(a.name)],
                                       )),
-                              ];
-                            },
-                            onSelected: (String value) {
-                              Shocker shocker = manager.shockers.firstWhere(
-                                  (x) => x.id == manager.selectedShockers[0]);
-                              for (ShockerAction a in actions) {
-                                if (a.name == value) {
-                                  a.onClick(
-                                      manager, shocker, context, onRebuild);
-                                  return;
-                                }
+                              PopupMenuItem(
+                                  value: "live",
+                                  child: Row(
+                                        spacing: 10,
+                                        children: [OpenShockClient.getIconForControlType(ControlType.live), Text("${liveEnabled ? "Disable" : "Enable"} live controls")],
+                                      )),
+                            ];
+                          },
+                          onSelected: (String value) {
+                            Shocker shocker = manager.shockers.firstWhere(
+                                (x) => x.id == manager.selectedShockers[0]);
+                            for (ShockerAction a in actions) {
+                              if (a.name == value) {
+                                a.onClick(manager, shocker, context, onRebuild);
+                                return;
                               }
-                            },
-                          ),
+                            }
+                            if (value == "live") {
+                              setState(() {
+                                liveEnabled = !liveEnabled;
+                              });
+                            }
+                          },
+                        ),
                       ],
                     ),
                     ShockingControls(
