@@ -155,6 +155,7 @@ class LiveControlWS {
           if(latency.length > 50) {
             latency.removeLast();
           }
+          onLatency?.call();
         }
       }
     }, onError: (error) {
@@ -162,6 +163,8 @@ class LiveControlWS {
       onError(hub);
     });
   }
+
+  void Function()? onLatency;
 
   int getLatency() {
     if(latency.isEmpty) return 0;

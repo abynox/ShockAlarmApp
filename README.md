@@ -105,6 +105,7 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Add online indicator for hubs on web
 - [x] Add OTA Updates
 - [ ] Fix WS on web
+- [ ] Add Patterns to live controls
 
 # Planned settings
 - [x] Hide/unhiding of the delay option

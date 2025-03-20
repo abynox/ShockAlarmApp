@@ -29,6 +29,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
   AlarmListManager manager;
 
   GroupedShockerScreenState(this.manager);
+  LiveControlSettings liveControlSettings = LiveControlSettings();
 
   bool liveEnabled = false;
 
@@ -235,6 +236,9 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                               }
                             }
                             if (value == "live") {
+
+                              context.findAncestorStateOfType<ScreenSelectorState>()
+                                                  ?.setPageSwipeEnabled(liveEnabled);
                               setState(() {
                                 liveEnabled = !liveEnabled;
                               });
@@ -250,8 +254,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                         vibrateAllowed: limitedShocker.vibrateAllowed,
                         shockAllowed: limitedShocker.shockAllowed,
                         intensityLimit: limitedShocker.intensityLimit,
-
-                        key: ValueKey(DateTime.now().millisecondsSinceEpoch)
+                        settings: liveControlSettings,
                     ) :
                     ShockingControls(
                         manager: manager,

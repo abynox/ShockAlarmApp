@@ -20,7 +20,9 @@ import 'package:universal_html/html.dart' as html;
 class ScreenSelector extends StatefulWidget {
   final AlarmListManager manager;
 
-  const ScreenSelector({Key? key, required this.manager}) : super(key: key);
+  ScreenSelector({Key? key, required this.manager}) : super(key: key);
+
+  bool setPageSwipeEnabled = true;
 
   @override
   State<StatefulWidget> createState() => ScreenSelectorState(manager: manager);
@@ -43,13 +45,13 @@ class ScreenSelectorState extends State<ScreenSelector> {
   }
 
   void redoLayout(bool initialReload) {
-    if(manager.settings.useAlarmServer && manager.getAlarmServerUserToken() != null) {
+    if (manager.settings.useAlarmServer &&
+        manager.getAlarmServerUserToken() != null) {
       supportsAlarms = true;
     } else {
       supportsAlarms = isAndroid();
     }
-    
-    
+
     screens = [
       if (supportsAlarms) AlarmScreen(manager: manager),
       ShareLinksScreen(),
@@ -92,12 +94,10 @@ class ScreenSelectorState extends State<ScreenSelector> {
       }),
       null,
     ];
-    if(!initialReload) {
+    if (!initialReload) {
       _selectedIndex = min(_selectedIndex, screens.length);
-      setState(() {
-        
-      });
-      if(mounted) _tap(_selectedIndex);
+      setState(() {});
+      if (mounted) _tap(_selectedIndex);
     }
   }
 
@@ -117,45 +117,50 @@ class ScreenSelectorState extends State<ScreenSelector> {
         print("Could not init method channel : ${e.toString()}");
       }
     }
-    if(kIsWeb) {
+    if (kIsWeb) {
       String? token;
       String? server;
-      for(MapEntry<String, String> s in Uri.base.queryParameters.entries) {
-        if(s.key == "server") {
+      for (MapEntry<String, String> s in Uri.base.queryParameters.entries) {
+        if (s.key == "server") {
           server = s.value;
         }
-        if(s.key == "token") {
+        if (s.key == "token") {
           token = s.value;
           removeTokenFromUrl();
         }
       }
-      if(token != null && server != null) {
+      if (token != null && server != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          manager.loginToken(
-            server!, token!).then((value) async {
-              showDialog(context: context, builder: (context) {
-                return AlertDialog(
-                  title: Text("Token login"),
-                  content: Text("You have been logged in with a token as user ${manager.getTokenByToken(token)?.name}"),
-                  actions: [
-                    TextButton(onPressed: () {
-                      html.window.location.href = Uri.base.toString().split('?')[0];
-                    }, child: Text("Reload page"))
-                  ],
-                );
-              });
-          },);
+          manager.loginToken(server!, token!).then(
+            (value) async {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text("Token login"),
+                      content: Text(
+                          "You have been logged in with a token as user ${manager.getTokenByToken(token)?.name}"),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              html.window.location.href =
+                                  Uri.base.toString().split('?')[0];
+                            },
+                            child: Text("Reload page"))
+                      ],
+                    );
+                  });
+            },
+          );
         });
-        
       }
     }
 
-    if(!addedKeyboardListener) {
+    if (!addedKeyboardListener) {
       addedKeyboardListener = true;
       print("registering keyboard listener");
       ServicesBinding.instance.keyboard.addHandler(_onKey);
     }
-
 
     redoLayout(true);
     manager.pageSelectorReloadMethod = () {
@@ -240,19 +245,22 @@ class ScreenSelectorState extends State<ScreenSelector> {
   Widget build(BuildContext context) {
     manager.startAnyWS();
     return Scaffold(
-        body:  Padding(
-              padding: const EdgeInsets.only(
-                bottom: 15,
-                left: 15,
-                right: 15,
-                top: 15,
-              ),
-              child: PageView(
-                children: screens,
-                onPageChanged: _tap,
-                controller: pageController,
-              ),
-            ),
+        body: Padding(
+          padding: const EdgeInsets.only(
+            bottom: 15,
+            left: 15,
+            right: 15,
+            top: 15,
+          ),
+          child: PageView(
+            children: screens,
+            onPageChanged: _tap,
+            controller: pageController,
+            physics: widget.setPageSwipeEnabled
+                ? null
+                : NeverScrollableScrollPhysics(),
+          ),
+        ),
         appBar: null,
         floatingActionButton: floatingActionButtons.elementAt(_selectedIndex),
         bottomNavigationBar: BottomNavigationBar(
@@ -262,8 +270,13 @@ class ScreenSelectorState extends State<ScreenSelector> {
           onTap: _tap,
         ));
   }
-}
 
+  void setPageSwipeEnabled(bool value) {
+    setState(() {
+      widget.setPageSwipeEnabled = value;
+    });
+  }
+}
 
 class PagePadding extends StatefulWidget {
   final Widget child;

@@ -5,9 +5,16 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
+import 'package:shock_alarm_app/main.dart';
+import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
+
+class LiveControlSettings {
+  bool loop = false;
+  bool float = false;
+}
 
 class LiveControls extends StatefulWidget {
   ControlsContainer controlsContainer;
@@ -16,8 +23,7 @@ class LiveControls extends StatefulWidget {
   bool vibrateAllowed;
   bool shockAllowed;
   int intensityLimit;
-  static bool loop = false;
-  static bool float = false;
+  LiveControlSettings settings;
   bool snapToZeroAfterDone;
 
   LiveControls(
@@ -28,6 +34,7 @@ class LiveControls extends StatefulWidget {
       required this.vibrateAllowed,
       required this.shockAllowed,
       required this.intensityLimit,
+      required this.settings,
       this.snapToZeroAfterDone = false});
 
   @override
@@ -40,6 +47,10 @@ class _LiveControlsState extends State<LiveControls> {
   ControlType type = ControlType.vibrate;
   bool connecting = false;
 
+  void onLatency() {
+    setState(() {});
+  }
+
   void ensureConnection() async {
     setState(() {
       connecting = true;
@@ -49,6 +60,10 @@ class _LiveControlsState extends State<LiveControls> {
     if (error.error != null) {
       ErrorDialog.show("Error connecting to hubs", error.error!);
     }
+    AlarmListManager.getInstance().liveControlGatewayConnections.values
+        .forEach((element) {
+      element.onLatency = onLatency;
+    });
     setState(() {
       connecting = false;
     });
@@ -96,31 +111,37 @@ class _LiveControlsState extends State<LiveControls> {
             )
           : Column(
               children: [
+                Row(children: [
+                  Text("Latency: "),
+                  ...AlarmListManager.getInstance().liveControlGatewayConnections.entries
+                      .map((e) => Text("${AlarmListManager.getInstance().getHub(e.key)?.name}: ${e.value.getLatency()} ms, "))
+                      .toList()
+                ],),
                 Row(
                   spacing: 10,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Switch(
-                        value: LiveControls.loop,
+                        value: widget.settings.loop,
                         onChanged: (value) {
                           setState(() {
-                            LiveControls.loop = value;
+                            widget.settings.loop = value;
                           });
                         }),
                     Text("Loop"),
                     Switch(
-                        value: LiveControls.float,
+                        value: widget.settings.float,
                         onChanged: (value) {
                           setState(() {
-                            LiveControls.float = value;
+                            widget.settings.float = value;
                           });
                         }),
                     Text("Float")
                   ],
                 ),
                 DraggableCircle(
-                  loop: LiveControls.loop,
-                  float: LiveControls.float,
+                  loop: widget.settings.loop,
+                  float: widget.settings.float,
                   onSendLive: (intensity) {
                     widget.onSendLive(type, intensity);
                   },
@@ -175,6 +196,7 @@ class _DraggableCircleState extends State<DraggableCircle> {
   double xValue = 0;
   double step = 1;
   int lastResponse = 0;
+  bool sentZero = false;
 
   @override
   void dispose() {
@@ -185,7 +207,6 @@ class _DraggableCircleState extends State<DraggableCircle> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     for (int i = 0; i < sampleLimitCount; i++) {
       samples.add(FlSpot(i.toDouble(), 0));
@@ -213,7 +234,10 @@ class _DraggableCircleState extends State<DraggableCircle> {
       int now = DateTime.now().millisecondsSinceEpoch;
       if (now - lastResponse > widget.respondInterval) {
         lastResponse = now;
+
+        if(sentZero && value.toInt() == 0) return; // don't spam the ws when not active
         widget.onSendLive(value.toInt());
+        sentZero = value.toInt() == 0;
       }
     });
   }
@@ -222,8 +246,6 @@ class _DraggableCircleState extends State<DraggableCircle> {
     verticalLines.add(FlSpot(sampleLimitCount.toDouble(),
         DateTime.now().millisecondsSinceEpoch.toDouble()));
   }
-
-  void moveToMiddle() {}
 
   void checkBounds() {
     posX = max(0, min(widget.width - widget.circleDiameter, posX));
@@ -279,6 +301,8 @@ class _DraggableCircleState extends State<DraggableCircle> {
 
   void update(details, {bool end = false, bool start = false}) {
     if (end) {
+
+      lastStroke[DateTime.now().millisecondsSinceEpoch - startMs] = value;
       if(!widget.float) setValue(0);
       lookStrokeStart = DateTime.now().millisecondsSinceEpoch;
       if (widget.loop) {
@@ -325,11 +349,11 @@ class _DraggableCircleState extends State<DraggableCircle> {
           child: Stack(
             children: [
               Center(
-                  child: Text("BETA\nWIDGET",
+                  child: Text("Intensity\n${value.toInt().toString()}",
                       textAlign: TextAlign.center,
                       style: t.textTheme.headlineLarge?.copyWith(
                           color: Color(0x22FFFFFF),
-                          fontSize: widget.width / 4))),
+                          fontSize: widget.width / 5))),
               Positioned(
                 left: posX,
                 top: posY,

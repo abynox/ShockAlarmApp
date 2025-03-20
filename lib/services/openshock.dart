@@ -47,6 +47,7 @@ class OpenShockClient {
           Hub h = Hub.fromOpenShockDevice(device);
           h.apiTokenId = t.id;
           hubs.add(h);
+          print(response.body);
           for (var shocker in device.shockers) {
             Shocker s = Shocker.fromOpenShockShocker(shocker);
             s.hubReference = h;
@@ -1227,6 +1228,7 @@ class Shocker {
       shockAllowed = shocker.permissions!.shock;
       vibrateAllowed = shocker.permissions!.vibrate;
       soundAllowed = shocker.permissions!.sound;
+      print(shocker.permissions!.live);
       liveAllowed = shocker.permissions!.live;
     }
     if(shocker.limits != null) {
@@ -1442,6 +1444,7 @@ class OpenShockShocker
             permissions!.shock = json['permissions']['shock'];
             permissions!.vibrate = json['permissions']['vibrate'];
             permissions!.sound = json['permissions']['sound'];
+            permissions!.live = json['permissions']['live'];
         }
     }
 }
