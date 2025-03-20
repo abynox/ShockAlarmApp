@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
+import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
+import 'package:shock_alarm_app/screens/pattern_chooser.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
@@ -11,6 +13,39 @@ import 'package:shock_alarm_app/services/openshock.dart';
 class LiveControlSettings {
   bool loop = false;
   bool float = false;
+}
+
+class LivePattern {
+  int id = -1;
+  Map<int, double> pattern = {};
+  String name = "";
+
+  LivePattern();
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "pattern": pattern.map((key, value) =>
+          MapEntry(key.toString(), value)), // Convert int keys to String
+      "name": name
+    };
+  }
+
+  LivePattern.fromJson(Map<String, dynamic> json) {
+    id = json["id"];
+    pattern = (json["pattern"] as Map<String, dynamic>).map((key, value) =>
+        MapEntry(int.parse(key),
+            (value as num).toDouble())); // Convert keys back to int
+    name = json["name"];
+  }
+
+  double? maxTime;
+
+  double getMaxTime() {
+    if (maxTime != null) return maxTime!;
+    maxTime = pattern.keys.reduce(max).toDouble();
+    return maxTime!;
+  }
 }
 
 class LiveControls extends StatefulWidget {
@@ -44,6 +79,8 @@ class _LiveControlsState extends State<LiveControls> {
   ControlType type = ControlType.vibrate;
   bool connecting = false;
 
+  LivePattern pattern = LivePattern();
+
   void onLatency() {
     setState(() {});
   }
@@ -57,7 +94,9 @@ class _LiveControlsState extends State<LiveControls> {
     if (error.error != null) {
       ErrorDialog.show("Error connecting to hubs", error.error!);
     }
-    AlarmListManager.getInstance().liveControlGatewayConnections.values
+    AlarmListManager.getInstance()
+        .liveControlGatewayConnections
+        .values
         .forEach((element) {
       element.onLatency = onLatency;
     });
@@ -65,6 +104,12 @@ class _LiveControlsState extends State<LiveControls> {
       connecting = false;
     });
   }
+
+  bool isSavedPattern() {
+    return pattern.id != -1;
+  }
+
+  bool isPlaying = false;
 
   @override
   Widget build(BuildContext context) {
@@ -108,12 +153,23 @@ class _LiveControlsState extends State<LiveControls> {
             )
           : Column(
               children: [
-                Row(children: [
-                  Text("Latency: "),
-                  ...AlarmListManager.getInstance().liveControlGatewayConnections.entries
-                      .map((e) => Text("${AlarmListManager.getInstance().getHub(e.key)?.name}: ${e.value.getLatency()} ms, "))
-                      .toList()
-                ],),
+                Row(
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          InfoDialog.show("Live controls",
+                              "Live control offers low latency controlling of your shocker with many events per second.\n\nHere you simply swipe in the area to control shockers in real time.\n\nFurthermore you can record patterns: A pattern is automatically recorded from when you touch the area until you release it. You can then save the pattern and play it back. Enabling loop will infinitely repeat the pattern once your finger is lifet off. Enabling float will make the intensity remain where it is when you lift your finger off.\n\n\nTo load a saved pattern click the load icon and tap on it. You'll see a preview of the pattern in the control box then. Press play to play the pattern then.");
+                        },
+                        icon: Icon(Icons.info)),
+                    Text("Latency: "),
+                    ...AlarmListManager.getInstance()
+                        .liveControlGatewayConnections
+                        .entries
+                        .map((e) => Text(
+                            "${AlarmListManager.getInstance().getHub(e.key)?.name}: ${e.value.getLatency()} ms, "))
+                        .toList()
+                  ],
+                ),
                 Row(
                   spacing: 10,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -126,14 +182,29 @@ class _LiveControlsState extends State<LiveControls> {
                           });
                         }),
                     Text("Loop"),
-                    Switch(
-                        value: widget.settings.float,
-                        onChanged: (value) {
-                          setState(() {
-                            widget.settings.float = value;
-                          });
-                        }),
-                    Text("Float")
+                    if (!isSavedPattern())
+                      Switch(
+                          value: widget.settings.float,
+                          onChanged: (value) {
+                            setState(() {
+                              widget.settings.float = value;
+                            });
+                          }),
+                    if (!isSavedPattern()) Text("Float"),
+                    if (isSavedPattern())
+                      IconButton(
+                          onPressed: () {
+                            setState(() {
+                              isPlaying = !isPlaying;
+                            });
+                          },
+                          icon:
+                              Icon(isPlaying ? Icons.pause : Icons.play_arrow)),
+                    if (!isSavedPattern())
+                      IconButton(
+                          onPressed: savePattern, icon: Icon(Icons.save)),
+                    IconButton(
+                        onPressed: loadPattern, icon: Icon(Icons.pattern))
                   ],
                 ),
                 DraggableCircle(
@@ -142,6 +213,13 @@ class _LiveControlsState extends State<LiveControls> {
                   onSendLive: (intensity) {
                     widget.onSendLive(type, intensity);
                   },
+                  onPlayDone: () {
+                    setState(() {
+                      isPlaying = false;
+                    });
+                  },
+                  isPlaying: isPlaying,
+                  pattern: pattern,
                   respondInterval: 50,
                   intensityLimit: widget.intensityLimit,
                 )
@@ -149,18 +227,124 @@ class _LiveControlsState extends State<LiveControls> {
             )
     ]);
   }
+
+  void loadPattern() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return PatternChooser(onPatternSelected: (pattern) {
+        setState(() {
+          this.pattern = pattern;
+        });
+      });
+    }));
+  }
+
+  void savePattern() {
+    TextEditingController nameController = TextEditingController();
+    if (pattern.pattern.isEmpty) {
+      ErrorDialog.show("Pattern is empty",
+          "A pattern is recorded from the moment you start dragging the circle. Please move the circle to record a pattern.");
+      return;
+    }
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Save pattern?"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("Do you want to save the current pattern?"),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(labelText: "Pattern name"),
+                  ),
+                  Container(
+                    width: 200,
+                    height: 200,
+                    child: PatternPreview(pattern: pattern),
+                  )
+                ],
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("Close")),
+                TextButton(
+                    onPressed: () {
+                      pattern.name = nameController.text;
+                      pattern.id =
+                          AlarmListManager.getInstance().getNewLivePatternId();
+                      AlarmListManager.getInstance().saveLivePattern(pattern);
+                      pattern = LivePattern();
+                      Navigator.pop(context);
+                    },
+                    child: Text("Save pattern"))
+              ],
+            ));
+  }
+}
+
+class PatternPreview extends StatelessWidget {
+  LivePattern pattern;
+  double aspectRation;
+
+  PatternPreview({required this.pattern, this.aspectRation = 4 / 3});
+
+  @override
+  Widget build(BuildContext context) {
+    ThemeData t = Theme.of(context);
+    return AspectRatio(
+      aspectRatio: aspectRation,
+      child: LineChart(
+        LineChartData(
+          minY: 0,
+          maxY: 100,
+          minX: 0,
+          maxX: pattern.pattern.keys.last.toDouble(),
+          lineTouchData: const LineTouchData(enabled: false),
+          clipData: const FlClipData.all(),
+          gridData: const FlGridData(
+            show: true,
+            drawVerticalLine: false,
+          ),
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: pattern.pattern.entries.map((e) {
+                return FlSpot(e.key.toDouble(), e.value);
+              }).toList(),
+              dotData: const FlDotData(
+                show: false,
+              ),
+              barWidth: 4,
+              isCurved: false,
+            )
+          ],
+          titlesData: const FlTitlesData(
+            show: false,
+          ),
+        ),
+        key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+      ),
+    );
+  }
 }
 
 class DraggableCircle extends StatefulWidget {
   double height = 300;
   double width = 300;
   Color graphColor = Colors.blue;
+  Color graphPreviewColor = Colors.lightBlue;
   double circleDiameter = 50;
   double respondInterval = 100;
   bool loop = true;
   bool float = false;
+  bool isPlaying = false;
   int intensityLimit = 100;
+  LivePattern pattern;
   void Function(int intensity) onSendLive;
+  Function()? onPlayDone;
 
   DraggableCircle(
       {super.key,
@@ -171,8 +355,11 @@ class DraggableCircle extends StatefulWidget {
       this.respondInterval = 100,
       required this.onSendLive,
       this.intensityLimit = 100,
+      required this.pattern,
       this.loop = true,
-      this.float = false});
+      this.float = false,
+      this.isPlaying = false,
+      this.onPlayDone});
 
   @override
   _DraggableCircleState createState() => _DraggableCircleState();
@@ -186,18 +373,14 @@ class _DraggableCircleState extends State<DraggableCircle> {
   int startMs = 0;
   late Timer timer;
 
-  Map<int, double> lastStroke = {};
   List<FlSpot> samples = [];
   List<FlSpot> verticalLines = [];
   int sampleLimitCount = 100;
-  double xValue = 0;
-  double step = 1;
   int lastResponse = 0;
   bool sentZero = false;
 
   @override
   void dispose() {
-    // TODO: implement dispose
     timer.cancel();
     super.dispose();
   }
@@ -218,8 +401,7 @@ class _DraggableCircleState extends State<DraggableCircle> {
           samples[i] = FlSpot(i.toDouble(), samples[i + 1].y);
         }
         for (int i = 0; i < verticalLines.length; i++) {
-          verticalLines[i] =
-              FlSpot(verticalLines[i].x - step, verticalLines[i].y);
+          verticalLines[i] = FlSpot(verticalLines[i].x - 1, verticalLines[i].y);
           if (verticalLines[i].x < 0) {
             verticalLines.removeAt(i);
           }
@@ -227,12 +409,12 @@ class _DraggableCircleState extends State<DraggableCircle> {
         samples[sampleLimitCount - 1] =
             FlSpot(sampleLimitCount.toDouble(), value.toDouble());
       });
-      xValue += step;
       int now = DateTime.now().millisecondsSinceEpoch;
       if (now - lastResponse > widget.respondInterval) {
         lastResponse = now;
 
-        if(sentZero && value.toInt() == 0) return; // don't spam the ws when not active
+        if (sentZero && value.toInt() == 0)
+          return; // don't spam the ws when not active
         widget.onSendLive(value.toInt());
         sentZero = value.toInt() == 0;
       }
@@ -269,10 +451,17 @@ class _DraggableCircleState extends State<DraggableCircle> {
 
   @override
   void didUpdateWidget(covariant DraggableCircle oldWidget) {
-    if(oldWidget.float && !widget.float) {
+    if (oldWidget.float && !widget.float) {
       setValue(0);
     }
-    if(oldWidget.loop && !widget.loop) {
+    if (oldWidget.loop && !widget.loop) {
+      onTick = null;
+      setValue(0);
+    }
+    if (!oldWidget.isPlaying && widget.isPlaying) {
+      startPlay();
+    }
+    if (oldWidget.isPlaying && !widget.isPlaying) {
       onTick = null;
       setValue(0);
     }
@@ -283,28 +472,40 @@ class _DraggableCircleState extends State<DraggableCircle> {
 
   int lookStrokeStart = 0;
   void loopStroke() {
-    if (lastStroke.isEmpty) return;
+    if (widget.pattern.pattern.isEmpty) return;
     int now = DateTime.now().millisecondsSinceEpoch;
     int elapsed = now - lookStrokeStart;
-    if (elapsed > lastStroke.keys.last) {
+    if (elapsed > widget.pattern.pattern.keys.last) {
+      if (!widget.loop) {
+        onTick = null;
+        setValue(0);
+        widget.onPlayDone?.call();
+        return;
+      }
       lookStrokeStart = now;
       spawnVerticalLine();
       return;
     }
-    int next = lastStroke.keys.firstWhere((element) => element > elapsed,
-        orElse: () => lastStroke.keys.last);
-    setValue(lastStroke[next]!.toInt());
+    int next = widget.pattern.pattern.keys.firstWhere(
+        (element) => element > elapsed,
+        orElse: () => widget.pattern.pattern.keys.last);
+    setValue(widget.pattern.pattern[next]!.toInt());
+  }
+
+  void startPlay() {
+    spawnVerticalLine();
+    lookStrokeStart = DateTime.now().millisecondsSinceEpoch;
+    onTick = loopStroke;
   }
 
   void update(details, {bool end = false, bool start = false}) {
+    if (widget.pattern.id != -1) return;
     if (end) {
-
-      lastStroke[DateTime.now().millisecondsSinceEpoch - startMs] = value;
-      if(!widget.float) setValue(0);
-      lookStrokeStart = DateTime.now().millisecondsSinceEpoch;
+      widget.pattern.pattern[DateTime.now().millisecondsSinceEpoch - startMs] =
+          value;
+      if (!widget.float) setValue(0);
       if (widget.loop) {
-        spawnVerticalLine();
-        onTick = loopStroke;
+        startPlay();
       }
       return;
     }
@@ -312,7 +513,7 @@ class _DraggableCircleState extends State<DraggableCircle> {
     if (details == null) return;
     if (start) {
       startMs = DateTime.now().millisecondsSinceEpoch;
-      lastStroke.clear();
+      widget.pattern.pattern.clear();
     }
     setState(() {
       posX = details.localPosition.dx -
@@ -322,7 +523,8 @@ class _DraggableCircleState extends State<DraggableCircle> {
     });
 
     // save stroke data point
-    lastStroke[DateTime.now().millisecondsSinceEpoch - startMs] = value;
+    widget.pattern.pattern[DateTime.now().millisecondsSinceEpoch - startMs] =
+        value;
   }
 
   @override
@@ -371,15 +573,24 @@ class _DraggableCircleState extends State<DraggableCircle> {
                     maxY: widget.intensityLimit.toDouble(),
                     minX: 0,
                     maxX: sampleLimitCount.toDouble(),
-                    extraLinesData: ExtraLinesData(
-                        verticalLines: verticalLines.map((element) {
-                      return VerticalLine(
-                        x: element.x,
-                        color: t.colorScheme.secondary,
-                        strokeWidth: 2,
-                        dashArray: [5, 5],
-                      );
-                    }).toList()),
+                    extraLinesData: ExtraLinesData(verticalLines: [
+                      if (widget.pattern.id != -1)
+                        VerticalLine(
+                          x: (DateTime.now().millisecondsSinceEpoch -
+                                      lookStrokeStart) / widget.pattern.getMaxTime() * 100,
+                          color: t.colorScheme.tertiary,
+                          strokeWidth: 1,
+                          dashArray: [5, 15],
+                        ),
+                      ...verticalLines.map((element) {
+                        return VerticalLine(
+                          x: element.x,
+                          color: t.colorScheme.secondary,
+                          strokeWidth: 2,
+                          dashArray: [5, 5],
+                        );
+                      }).toList()
+                    ]),
                     lineTouchData: const LineTouchData(enabled: false),
                     clipData: const FlClipData.all(),
                     gridData: const FlGridData(
@@ -402,7 +613,28 @@ class _DraggableCircleState extends State<DraggableCircle> {
                         ),
                         barWidth: 4,
                         isCurved: false,
-                      )
+                      ),
+                      if (widget.pattern.id != -1)
+                        LineChartBarData(
+                          spots: widget.pattern.pattern.entries.map((e) {
+                            return FlSpot(
+                                e.key.toDouble() /
+                                    widget.pattern.getMaxTime() *
+                                    100,
+                                e.value);
+                          }).toList(),
+                          dotData: const FlDotData(
+                            show: false,
+                          ),
+                          gradient: LinearGradient(
+                            colors: [
+                              widget.graphPreviewColor.withValues(alpha: 0.2)
+                            ],
+                            stops: const [0.1],
+                          ),
+                          barWidth: 4,
+                          isCurved: false,
+                        )
                     ],
                     titlesData: const FlTitlesData(
                       show: false,

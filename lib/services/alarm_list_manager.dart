@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/live_controls.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -91,6 +92,7 @@ class AlarmListManager {
   final List<Hub> hubs = [];
   final List<String> onlineHubs = [];
   final List<AlarmTone> alarmTones = [];
+  final List<LivePattern> livePatterns = [];
   List<OpenShockShareLink>? shareLinks;
   final Map<String, bool> enabledHubs = {};
   Settings settings = Settings();
@@ -137,6 +139,7 @@ class AlarmListManager {
     String settings = prefs.getString("settings") ?? "{}";
     String alarmTones = prefs.getString("alarmTones") ?? "[]";
     String shareLinks = prefs.getString("shareLinks") ?? "[]";
+    String livePatternsString = prefs.getString("livePatterns") ?? "[]";
     List<dynamic> alarmsList = jsonDecode(alarms);
     List<dynamic> tokensList = jsonDecode(tokens);
     List<dynamic> alarmServerTokensList = jsonDecode(alarmServerTokens);
@@ -144,6 +147,7 @@ class AlarmListManager {
     List<dynamic> hubsList = jsonDecode(hubs);
     List<dynamic> alarmTonesList = jsonDecode(alarmTones);
     List<dynamic> shareLinksList = jsonDecode(shareLinks);
+    List<dynamic> livePatternsList = jsonDecode(livePatternsString);
     this.settings = Settings.fromJson(jsonDecode(settings));
     if(kIsWeb) this.settings.useHttpShocking = true;
     for (var alarm in alarmsList) {
@@ -157,6 +161,9 @@ class AlarmListManager {
     }
     for (var hub in hubsList) {
       this.hubs.add(Hub.fromJson(hub));
+    }
+    for(var pattern in livePatternsList) {
+      livePatterns.add(LivePattern.fromJson(pattern));
     }
     for (var shocker in shockersList) {
       Shocker s = Shocker.fromJson(shocker);
@@ -754,6 +761,21 @@ class AlarmListManager {
     saveAlarmTones();
   }
 
+  void saveLivePatterns() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("livePatterns", jsonEncode(livePatterns.map((e) => e.toJson()).toList()));
+  }
+
+  void saveLivePattern(LivePattern pattern) {
+    final index = livePatterns.indexWhere((findPattern) => pattern.id == findPattern.id);
+    if (index == -1) {
+      livePatterns.add(pattern);
+    } else {
+      livePatterns[index] = pattern;
+    }
+    saveLivePatterns();
+  }
+
   void deleteTone(AlarmTone tone) {
     alarmTones.removeWhere((findTone) => tone.id == findTone.id);
     alarmManager?.deleteTone(tone);
@@ -945,5 +967,26 @@ class AlarmListManager {
       }
     }
     return ErrorContainer(true, null);
+  }
+
+  int getNewLivePatternId() {
+    int id = 0;
+    bool foundNew = false;
+    while (!foundNew) {
+      foundNew = true;
+      for (var pattern in livePatterns) {
+        if (pattern.id == id) {
+          id++;
+          foundNew = false;
+          break;
+        }
+      }
+    }
+    return id;
+  }
+
+  void removePattern(pattern) {
+    livePatterns.remove(pattern);
+    saveLivePatterns();
   }
 }
