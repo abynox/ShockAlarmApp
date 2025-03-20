@@ -16,6 +16,8 @@ class LiveControls extends StatefulWidget {
   bool vibrateAllowed;
   bool shockAllowed;
   int intensityLimit;
+  static bool loop = false;
+  static bool float = false;
   bool snapToZeroAfterDone;
 
   LiveControls(
@@ -36,15 +38,15 @@ class _LiveControlsState extends State<LiveControls> {
   double posX = 100; // Initial X position
   double posY = 100; // Initial Y position
   ControlType type = ControlType.vibrate;
-  bool loop = false;
   bool connecting = false;
 
   void ensureConnection() async {
     setState(() {
       connecting = true;
     });
-    ErrorContainer<bool> error = await AlarmListManager.getInstance().connectToLiveControlGatewayOfSelectedShockers();
-    if(error.error != null) {
+    ErrorContainer<bool> error = await AlarmListManager.getInstance()
+        .connectToLiveControlGatewayOfSelectedShockers();
+    if (error.error != null) {
       ErrorDialog.show("Error connecting to hubs", error.error!);
     }
     setState(() {
@@ -54,21 +56,24 @@ class _LiveControlsState extends State<LiveControls> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      spacing: 10,
-      children: [
+    return Column(spacing: 10, children: [
       SegmentedButton<ControlType>(
         segments: [
-          if(widget.shockAllowed) ButtonSegment(
-              value: ControlType.shock,
-              label: OpenShockClient.getIconForControlType(ControlType.shock)),
-          if(widget.vibrateAllowed) ButtonSegment(
-              value: ControlType.vibrate,
-              label:
-                  OpenShockClient.getIconForControlType(ControlType.vibrate)),
-          if(widget.soundAllowed) ButtonSegment(
-              value: ControlType.sound,
-              label: OpenShockClient.getIconForControlType(ControlType.sound)),
+          if (widget.shockAllowed)
+            ButtonSegment(
+                value: ControlType.shock,
+                label:
+                    OpenShockClient.getIconForControlType(ControlType.shock)),
+          if (widget.vibrateAllowed)
+            ButtonSegment(
+                value: ControlType.vibrate,
+                label:
+                    OpenShockClient.getIconForControlType(ControlType.vibrate)),
+          if (widget.soundAllowed)
+            ButtonSegment(
+                value: ControlType.sound,
+                label:
+                    OpenShockClient.getIconForControlType(ControlType.sound)),
         ],
         selected: {type},
         onSelectionChanged: (Set<ControlType> newSelection) {
@@ -79,25 +84,51 @@ class _LiveControlsState extends State<LiveControls> {
           }
         },
       ),
-      !AlarmListManager.getInstance().areSelectedShockersConnected() ?
-      Column(children: [
-        connecting ? CircularProgressIndicator() : FilledButton(onPressed: ensureConnection, child: Text("Connect to hubs")),
-      ],)
-      :
-      Column(children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [Switch(value: loop, onChanged: (value) {
-          setState(() {
-            
-          loop = value;
-          });
-        }), Text("Loop")],),
-        DraggableCircle(loop: loop, onSendLive: (intensity) {
-          widget.onSendLive(type, intensity);
-        }, respondInterval: 50,
-        intensityLimit: widget.intensityLimit,)
-      ],)
+      !AlarmListManager.getInstance().areSelectedShockersConnected()
+          ? Column(
+              children: [
+                connecting
+                    ? CircularProgressIndicator()
+                    : FilledButton(
+                        onPressed: ensureConnection,
+                        child: Text("Connect to hubs")),
+              ],
+            )
+          : Column(
+              children: [
+                Row(
+                  spacing: 10,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Switch(
+                        value: LiveControls.loop,
+                        onChanged: (value) {
+                          setState(() {
+                            LiveControls.loop = value;
+                          });
+                        }),
+                    Text("Loop"),
+                    Switch(
+                        value: LiveControls.float,
+                        onChanged: (value) {
+                          setState(() {
+                            LiveControls.float = value;
+                          });
+                        }),
+                    Text("Float")
+                  ],
+                ),
+                DraggableCircle(
+                  loop: LiveControls.loop,
+                  float: LiveControls.float,
+                  onSendLive: (intensity) {
+                    widget.onSendLive(type, intensity);
+                  },
+                  respondInterval: 50,
+                  intensityLimit: widget.intensityLimit,
+                )
+              ],
+            )
     ]);
   }
 }
@@ -109,6 +140,7 @@ class DraggableCircle extends StatefulWidget {
   double circleDiameter = 50;
   double respondInterval = 100;
   bool loop = true;
+  bool float = false;
   int intensityLimit = 100;
   void Function(int intensity) onSendLive;
 
@@ -121,7 +153,8 @@ class DraggableCircle extends StatefulWidget {
       this.respondInterval = 100,
       required this.onSendLive,
       this.intensityLimit = 100,
-      this.loop = true});
+      this.loop = true,
+      this.float = false});
 
   @override
   _DraggableCircleState createState() => _DraggableCircleState();
@@ -143,7 +176,8 @@ class _DraggableCircleState extends State<DraggableCircle> {
   double step = 1;
   int lastResponse = 0;
 
-  @override void dispose() {
+  @override
+  void dispose() {
     // TODO: implement dispose
     timer.cancel();
     super.dispose();
@@ -153,38 +187,40 @@ class _DraggableCircleState extends State<DraggableCircle> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    for(int i = 0; i < sampleLimitCount; i++) {
+    for (int i = 0; i < sampleLimitCount; i++) {
       samples.add(FlSpot(i.toDouble(), 0));
     }
     setValue(0);
     timer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
-      if(onTick != null) {
+      if (onTick != null) {
         onTick!();
       }
       setState(() {
-        for(int i = 0; i < sampleLimitCount - 1; i++) {
+        for (int i = 0; i < sampleLimitCount - 1; i++) {
           samples[i] = FlSpot(i.toDouble(), samples[i + 1].y);
         }
-        for(int i = 0; i < verticalLines.length; i++) {
-          verticalLines[i] = FlSpot(verticalLines[i].x - step, verticalLines[i].y);
-          if(verticalLines[i].x < 0) {
+        for (int i = 0; i < verticalLines.length; i++) {
+          verticalLines[i] =
+              FlSpot(verticalLines[i].x - step, verticalLines[i].y);
+          if (verticalLines[i].x < 0) {
             verticalLines.removeAt(i);
           }
         }
-        samples[sampleLimitCount - 1] = FlSpot(sampleLimitCount.toDouble(), value.toDouble());
+        samples[sampleLimitCount - 1] =
+            FlSpot(sampleLimitCount.toDouble(), value.toDouble());
       });
       xValue += step;
       int now = DateTime.now().millisecondsSinceEpoch;
-      if(now - lastResponse > widget.respondInterval) {
+      if (now - lastResponse > widget.respondInterval) {
         lastResponse = now;
         widget.onSendLive(value.toInt());
       }
     });
-
   }
 
   void spawnVerticalLine() {
-    verticalLines.add(FlSpot(sampleLimitCount.toDouble(), DateTime.now().millisecondsSinceEpoch.toDouble()));
+    verticalLines.add(FlSpot(sampleLimitCount.toDouble(),
+        DateTime.now().millisecondsSinceEpoch.toDouble()));
   }
 
   void moveToMiddle() {}
@@ -196,12 +232,13 @@ class _DraggableCircleState extends State<DraggableCircle> {
   }
 
   void updateValue() {
-    value =
-        ((1 - posY / (widget.height - widget.circleDiameter)) * widget.intensityLimit);
+    value = ((1 - posY / (widget.height - widget.circleDiameter)) *
+        widget.intensityLimit);
   }
 
   double getYForValue(int value) {
-    return (1 - (value / widget.intensityLimit)) * (widget.height - widget.circleDiameter);
+    return (1 - (value / widget.intensityLimit)) *
+        (widget.height - widget.circleDiameter);
   }
 
   void setValue(int value) {
@@ -211,8 +248,19 @@ class _DraggableCircleState extends State<DraggableCircle> {
     });
   }
 
-  Function? onTick;
+  @override
+  void didUpdateWidget(covariant DraggableCircle oldWidget) {
+    if(oldWidget.float && !widget.float) {
+      setValue(0);
+    }
+    if(oldWidget.loop && !widget.loop) {
+      onTick = null;
+      setValue(0);
+    }
+    super.didUpdateWidget(oldWidget);
+  }
 
+  Function? onTick;
 
   int lookStrokeStart = 0;
   void loopStroke() {
@@ -231,9 +279,9 @@ class _DraggableCircleState extends State<DraggableCircle> {
 
   void update(details, {bool end = false, bool start = false}) {
     if (end) {
-      setValue(0);
+      if(!widget.float) setValue(0);
       lookStrokeStart = DateTime.now().millisecondsSinceEpoch;
-      if(widget.loop) {
+      if (widget.loop) {
         spawnVerticalLine();
         onTick = loopStroke;
       }
@@ -259,10 +307,6 @@ class _DraggableCircleState extends State<DraggableCircle> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    if(!widget.loop && onTick != null) {
-      onTick = null;
-      setValue(0);
-    }
     return GestureDetector(
         onPanStart: (details) => update(details, start: true),
         onPanEnd: (details) {
@@ -298,53 +342,53 @@ class _DraggableCircleState extends State<DraggableCircle> {
                   ),
                   child: Center(child: Text(value.toInt().toString())),
                 ),
-                ),
-
-                if(samples.isNotEmpty) LineChart(
-                    LineChartData(
-                      minY: 0,
-                      maxY: widget.intensityLimit.toDouble(),
-                      minX: 0,
-                      maxX: sampleLimitCount.toDouble(),
-                      extraLinesData: ExtraLinesData(verticalLines: 
-                        verticalLines.map((element) {
-                          return VerticalLine(
-                            x: element.x,
-                            color: t.colorScheme.secondary,
-                            strokeWidth: 2,
-                            dashArray: [5, 5],
-                            
-                          );
-                        }).toList()
-                      ),
-                      lineTouchData: const LineTouchData(enabled: false),
-                      clipData: const FlClipData.all(),
-                      gridData: const FlGridData(
-                        show: true,
-                        drawVerticalLine: false,
-                      ),
-                      borderData: FlBorderData(show: false),
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: samples,
-                          dotData: const FlDotData(
-                            show: false,
-                          ),
-                          gradient: LinearGradient(
-                            colors: [widget.graphColor.withValues(alpha: 0), widget.graphColor],
-                            stops: const [0.1, 0.5],
-                          ),
-                          barWidth: 4,
-                          isCurved: false,
-                        )
-                      ],
-                      titlesData: const FlTitlesData(
-                        show: false,
-                      ),
+              ),
+              if (samples.isNotEmpty)
+                LineChart(
+                  LineChartData(
+                    minY: 0,
+                    maxY: widget.intensityLimit.toDouble(),
+                    minX: 0,
+                    maxX: sampleLimitCount.toDouble(),
+                    extraLinesData: ExtraLinesData(
+                        verticalLines: verticalLines.map((element) {
+                      return VerticalLine(
+                        x: element.x,
+                        color: t.colorScheme.secondary,
+                        strokeWidth: 2,
+                        dashArray: [5, 5],
+                      );
+                    }).toList()),
+                    lineTouchData: const LineTouchData(enabled: false),
+                    clipData: const FlClipData.all(),
+                    gridData: const FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
                     ),
-                    key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: samples,
+                        dotData: const FlDotData(
+                          show: false,
+                        ),
+                        gradient: LinearGradient(
+                          colors: [
+                            widget.graphColor.withValues(alpha: 0),
+                            widget.graphColor
+                          ],
+                          stops: const [0.1, 0.5],
+                        ),
+                        barWidth: 4,
+                        isCurved: false,
+                      )
+                    ],
+                    titlesData: const FlTitlesData(
+                      show: false,
+                    ),
                   ),
-              
+                  key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                ),
             ],
           ),
         ));
