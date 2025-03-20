@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:signalr_core/signalr_core.dart';
 import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../main.dart';
 import '../stores/alarm_store.dart';
@@ -128,10 +129,15 @@ class LiveControlWS {
   List<int> latency = [];
   Function(Hub) onError;
   Hub hub;
+  Token? token;
 
-  LiveControlWS(String? host, this.hub, this.onError) {
-    if(host == null) return;
-    channel = WebSocketChannel.connect(Uri.parse('ws://$host'));
+  LiveControlWS(String? host, this.hub, this.onError, this.token) {
+    if(host == null || token == null) return;
+    print("connecting");
+    channel = IOWebSocketChannel.connect(Uri.parse('wss://$host/1/ws/live/${hub.id}'), headers: {
+      "User-Agent": GetUserAgent(),
+      "OpenShockSession": token?.token
+    });
 
     channel?.stream.listen((data) {
       print(data);
@@ -139,7 +145,7 @@ class LiveControlWS {
       // check if data is string and if so parse the json
       if(data is String) {
         Map<String, dynamic> json = jsonDecode(data);
-        if(json["ResponseType"] == "ResponseType") {
+        if(json["ResponseType"] == "Ping") {
           // just echo back
           channel?.sink.add(jsonEncode({"RequestType": "Pong", "Data": json["Data"]}));
         }
@@ -167,6 +173,7 @@ class LiveControlWS {
   }
 
   void sendControl(Shocker s, ControlType type, int intensity) {
+    print("wee");
     if(channel == null) return;
     channel?.sink.add(jsonEncode({
       "RequestType": "Frame",

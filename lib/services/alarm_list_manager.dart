@@ -342,8 +342,9 @@ class AlarmListManager {
     }
     LiveControlWS ws = LiveControlWS(lcg?.gateway, hub, (hub) {
       disconnectFromLiveControlGateway(hub);
-    });
-    
+    }, getAnyUserToken());
+    liveControlGatewayConnections[hub.id] = ws;
+
     return ErrorContainer(true, null);
   }
 
@@ -577,7 +578,7 @@ class AlarmListManager {
     return OpenShockClient().deleteShare(share, this);
     }
 
-  Hub? getHub(String hubId) {
+  Hub? getHub(String? hubId) {
     for(var hub in hubs) {
       if(hub.id == hubId) {
         return hub;
@@ -712,6 +713,23 @@ class AlarmListManager {
         if(!await client.sendControls(token, controlsByToken[token.id]!, this, customName: customName, useWs: !settings.useHttpShocking && useWs)) {
           return "Failed to send shock to at least 1 shocker, is your token still valid?";
         }
+      }
+    }
+    return null;
+  }
+
+  Future<String?> sendLiveControls(List<Control> controls, {String customName = "ShockAlarm", bool useWs = true}) async {
+    Map<String?, List<Control>> controlsByHub = {};
+    for(var control in controls) {
+      if(control.type == ControlType.sound && control.intensity <= 0) continue; // don't send sound as it seems to always play
+      controlsByHub.putIfAbsent(control.shockerReference?.hubId, () => []).add(control);
+    }
+    for(String? key in controlsByHub.keys) {
+      if(!liveControlGatewayConnections.containsKey(key)) {
+        return "Not connected to live control gateway for ${getHub(key)?.name ?? key ?? "unspecified hub  "}";
+      }
+      for(Control control in controlsByHub[key]!) {
+        liveControlGatewayConnections[key]?.sendControl(control.shockerReference!, control.type, control.intensity);
       }
     }
     return null;
@@ -909,5 +927,23 @@ class AlarmListManager {
         hub.id,
         version
       ]);
+  }
+  bool areSelectedShockersConnected() {
+    for(var shocker in getSelectedShockers()) {
+      if(!liveControlGatewayConnections.keys.contains(shocker.hubId)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  Future<ErrorContainer<bool>> connectToLiveControlGatewayOfSelectedShockers() async {
+    for(var shocker in getSelectedShockers()) {
+      if(!liveControlGatewayConnections.keys.contains(shocker.hubId)) {
+        ErrorContainer<bool> error = await connectToLiveControlGateway(getHub(shocker.hubId)!);
+        if(error.error != null) return error;
+      }
+    }
+    return ErrorContainer(true, null);
   }
 }

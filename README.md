@@ -89,7 +89,7 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Random shocking (specify random delay between shocks, min and max intensity/duration)
 - [x] Random shocking -> Add background task + notification (works without notification???)
 - [x] Fix alarms not sending controls when app is minimized (seems to work)
-- [ ] Live controls
+- [x] Live controls
 - [x] Allow alarm tones to be used as patterns
 - [x] Request permissions only when needed
 - [x] fix reloading problems in settings after login?

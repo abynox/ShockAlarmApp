@@ -6,6 +6,7 @@ import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 import 'package:shock_alarm_app/components/grouped_shocker_selector.dart';
 import 'package:shock_alarm_app/components/hub_item.dart';
+import 'package:shock_alarm_app/components/live_controls.dart';
 import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
 import 'package:shock_alarm_app/screens/home.dart';
@@ -54,6 +55,21 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
       return;
     }
     manager.sendControls(controls);
+  }
+
+  void executeAllLive(ControlType type, int intensity) {
+    List<Control> controls = [];
+    for (Shocker s in manager.getSelectedShockers()) {
+      controls.add(s.getLimitedControls(type, intensity, 300));
+    }
+    if (type == ControlType.stop) {
+      // Temporary workaround until OpenShock fixed the issue with stop. So for now we send them individually
+      for (Control c in controls) {
+        manager.sendControls([c]);
+      }
+      return;
+    }
+    manager.sendLiveControls(controls);
   }
 
   bool loadingPause = false;
@@ -205,7 +221,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                                   value: "live",
                                   child: Row(
                                         spacing: 10,
-                                        children: [OpenShockClient.getIconForControlType(ControlType.live), Text("${liveEnabled ? "Disable" : "Enable"} live controls")],
+                                        children: [OpenShockClient.getIconForControlType(ControlType.live), Text("${liveEnabled ? "Disable" : "Enable"} live controls (beta)")],
                                       )),
                             ];
                           },
@@ -227,6 +243,16 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                         ),
                       ],
                     ),
+                    liveEnabled ? LiveControls(
+                        controlsContainer: manager.controls,
+                        onSendLive: executeAllLive,
+                        soundAllowed: limitedShocker.soundAllowed,
+                        vibrateAllowed: limitedShocker.vibrateAllowed,
+                        shockAllowed: limitedShocker.shockAllowed,
+                        intensityLimit: limitedShocker.intensityLimit,
+
+                        key: ValueKey(DateTime.now().millisecondsSinceEpoch)
+                    ) :
                     ShockingControls(
                         manager: manager,
                         controlsContainer: manager.controls,

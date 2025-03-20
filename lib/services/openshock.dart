@@ -1284,6 +1284,7 @@ class Shocker {
       c.intensity = min(this.intensityLimit, intensity);
       c.duration = min(this.durationLimit, duration);
       c.apiTokenId = this.apiTokenId;
+      c.shockerReference = this;
       if(!this.shockAllowed && type == ControlType.shock) {
         c.type = ControlType.vibrate;
       }
