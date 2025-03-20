@@ -1,12 +1,9 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
-import 'package:shock_alarm_app/main.dart';
-import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
