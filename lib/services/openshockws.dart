@@ -173,7 +173,6 @@ class LiveControlWS {
   }
 
   void sendControl(Shocker s, ControlType type, int intensity) {
-    print("wee");
     if(channel == null) return;
     channel?.sink.add(jsonEncode({
       "RequestType": "Frame",
