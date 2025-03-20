@@ -1,3 +1,2 @@
 **Changelog:**
 - Added live pattern saving and playback
-- ToDo: Added log workaround for live patterns
