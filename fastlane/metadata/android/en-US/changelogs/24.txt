@@ -1,0 +1,2 @@
+**Changelog:**
+- Added live controls (3 dots in grouped shocker selector)
