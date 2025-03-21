@@ -24,14 +24,19 @@ class QrCardState extends State<QrCard> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                PrettyQrView(
-                    decoration: PrettyQrDecoration(
-                        shape: PrettyQrSmoothSymbol(
-                      color: widget.c,
-                    )),
-                    qrImage: QrImage(
-                      QrCode.fromData(data: widget.data, errorCorrectLevel: QrErrorCorrectLevel.Q),
-                    )),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 500),
+                  child: PrettyQrView(
+                      decoration: PrettyQrDecoration(
+                          shape: PrettyQrSmoothSymbol(
+                        color: widget.c,
+                      )),
+                      qrImage: QrImage(
+                        QrCode.fromData(
+                            data: widget.data,
+                            errorCorrectLevel: QrErrorCorrectLevel.Q),
+                      )),
+                ),
                 Padding(padding: EdgeInsets.all(10)),
                 Center(
                     child: GestureDetector(
@@ -41,8 +46,14 @@ class QrCardState extends State<QrCard> {
                   child: TextButton(
                     child: Column(
                       children: [
-                          Icon(Icons.copy, color: widget.c),
-                        Text(widget.data, textAlign: TextAlign.center, softWrap: true, style: t.textTheme.bodyMedium?.copyWith(color: widget.c),),
+                        Icon(Icons.copy, color: widget.c),
+                        Text(
+                          widget.data,
+                          textAlign: TextAlign.center,
+                          softWrap: true,
+                          style:
+                              t.textTheme.bodyMedium?.copyWith(color: widget.c),
+                        ),
                         if (widget.copied)
                           Icon(Icons.check, color: Colors.green),
                       ],

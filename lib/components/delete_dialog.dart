@@ -10,7 +10,6 @@ class DeleteDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return AlertDialog.adaptive(
       title: Text(title),
       content: Text(body),

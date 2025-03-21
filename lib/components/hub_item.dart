@@ -252,7 +252,7 @@ class HubItemState extends State<HubItem> {
   }
 
   void showCurrentToken({bool isCurrent = false}) async {
-    LoadingDialog.show("Loading new token");
+    LoadingDialog.show("Loading${isCurrent ? "" : " new"} token");
     // ToDo: show new token
     ErrorContainer<OpenShockDevice> device =
         await OpenShockClient().getDeviceDetails(hub);

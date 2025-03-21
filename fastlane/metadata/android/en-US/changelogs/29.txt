@@ -1,0 +1,2 @@
+**Changelog:**
+- Updated QR widget to have a max width of 500

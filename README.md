@@ -21,6 +21,12 @@ Furthermore it fixes some layout flaws of the official OpenShock Frontend like h
 
 You can also log in on multiple OpenShock instances at once. ShockAlarm will show all shockers from all instances seamlessly at a glance!
 
+### Not supported in Web Version
+Everything with websockets is currently not supported due to authentication problems with websockets. This includes:
+- OTA Updates
+- Enabling/Disabling the captive portal
+- Live control
+
 # Installation on Android
 ## Through Obtainium (recommended as you get the updates the fastest)
 [<img src="https://github.com/user-attachments/assets/713d71c5-3dec-4ec4-a3f2-8d28d025a9c6"
