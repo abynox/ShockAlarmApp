@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
@@ -43,7 +44,23 @@ class LogScreenState extends State<LogScreen> {
         reloadShockerLogs!();
       }
     };
-    loadLogs();
+    if(needsToLoadLogsOnStart()) {
+      loadLogs();
+    }
+  }
+
+
+  
+  bool needsToLoadLogsOnStart() {
+    if(!AlarmListManager.supportsWs()) {
+      return true;
+    }
+    for (var shocker in shockers) {
+      if(manager.shockerLog[shocker.id] == null) {
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<void> loadLogs() async {
@@ -157,20 +174,22 @@ class ShockerLogEntry extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             spacing: 10,
             children: [
-              Row(
+              Expanded(child: Row(
                 spacing: 10,
                 children: [
-                  OpenShockClient.getIconForControlType(log.type),
-                  Column(
+                  log.getTypeIcon(),
+                  if(log.getLiveIcon() != null) log.getLiveIcon()!,
+                  Expanded(child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          spacing: 10,
+                        Column(
+                          spacing: 0,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               log.getName(),
                               style: t.textTheme.titleMedium,
-                            ),
+                            )
                           ],
                         ),
                         Row(
@@ -180,14 +199,14 @@ class ShockerLogEntry extends StatelessWidget {
                             Text(formatDateTime(log.createdOn.toLocal())),
                           ],
                         ),
-                      ]),
-                ],
-              ),
+                      ]),),
+                ]
+              ),),
               Row(
                 children: [
                   Text("${(log.duration / 100).round() / 10} s"),
                   Text(" @ "),
-                  Text("${log.intensity}"),
+                  Text("${log.type == ControlType.live ? "up to " : ""}${log.intensity}"),
                 ],
               ),
               Chip(label: Text(log.shockerReference?.name ?? "Unknown")),

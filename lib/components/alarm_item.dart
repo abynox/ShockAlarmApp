@@ -84,7 +84,7 @@ class AlarmItemState extends State<AlarmItem> {
                             await showDialog(
                                 context: context,
                                 builder: (builder) {
-                                  return AlertDialog(
+                                  return AlertDialog.adaptive(
                                     title: Text("Rename alarm"),
                                     content: TextField(controller: controller),
                                     actions: [

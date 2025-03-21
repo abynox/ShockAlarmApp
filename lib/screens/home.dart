@@ -136,7 +136,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
               showDialog(
                   context: context,
                   builder: (context) {
-                    return AlertDialog(
+                    return AlertDialog.adaptive(
                       title: Text("Token login"),
                       content: Text(
                           "You have been logged in with a token as user ${manager.getTokenByToken(token)?.name}"),
@@ -203,7 +203,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       showDialog(
           context: context,
           builder: (context) {
-            return AlertDialog(
+            return AlertDialog.adaptive(
               title: Text("Redeem share code?"),
               content: Text(
                   "This will allow you to control someone elses shocker. The code is $code"),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
+import 'package:shock_alarm_app/services/openshockws.dart';
 import '../stores/alarm_store.dart';
 import 'dart:convert';
 import '../main.dart';
@@ -114,6 +115,16 @@ class OpenShockClient {
     }, body: body);
   }
 
+  Future<http.Response> PutRequest(Token t, String path, String body) {
+    var url = Uri.parse(t.server + path);
+    return http.put(url, headers: {
+      if(t.isSession) "Cookie": "openShockSession=${t.token}"
+      else "OpenShockToken": t.token,
+      "Content-Type": "application/json",
+      'User-Agent': GetUserAgent(),
+    }, body: body);
+  }
+
   Future<http.Response> DeleteRequest(Token t, String path, String body) {
     var url = Uri.parse(t.server + path);
     return http.delete(url, headers: {
@@ -149,7 +160,7 @@ class OpenShockClient {
     return ErrorContainer(token, null);
   }
 
-  Future<bool> sendControls(Token t, List<Control> list, AlarmListManager manager, {String customName = "ShockAlarm", bool useWs = true}) async {
+  Future<bool> sendControls(Token t, List<Control> list, AlarmListManager manager, {String? customName, bool useWs = true}) async {
     if(useWs) {
       if(manager.ws == null || manager.ws?.t.id != t.id) {
         await manager.startWS(t);
@@ -247,6 +258,22 @@ class OpenShockClient {
       return null;
     }
     return getErrorCode(response, "Failed to save shocker");
+  }
+
+  Future<ErrorContainer<OpenShockDevice>> getDeviceDetails(Hub hub) async {
+    Token? t = AlarmListManager.getInstance().getToken(hub.apiTokenId);
+    if(t == null) {
+      return ErrorContainer(null, "Token not found");
+    }
+    var response = await GetRequest(t, "/1/devices/${hub.id}");
+
+    if(response.statusCode != 200) {
+      return ErrorContainer(null, "${response.statusCode} - failed to get hub");
+    }
+    // replace name of response
+    var responseBody = jsonDecode(response.body)["data"];
+    OpenShockDevice device = OpenShockDevice.fromJson(responseBody);
+    return ErrorContainer(device, null);
   }
 
 
@@ -658,6 +685,16 @@ class OpenShockClient {
     }
     return ErrorContainer(null, getErrorCode(response, "Failed to get session"));
   }
+
+  Future<ErrorContainer<bool>> regenerateDeviceToken(Hub hub) async {
+    Token? t = AlarmListManager.getInstance().getToken(hub.apiTokenId);
+    if(t == null) return ErrorContainer(false, "Token not found");
+    var response = await PutRequest(t, "/1/devices/${hub.id}", "");
+    if(response.statusCode == 200) {
+      return ErrorContainer(true, null);
+    }
+    return ErrorContainer(false, getErrorCode(response, "Failed to regenerate token"));
+  }
 }
 
 class OTAInstallProgress {
@@ -1031,7 +1068,29 @@ class ShockerLog {
   }
 
   String getName() {
-    return controlledBy.customName != null ? "${controlledBy.customName} [${controlledBy.name}]" : controlledBy.name;
+    return controlledBy.customName != null && !controlledBy.customName!.contains("{") && !controlledBy.customName!.contains("}") ? "${controlledBy.customName} [${controlledBy.name}]" : controlledBy.name;
+  }
+
+  Icon? getLiveIcon() {
+    if(type != ControlType.stop && type != ControlType.live) return null;
+    String? control = controlledBy.customName;
+    if(control == null) return null;
+    if(control.contains("{vibrate}")) {
+      return OpenShockClient.getIconForControlType(ControlType.vibrate);
+    }
+    if(control.contains("{sound}")) {
+      return OpenShockClient.getIconForControlType(ControlType.sound);
+    }
+    if(control.contains("{shock}")) {
+      return OpenShockClient.getIconForControlType(ControlType.shock);
+    }
+  }
+
+  Icon getTypeIcon() {
+    if(controlledBy.customName?.contains("{live}") ?? false) {
+      return OpenShockClient.getIconForControlType(ControlType.live);
+    }
+    return OpenShockClient.getIconForControlType(type);
   }
 }
 
@@ -1365,6 +1424,7 @@ class OpenShockDevice
     String name = "";
     String id = "";
     String device = "";
+    String token = "";
     bool online = false;
     String firmwareVersion = "";
     List<OpenShockShocker> shockers = [];
@@ -1383,6 +1443,8 @@ class OpenShockDevice
         firmwareVersion = json['firmwareVersion'];
       if(json['device'] != null)
         device = json['device'];
+      if(json['token'] != null)
+        token = json['token'];
       if (json['shockers'] != null)
       {
         json['shockers'].forEach((v) {

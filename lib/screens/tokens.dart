@@ -66,7 +66,7 @@ class TokenScreenState extends State<TokenScreen> {
       AlarmListManager.getInstance().pageSelectorReloadMethod!();
       showDialog(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (context) => AlertDialog.adaptive(
                 title: Text("Success"),
                 content: Text(
                     "You are now logged in to the AlarmServer (ShockAlarmWeb). An OpenShock token has already been found on your AlarmServer account. It has therefor been choosen.\n\nIf you wish to choose another token, visit the AlarmServer website, delete all tokens and add only the one you want."),
@@ -92,7 +92,7 @@ class TokenScreenState extends State<TokenScreen> {
       // Ask whether to create a new token
       showDialog(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (context) => AlertDialog.adaptive(
                 title: Text("No token found"),
                 content: Text(
                     "You are logged in to OpenShock, but no token was found on your AlarmServer account. Do you want to create a new OpenShock api token for your AlarmServer account? By default the api token will be valid forever. If you do not want to create a token, you can add one manually on the AlarmServer website and then log in here."),
@@ -146,7 +146,7 @@ class TokenScreenState extends State<TokenScreen> {
                         Navigator.of(context).pop();
                         showDialog(
                             context: context,
-                            builder: (context) => AlertDialog(
+                            builder: (context) => AlertDialog.adaptive(
                                   title: Text("Success"),
                                   content: Text(
                                       "Token added to account. You can now create alarms."),
@@ -169,7 +169,7 @@ class TokenScreenState extends State<TokenScreen> {
       // Ask whether to use the token
       showDialog(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (context) => AlertDialog.adaptive(
                 title: Text("Use OpenShock token?"),
                 content: Text(
                     "You are logged in to OpenShock. Do you want to use the token found on your OpenShock account to log in to the AlarmServer (ShockAlarmWeb)?\n\nIf you choose no, your account will be removed from ShockAlarm. Add a token on the AlarmServer website manually and then log in again.\n\nIf you choose yes, your token will be transmitted to the AlarmServer and will be stored on your account there. It will then be able to trigger the alarms."),
@@ -192,7 +192,7 @@ class TokenScreenState extends State<TokenScreen> {
                         Navigator.of(context).pop();
                         showDialog(
                             context: context,
-                            builder: (context) => AlertDialog(
+                            builder: (context) => AlertDialog.adaptive(
                                   title: Text("Success"),
                                   content: Text(
                                       "Token added to account. You can now create alarms."),
@@ -236,7 +236,7 @@ class TokenScreenState extends State<TokenScreen> {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text("Login to ShockAlarmWeb"),
             content: SingleChildScrollView(
               child: Column(
@@ -294,7 +294,7 @@ class TokenScreenState extends State<TokenScreen> {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text("Login to OpenShock"),
             content: SingleChildScrollView(
               child: Column(
@@ -344,7 +344,7 @@ class TokenScreenState extends State<TokenScreen> {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text("Login to OpenShock"),
             content: SingleChildScrollView(
               child: Column(
@@ -426,7 +426,7 @@ class TokenScreenState extends State<TokenScreen> {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text("Login to OpenShock"),
             content: SingleChildScrollView(
               child: Column(
@@ -773,6 +773,21 @@ class TokenScreenState extends State<TokenScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Text("Send logs for live control (workaround)"),
+            Switch(
+                value: manager.settings.liveControlsLogWorkaround,
+                key: ValueKey("liveControlsLogWorkaround"),
+                onChanged: (value) {
+                  setState(() {
+                    manager.settings.liveControlsLogWorkaround = value;
+                    manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Row(children: [
             Text("Use AlarmServer for alarms"),
             IconButton(onPressed: () {
@@ -814,7 +829,7 @@ class TokenScreenState extends State<TokenScreen> {
                 onPressed: () {
                   showDialog(
                       context: context,
-                      builder: (context) => AlertDialog(
+                      builder: (context) => AlertDialog.adaptive(
                               title: Text("About"),
                               content: Text(
                                   "This app is made by ComputerElite. It is fully open source and can be found on GitHub. If you have any issues, report them there. Thank you so much for using my app! See safety rules in the safety section for more information."),

@@ -276,7 +276,7 @@ class _ApiTokenEditDialogState extends State<ApiTokenEditDialog> {
   Widget build(BuildContext context) {
     nameController.text = widget.apiToken.name;
     ThemeData t = Theme.of(context);
-    return AlertDialog(
+    return AlertDialog.adaptive(
       title:
           Text("${widget.apiToken.id == null ? "Create" : "Edit"} Api Token"),
       content: Column(
@@ -357,7 +357,7 @@ class _ApiTokenEditDialogState extends State<ApiTokenEditDialog> {
                 showDialog(
                     context: context,
                     builder: (context) {
-                      return AlertDialog(
+                      return AlertDialog.adaptive(
                         title: Text(
                             'QR Code for Api Token ${widget.apiToken.name}'),
                         content: QrCard(data: error.value!),

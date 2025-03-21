@@ -8,7 +8,7 @@ class ShockDisclaimer extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: implement build
     ThemeData t = Theme.of(context);
-    return AlertDialog(
+    return AlertDialog.adaptive(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

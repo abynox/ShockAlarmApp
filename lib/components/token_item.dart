@@ -56,7 +56,7 @@ class TokenItemState extends State<TokenItem> {
   }
 
   void askLogout() {
-    showDialog(context: context, builder: (context) => AlertDialog(
+    showDialog(context: context, builder: (context) => AlertDialog.adaptive(
       title: Text("Logout?"),
       content: Text("Do you want to log out?"),
       actions: [

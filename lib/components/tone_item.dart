@@ -86,7 +86,7 @@ class ToneItemState extends State<ToneItem> {
                             await showDialog(
                                 context: context,
                                 builder: (builder) {
-                                  return AlertDialog(
+                                  return AlertDialog.adaptive(
                                     title: Text("Rename tone"),
                                     content: TextField(controller: controller),
                                     actions: [

@@ -95,7 +95,7 @@ class OpenShockWS {
     return true;
   }
 
-  Future<bool> sendControls(List<Control> controls, String customName, {int depth = 0}) async {
+  Future<bool> sendControls(List<Control> controls, String? customName, {int depth = 0}) async {
     if(!await establishConnection(0)) return false;
     try {
       // Wrap the Map in a List
@@ -187,7 +187,7 @@ class LiveControlWS {
     }));
   }
 
-  String getControl(ControlType type) {
+  static String getControl(ControlType type) {
     switch(type) {
       case ControlType.shock:
         return "shock";

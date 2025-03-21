@@ -45,7 +45,7 @@ class ShockerItem extends StatefulWidget {
           controller.text = shocker.name;
           showDialog(
               context: context,
-              builder: (context) => AlertDialog(
+              builder: (context) => AlertDialog.adaptive(
                     title: Text("Edit shocker"),
                     content: ShockerDetails(shocker: s, devices: devices),
                     actions: [
@@ -126,7 +126,7 @@ class ShockerItem extends StatefulWidget {
             BuildContext context, Function onRebuild) {
           showDialog(
               context: context,
-              builder: (context) => AlertDialog(
+              builder: (context) => AlertDialog.adaptive(
                     title: Text("Unlink shocker"),
                     content: Text(
                         "Are you sure you want to unlink the shocker ${shocker.name} from your account? After that you cannot control the shocker anymore unless you redeem another share code."),

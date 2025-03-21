@@ -63,7 +63,7 @@ class SharesScreenState extends State<SharesScreen> {
     OpenShockShare share = OpenShockShare();
     await showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => AlertDialog.adaptive(
               content: ShockerShareEntryEditor(limits: limits),
               actions: [
                 TextButton(
@@ -225,7 +225,7 @@ class ShockerShareEntryState extends State<ShockerShareEntry> {
   void deleteShare() async {
     showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => AlertDialog.adaptive(
               title: Text("Delete share"),
               content: Text(
                   "Are you sure you want to delete the share with ${share.sharedWith.name}?\n\n(You can create a new one later). If you just want their access to temporarely stop, you can pause the share instead."),
@@ -499,7 +499,7 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                             showDialog(
                                 context: context,
                                 builder: (context) {
-                                  return AlertDialog(
+                                  return AlertDialog.adaptive(
                                     title: Text('Scan to claim'),
                                     content: QrCard(
                                         data:

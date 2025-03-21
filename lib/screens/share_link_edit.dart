@@ -57,7 +57,7 @@ class ShareLinkEditScreenState extends State<ShareLinkEditScreen> {
     if (ownShockers.length <= 0) {
       showDialog(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (context) => AlertDialog.adaptive(
                 title: Text("All done"),
                 content: Text(
                     "You have already added all your shockers to this share link."),
@@ -74,7 +74,7 @@ class ShareLinkEditScreenState extends State<ShareLinkEditScreen> {
 
     await showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => AlertDialog.adaptive(
               title: Text("Add a shocker to the share link"),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -254,7 +254,7 @@ class ShareLinkShockerState extends State<ShareLinkShocker> {
   void deleteShare() async {
     showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => AlertDialog.adaptive(
               title: Text("Remove shocker"),
               content: Text(
                   "Are you sure you want to remove shocker ${widget.shocker.name} from the share link ${widget.shareLink.name}?\n\n(You can create a new one again later)"),

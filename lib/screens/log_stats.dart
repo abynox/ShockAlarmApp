@@ -102,7 +102,7 @@ class _LogStatScreenState extends State<LogStatScreen> {
                               TextEditingController();
                           controller.text = "200";
 
-                          return AlertDialog(
+                          return AlertDialog.adaptive(
                             title: Text("Load more"),
                             content: SingleChildScrollView(
                                 child: Column(children: [

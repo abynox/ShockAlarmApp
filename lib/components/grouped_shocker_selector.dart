@@ -210,7 +210,7 @@ class ShockerChipState extends State<ShockerChip> {
     showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text(shocker.name),
             content: Column(
               spacing: 20,

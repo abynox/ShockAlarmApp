@@ -44,7 +44,7 @@ class _UpdateHubScreenState extends State<UpdateHubScreen> {
   void updateHub(String version) {
     showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => AlertDialog.adaptive(
               title: Text('Update Hub'),
               content: RichText(
                   text: TextSpan(children: [

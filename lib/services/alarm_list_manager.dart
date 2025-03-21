@@ -5,6 +5,7 @@ import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
+import 'package:shock_alarm_app/services/settings.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../stores/alarm_store.dart';
@@ -12,77 +13,6 @@ import 'dart:convert';
 
 import 'alarm_manager.dart';
 
-class Settings {
-  bool showRandomDelay = true;
-  bool useRangeSliderForRandomDelay = true;
-  bool useRangeSliderForIntensity = false;
-  bool useRangeSliderForDuration = false;
-
-  bool disableHubFiltering = true;
-
-  bool allowTokenEditing = false;
-  bool useHttpShocking = false;
-
-  bool useAlarmServer = false;
-
-  bool useGroupedShockerSelection = true;
-
-  int alarmToneRepeatDelayMs = 1500;
-
-  int maxAlarmLengthSeconds = 60;
-
-  ThemeMode theme = ThemeMode.system;
-
-  bool showFirmwareVersion = false;
-  bool allowTonesForControls = false;
-
-
-  Settings();
-
-  Settings.fromJson(Map<String, dynamic> json) {
-    if(json["showRandomDelay"] != null)
-      showRandomDelay = json["showRandomDelay"];
-    if(json["useRangeSliderForRandomDelay"] != null)
-      useRangeSliderForRandomDelay = json["useRangeSliderForRandomDelay"];
-    if(json["useRangeSliderForIntensity"] != null)
-      useRangeSliderForIntensity = json["useRangeSliderForIntensity"];
-    if(json["useRangeSliderForDuration"] != null)
-      useRangeSliderForDuration = json["useRangeSliderForDuration"];
-    if(json["useAlarmServer"] != null)
-      useAlarmServer = json["useAlarmServer"];
-    if(json["disableHubFiltering"] != null)
-      disableHubFiltering = json["disableHubFiltering"];
-    if(json["allowTokenEditing"] != null)
-      allowTokenEditing = json["allowTokenEditing"];
-    if(json["useHttpShocking"] != null)
-      useHttpShocking = json["useHttpShocking"];
-    if(json["useGroupedShockerSelection_1"] != null)
-      useGroupedShockerSelection = json["useGroupedShockerSelection_1"]; // _1 added so the default saved value on existing installations gets changed
-    if(json["theme"] != null)
-      theme = ThemeMode.values[json["theme"]];
-    if(json["showFirmwareVersion"] != null)
-      showFirmwareVersion = json["showFirmwareVersion"];
-    if(json["allowTonesForControls"] != null)
-      allowTonesForControls = json["allowTonesForControls"];
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "showRandomDelay": showRandomDelay,
-      "useRangeSliderForRandomDelay": useRangeSliderForRandomDelay,
-      "useRangeSliderForIntensity": useRangeSliderForIntensity,
-      "useRangeSliderForDuration": useRangeSliderForDuration,
-      "disableHubFiltering": disableHubFiltering,
-      "allowTokenEditing": allowTokenEditing,
-      "useHttpShocking": useHttpShocking,
-      "useGroupedShockerSelection_1": useGroupedShockerSelection,
-      "theme": theme.index,
-      "showFirmwareVersion": showFirmwareVersion,
-      "useAlarmServer": useAlarmServer,
-      "allowTonesForControls": allowTonesForControls
-    };
-  }
-}
 
 class AlarmListManager {
   final List<Alarm> _alarms = [];
@@ -149,7 +79,7 @@ class AlarmListManager {
     List<dynamic> shareLinksList = jsonDecode(shareLinks);
     List<dynamic> livePatternsList = jsonDecode(livePatternsString);
     this.settings = Settings.fromJson(jsonDecode(settings));
-    if(kIsWeb) this.settings.useHttpShocking = true;
+    if(!supportsWs()) this.settings.useHttpShocking = true;
     for (var alarm in alarmsList) {
       _alarms.add(Alarm.fromJson(alarm));
     }
@@ -325,7 +255,7 @@ class AlarmListManager {
     if(tokenExpired) {
       showSessionExpired();
     }
-    if(kIsWeb) updateHubStatusViaHttp();
+    if(!supportsWs()) updateHubStatusViaHttp();
     return !tokenExpired;
   }
 
@@ -336,6 +266,12 @@ class AlarmListManager {
     if(liveControlGatewayConnections.containsKey(hub.id)) {
       await liveControlGatewayConnections[hub.id]?.dispose();
       liveControlGatewayConnections.remove(hub.id);
+    }
+  }
+  Future disconnectAllFromLiveControlGateway() async {
+    // close connection if still open and remove from map
+    for(var key in liveControlGatewayConnections.keys.toList()) {
+      disconnectFromLiveControlGateway(Hub()..id = key);
     }
   }
 
@@ -356,7 +292,7 @@ class AlarmListManager {
   }
 
   void showSessionExpired() {
-    showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog(title: Text("Session expired"),
+    showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog.adaptive(title: Text("Session expired"),
       content: Text("Your session has expired. To continue using the app log in again in the settings page."),
       actions: [
         TextButton(onPressed: () {
@@ -480,7 +416,7 @@ class AlarmListManager {
     return null;
   }
 
-  Future<String?> sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration, {String customName = "ShockAlarm", bool useWs = true}) async {
+  Future<String?> sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration, {String? customName, bool useWs = true}) async {
     Control control = Control();
     control.intensity = currentIntensity;
     control.duration = currentDuration;
@@ -691,6 +627,8 @@ class AlarmListManager {
 
   bool queuedUpdate = false;
 
+  Function(OpenShockDevice device)? onDeviceStatusUpdated;
+
   void deviceStatusHandler(List<dynamic> args) {
     for(var arg in args[0]) {
       OpenShockDevice d = OpenShockDevice.fromJson(arg);
@@ -700,6 +638,7 @@ class AlarmListManager {
           h.firmwareVersion = d.firmwareVersion;
         }
       }
+      onDeviceStatusUpdated?.call(d);
       if(d.online && !onlineHubs.contains(d.device)) {
         onlineHubs.add(d.device);
       } else {
@@ -709,7 +648,7 @@ class AlarmListManager {
     reloadAllMethod!();
   }
 
-  Future<String?> sendControls(List<Control> controls, {String customName = "ShockAlarm", bool useWs = true}) async {
+  Future<String?> sendControls(List<Control> controls, {String? customName, bool useWs = true}) async {
     Map<int, List<Control>> controlsByToken = {};
     for(var control in controls) {
       controlsByToken.putIfAbsent(control.apiTokenId, () => []).add(control);
@@ -905,7 +844,7 @@ class AlarmListManager {
   }
 
   void dialogError(String title, String body) {
-    showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog(title: Text(title),
+    showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog.adaptive(title: Text(title),
       content: Text(body),
       actions: [
         TextButton(onPressed: () {

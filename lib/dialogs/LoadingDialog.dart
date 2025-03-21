@@ -11,7 +11,7 @@ class LoadingDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return AlertDialog.adaptive(
         title: Text(title),
         content: Row(
             mainAxisAlignment: MainAxisAlignment.center,

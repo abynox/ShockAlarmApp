@@ -235,7 +235,7 @@ class ShockerUnpauseDialogState extends State<ShockerUnpauseDialog> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    return AlertDialog(
+    return AlertDialog.adaptive(
               title: Text("Select shockers to unpause"),
               content: Column(
                   mainAxisSize: MainAxisSize.min,

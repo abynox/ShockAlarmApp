@@ -57,6 +57,8 @@ class LiveControls extends StatefulWidget {
   int intensityLimit;
   LiveControlSettings settings;
   bool snapToZeroAfterDone;
+  
+  Function(ControlType, int, int)? liveEventDone;
 
   LiveControls(
       {super.key,
@@ -67,6 +69,7 @@ class LiveControls extends StatefulWidget {
       required this.shockAllowed,
       required this.intensityLimit,
       required this.settings,
+      this.liveEventDone,
       this.snapToZeroAfterDone = false});
 
   @override
@@ -220,6 +223,7 @@ class _LiveControlsState extends State<LiveControls> {
                   },
                   isPlaying: isPlaying,
                   pattern: pattern,
+                  logEvent: (duration, intensity) => widget.liveEventDone?.call(type, duration, intensity),
                   respondInterval: 50,
                   intensityLimit: widget.intensityLimit,
                 )
@@ -247,7 +251,7 @@ class _LiveControlsState extends State<LiveControls> {
     }
     showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => AlertDialog.adaptive(
               title: Text("Save pattern?"),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -345,6 +349,7 @@ class DraggableCircle extends StatefulWidget {
   LivePattern pattern;
   void Function(int intensity) onSendLive;
   Function()? onPlayDone;
+  Function(int, int)? logEvent;
 
   DraggableCircle(
       {super.key,
@@ -359,6 +364,7 @@ class DraggableCircle extends StatefulWidget {
       this.loop = true,
       this.float = false,
       this.isPlaying = false,
+      this.logEvent,
       this.onPlayDone});
 
   @override
@@ -378,6 +384,9 @@ class _DraggableCircleState extends State<DraggableCircle> {
   int sampleLimitCount = 100;
   int lastResponse = 0;
   bool sentZero = false;
+  bool notifiedEnd = false;
+  int maxIntensity = 0;
+  int? logTimeStart;
 
   @override
   void dispose() {
@@ -412,9 +421,19 @@ class _DraggableCircleState extends State<DraggableCircle> {
       int now = DateTime.now().millisecondsSinceEpoch;
       if (now - lastResponse > widget.respondInterval) {
         lastResponse = now;
-
-        if (sentZero && value.toInt() == 0)
+        if (sentZero && value.toInt() == 0) {
+          if(!notifiedEnd) {
+            notifiedEnd = true;
+            int lengthInMs = logTimeStart == null ? 0 : now - logTimeStart!;
+            if(maxIntensity != 0) widget.logEvent?.call(lengthInMs, maxIntensity);
+            maxIntensity = 0;
+            logTimeStart = null;
+          }
           return; // don't spam the ws when not active
+        }
+        logTimeStart ??= now;
+        notifiedEnd = false;
+        if(value > maxIntensity) maxIntensity = value.toInt();
         widget.onSendLive(value.toInt());
         sentZero = value.toInt() == 0;
       }

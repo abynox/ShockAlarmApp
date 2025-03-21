@@ -30,7 +30,7 @@ class QrCardState extends State<QrCard> {
                       color: widget.c,
                     )),
                     qrImage: QrImage(
-                      QrCode(8, QrErrorCorrectLevel.Q)..addData(widget.data),
+                      QrCode.fromData(data: widget.data, errorCorrectLevel: QrErrorCorrectLevel.Q),
                     )),
                 Padding(padding: EdgeInsets.all(10)),
                 Center(

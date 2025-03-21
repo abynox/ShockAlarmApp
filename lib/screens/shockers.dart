@@ -31,7 +31,7 @@ class ShockerScreen extends StatefulWidget {
         context: context,
         builder: (context) {
           TextEditingController codeController = TextEditingController();
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text("Redeem share code"),
             content: SingleChildScrollView(
               child: Column(
@@ -90,7 +90,7 @@ class ShockerScreen extends StatefulWidget {
         context: context,
         builder: (context) {
           TextEditingController nameController = TextEditingController();
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text("Add new hub"),
             content: (TextField(
               decoration: InputDecoration(labelText: "Hub name"),
@@ -141,7 +141,7 @@ class ShockerScreen extends StatefulWidget {
     showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text("Add new shocker"),
             content: ShockerDetails(shocker: newShocker, devices: devices),
             actions: <Widget>[
@@ -193,7 +193,7 @@ class ShockerScreen extends StatefulWidget {
             context: context,
             builder: (context) {
               if (!manager.hasValidAccount()) {
-                return AlertDialog(
+                return AlertDialog.adaptive(
                   title: Text("You're not logged in"),
                   content: Text(
                       "Login to OpenShock to add a shocker. To do this visit the settings page."),
@@ -206,7 +206,7 @@ class ShockerScreen extends StatefulWidget {
                   ],
                 );
               }
-              return AlertDialog(
+              return AlertDialog.adaptive(
                 title: Text("Add device"),
                 content: Text("What do you want to do?"),
                 actions: <Widget>[
@@ -250,7 +250,7 @@ class ShockerScreenState extends State<ShockerScreen> {
   @override
   void initState() {
     super.initState();
-    if(kIsWeb) AlarmListManager.getInstance().updateHubStatusViaHttp();
+    if(!AlarmListManager.supportsWs()) AlarmListManager.getInstance().updateHubStatusViaHttp();
   }
 
   ShockerScreenState(this.manager);

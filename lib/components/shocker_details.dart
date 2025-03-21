@@ -9,9 +9,7 @@ class ShockerDetails extends StatefulWidget {
   OpenShockShocker shocker;
   List<OpenShockDevice> devices;
 
-  ShockerDetails(
-      {required this.shocker,
-      required this.devices});
+  ShockerDetails({required this.shocker, required this.devices});
   @override
   ShockerDetailsState createState() => ShockerDetailsState();
 }
@@ -20,7 +18,7 @@ class ShockerDetailsState extends State<ShockerDetails> {
   TextEditingController nameController = TextEditingController();
   // number only
   TextEditingController rfIdController = TextEditingController();
-  
+
   @override
   Widget build(BuildContext context) {
     nameController.text = widget.shocker.name;
@@ -30,7 +28,14 @@ class ShockerDetailsState extends State<ShockerDetails> {
       child: Column(
         spacing: 10,
         children: <Widget>[
+          if(widget.shocker.id.isNotEmpty) TextField(
+              readOnly: true,
+              decoration: InputDecoration(labelText: "Id (readonly)"),
+              controller: TextEditingController(
+                text: widget.shocker.id,
+              )),
           DropdownMenu<String>(
+              width: double.infinity,
               label: Text("Hub"),
               onSelected: (value) {
                 widget.shocker.device = value;
@@ -41,6 +46,7 @@ class ShockerDetailsState extends State<ShockerDetails> {
                   DropdownMenuEntry(label: device.name, value: device.id),
               ]),
           DropdownMenu<String>(
+            width: double.infinity,
             dropdownMenuEntries: [
               DropdownMenuEntry(label: "CaiXianlin", value: "CaiXianlin"),
               DropdownMenuEntry(label: "PetTrainer", value: "PetTrainer"),
@@ -82,8 +88,8 @@ class ShockerDetailsState extends State<ShockerDetails> {
       }
       widget.shocker.rfId = proposedValue;
     } catch (e) {
-      ErrorDialog.show("Invalid RF ID",
-          "The RF ID must be a number between 0 and 65535");
+      ErrorDialog.show(
+          "Invalid RF ID", "The RF ID must be a number between 0 and 65535");
     }
   }
 }

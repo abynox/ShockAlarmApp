@@ -6,7 +6,7 @@ class ErrorDialog {
     return showDialog(
         context: navigatorKey.currentContext!,
         builder: (BuildContext context) {
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text(title),
             content: Text(message),
             actions: <Widget>[

@@ -11,6 +11,7 @@ import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
 import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/screens/logs.dart';
+import 'package:shock_alarm_app/services/openshockws.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
 import '../services/alarm_list_manager.dart';
@@ -36,7 +37,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
   @override
   void initState() {
     super.initState();
-    if (kIsWeb) AlarmListManager.getInstance().updateHubStatusViaHttp();
+    if (!AlarmListManager.supportsWs()) AlarmListManager.getInstance().updateHubStatusViaHttp();
   }
 
   void onRebuild() {
@@ -71,6 +72,17 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
       return;
     }
     manager.sendLiveControls(controls);
+  }
+
+
+
+  liveEventDone(ControlType type, int durationInMs, int maxIntensity) {
+    List<Control> controls = [];
+    for (Shocker s in manager.getSelectedShockers()) {
+      controls.add(s.getLimitedControls(ControlType.stop, maxIntensity, durationInMs));
+    }
+    // we create a log entry for transparency with the other user
+    if(manager.settings.liveControlsLogWorkaround) manager.sendControls(controls, customName: "{live}{${LiveControlWS.getControl(type)}}");
   }
 
   bool loadingPause = false;
@@ -241,6 +253,9 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                                                   ?.setPageSwipeEnabled(liveEnabled);
                               setState(() {
                                 liveEnabled = !liveEnabled;
+                                if(!liveEnabled) {
+                                  manager.disconnectAllFromLiveControlGateway();
+                                }
                               });
                             }
                           },
@@ -255,6 +270,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                         shockAllowed: limitedShocker.shockAllowed,
                         intensityLimit: limitedShocker.intensityLimit,
                         settings: liveControlSettings,
+                        liveEventDone: liveEventDone,
                     ) :
                     ShockingControls(
                         manager: manager,

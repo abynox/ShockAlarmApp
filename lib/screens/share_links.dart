@@ -28,7 +28,7 @@ class ShareLinkCreationDialog extends StatefulWidget {
 class ShareLinkCreationDialogState extends State<ShareLinkCreationDialog> {
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return AlertDialog.adaptive(
       title: Text("Create Share Link"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -230,7 +230,7 @@ class ShareLinkItem extends StatelessWidget {
                   showDialog(
                       context: context,
                       builder: (context) {
-                        return AlertDialog(
+                        return AlertDialog.adaptive(
                           title: Text('QR Code for ${shareLink.name}'),
                           content: QrCard(data: shareLink.getLink()),
                           actions: [
