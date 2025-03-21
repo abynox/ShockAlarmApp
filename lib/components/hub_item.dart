@@ -52,10 +52,10 @@ class HubItem extends StatefulWidget {
                         // The hub has come online. We can close the pop up.
                         Navigator.of(navigatorKey.currentContext!).pop();
                         showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog.adaptive(
-                          title: Text("Hub online"),
+                          title: Text("Hub paired!"),
                           content: Column(spacing: 10, mainAxisSize: MainAxisSize.min, children: [
                             Text("Your hub has come online under your account! You can now use it."),
-                            Text("In case you didn't enter your pair code yet and see this, here is your pair code again: ${pairCode.code}")
+                            Text("In case you didn't enter your pair code yet, here is your pair code again: ${pairCode.code}")
                           ],),
                           actions: [
                             TextButton(onPressed: () {
