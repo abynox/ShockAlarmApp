@@ -101,7 +101,7 @@ class TokenItemState extends State<TokenItem> {
                         token.name,
                         style: t.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                       ),
-                      Text(token.tokenType==TokenType.openshock? "OpenShock" : "AlarmServer")
+                      Text("${token.tokenType==TokenType.openshock? "OpenShock" : "AlarmServer"} (${token.server.replaceAll("http://", "").replaceAll("https://", "")})", style: t.textTheme.labelSmall,),
                     ],
                   ),
                   Row(

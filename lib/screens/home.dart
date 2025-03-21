@@ -171,7 +171,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
       if (index != -1) {
         _selectedIndex = min(index, screens.length);
       } else {
-        if (manager.getAnyUserToken() == null) _selectedIndex = 3;
+        if (!manager.hasValidAccount()) _selectedIndex = 3;
         if (!supportsAlarms) _selectedIndex -= 1;
       }
       setState(() {});
@@ -243,7 +243,7 @@ class ScreenSelectorState extends State<ScreenSelector> {
 
   @override
   Widget build(BuildContext context) {
-    manager.startAnyWS();
+    manager.startAllWS();
     return Scaffold(
         body: Padding(
           padding: const EdgeInsets.only(

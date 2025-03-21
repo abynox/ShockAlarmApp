@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/card.dart';
 import 'package:shock_alarm_app/components/live_controls.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
@@ -13,7 +14,6 @@ import 'dart:convert';
 
 import 'alarm_manager.dart';
 
-
 class AlarmListManager {
   final List<Alarm> _alarms = [];
   final List<Shocker> shockers = [];
@@ -26,7 +26,7 @@ class AlarmListManager {
   List<OpenShockShareLink>? shareLinks;
   final Map<String, bool> enabledHubs = {};
   Settings settings = Settings();
-  OpenShockWS? ws;
+  Map<int, OpenShockWS?> ws = {};
   static AlarmListManager? instance;
   AlarmTone? selectedTone;
 
@@ -35,10 +35,9 @@ class AlarmListManager {
   ControlsContainer controls = ControlsContainer();
 
   AlarmListManager() {
-    if(isAndroid() && !settings.useAlarmServer) {
+    if (isAndroid() && !settings.useAlarmServer) {
       alarmManager = AndroidAlarmManager();
-    }
-    else {
+    } else {
       alarmManager = AlarmServerAlarmManager();
     }
   }
@@ -56,7 +55,6 @@ class AlarmListManager {
   static AlarmListManager getInstance() {
     return instance!;
   }
-
 
   Future loadAllFromStorage() async {
     instance = this;
@@ -79,7 +77,7 @@ class AlarmListManager {
     List<dynamic> shareLinksList = jsonDecode(shareLinks);
     List<dynamic> livePatternsList = jsonDecode(livePatternsString);
     this.settings = Settings.fromJson(jsonDecode(settings));
-    if(!supportsWs()) this.settings.useHttpShocking = true;
+    if (!supportsWs()) this.settings.useHttpShocking = true;
     for (var alarm in alarmsList) {
       _alarms.add(Alarm.fromJson(alarm));
     }
@@ -92,13 +90,13 @@ class AlarmListManager {
     for (var hub in hubsList) {
       this.hubs.add(Hub.fromJson(hub));
     }
-    for(var pattern in livePatternsList) {
+    for (var pattern in livePatternsList) {
       livePatterns.add(LivePattern.fromJson(pattern));
     }
     for (var shocker in shockersList) {
       Shocker s = Shocker.fromJson(shocker);
-      for(var hub in this.hubs) {
-        if(s.hubId == hub.id) {
+      for (var hub in this.hubs) {
+        if (s.hubId == hub.id) {
           s.hubReference = hub;
           hub.apiTokenId = s.apiTokenId;
         }
@@ -116,14 +114,14 @@ class AlarmListManager {
     }
     updateHubList();
     rebuildAlarmShockers();
-    if(reloadAllMethod != null) {
+    if (reloadAllMethod != null) {
       reloadAllMethod!();
     }
   }
 
   Token? getTokenByToken(String? token) {
-    for(Token t in _tokens) {
-      if(t.token == token) return t;
+    for (Token t in _tokens) {
+      if (t.token == token) return t;
     }
     return null;
   }
@@ -137,8 +135,8 @@ class AlarmListManager {
     for (var hub in hubs) {
       enabledHubs.putIfAbsent(hub.id, () => true);
     }
-    for(var hub in enabledHubs.keys.toList()) {
-      if(hubs.indexWhere((element) => element.id == hub) == -1) {
+    for (var hub in enabledHubs.keys.toList()) {
+      if (hubs.indexWhere((element) => element.id == hub) == -1) {
         enabledHubs.remove(hub);
       }
     }
@@ -171,6 +169,7 @@ class AlarmListManager {
     }
     return id;
   }
+
   int getNewToneId() {
     int id = 0;
     bool foundNew = false;
@@ -188,56 +187,55 @@ class AlarmListManager {
   }
 
   saveAlarm(Alarm alarm, {bool updateServer = true}) async {
-    final index =
-        _alarms.indexWhere((findAlarm) => alarm.id == findAlarm.id);
+    final index = _alarms.indexWhere((findAlarm) => alarm.id == findAlarm.id);
     if (index == -1) {
       print('Adding new alarm');
       _alarms.add(alarm);
     } else {
       _alarms[index] = alarm;
     }
-    if(updateServer) alarmManager?.saveAlarm(alarm);
+    if (updateServer) alarmManager?.saveAlarm(alarm);
     rebuildAlarmShockers();
     rescheduleAlarms();
     saveAlarms();
   }
-  
+
   Future<bool> updateShockerStore() async {
     List<Shocker> shockers = [];
     List<Hub> hubs = [];
     List<Token> tokensCopy = this._tokens.toList(); // create a copy
     bool tokenExpired = false;
-    for(var token in tokensCopy) {
+    for (var token in tokensCopy) {
       OpenShockClient client = OpenShockClient();
-      if(!await client.setInfoOfToken(token)) {
+      if (!await client.setInfoOfToken(token)) {
         tokenExpired = true;
         token.invalidSession = true;
         // if another session of the same account exists remove that one
-        for(var otherToken in tokensCopy) {
-          if(otherToken.userId == token.userId) {
+        for (var otherToken in tokensCopy) {
+          if (otherToken.userId == token.userId) {
             _tokens.remove(token);
             tokenExpired = false;
           }
         }
         continue;
       }
-      
+
       DeviceContainer devices = await client.GetShockersForToken(token);
       // add shockers without duplicates
-      for(var hub in devices.hubs) {
-        if(hubs.indexWhere((element) => element.id == hub.id) == -1) {
+      for (var hub in devices.hubs) {
+        if (hubs.indexWhere((element) => element.id == hub.id) == -1) {
           hubs.add(hub);
         }
       }
-      for(var shocker in devices.shockers) {
-        if(shockers.indexWhere((element) => element.id == shocker.id) == -1) {
+      for (var shocker in devices.shockers) {
+        if (shockers.indexWhere((element) => element.id == shocker.id) == -1) {
           shockers.add(shocker);
         }
       }
     }
     List<String> newSelected = [];
-    for(var shocker in shockers) {
-      if(selectedShockers.contains(shocker.id)) {
+    for (var shocker in shockers) {
+      if (selectedShockers.contains(shocker.id)) {
         newSelected.add(shocker.id);
       }
     }
@@ -251,11 +249,11 @@ class AlarmListManager {
     updateHubList();
     rebuildAlarmShockers();
     updateShareLinks();
-    if(reloadAllMethod != null) reloadAllMethod!();
-    if(tokenExpired) {
+    if (reloadAllMethod != null) reloadAllMethod!();
+    if (tokenExpired) {
       showSessionExpired();
     }
-    if(!supportsWs()) updateHubStatusViaHttp();
+    if (!supportsWs()) updateHubStatusViaHttp();
     return !tokenExpired;
   }
 
@@ -263,43 +261,52 @@ class AlarmListManager {
 
   Future disconnectFromLiveControlGateway(Hub hub) async {
     // close connection if still open and remove from map
-    if(liveControlGatewayConnections.containsKey(hub.id)) {
+    if (liveControlGatewayConnections.containsKey(hub.id)) {
       await liveControlGatewayConnections[hub.id]?.dispose();
       liveControlGatewayConnections.remove(hub.id);
     }
   }
+
   Future disconnectAllFromLiveControlGateway() async {
     // close connection if still open and remove from map
-    for(var key in liveControlGatewayConnections.keys.toList()) {
+    for (var key in liveControlGatewayConnections.keys.toList()) {
       disconnectFromLiveControlGateway(Hub()..id = key);
     }
   }
 
   Future<ErrorContainer<bool>> connectToLiveControlGateway(Hub hub) async {
     OpenShockLCGResponse? lcg = await OpenShockClient().getLCGInfo(hub);
-    if(lcg == null) {
-      return ErrorContainer(false, "Couldn't fetch live control gateway information for hub");
+    if (lcg == null) {
+      return ErrorContainer(
+          false, "Couldn't fetch live control gateway information for hub");
     }
-    if(lcg.gateway == null) {
-      return ErrorContainer(false, "Couldn't find live control gateway for hub");
+    if (lcg.gateway == null) {
+      return ErrorContainer(
+          false, "Couldn't find live control gateway for hub");
     }
     LiveControlWS ws = LiveControlWS(lcg?.gateway, hub, (hub) {
       disconnectFromLiveControlGateway(hub);
-    }, getAnyUserToken());
+    }, getToken(hub.apiTokenId));
     liveControlGatewayConnections[hub.id] = ws;
 
     return ErrorContainer(true, null);
   }
 
   void showSessionExpired() {
-    showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog.adaptive(title: Text("Session expired"),
-      content: Text("Your session has expired. To continue using the app log in again in the settings page."),
-      actions: [
-        TextButton(onPressed: () {
-          Navigator.of(context).pop();
-        }, child: Text("Ok"))
-      ],
-    ));
+    showDialog(
+        context: navigatorKey.currentContext!,
+        builder: (context) => AlertDialog.adaptive(
+              title: Text("Session expired"),
+              content: Text(
+                  "Your session has expired. To continue using the app log in again in the settings page."),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Ok"))
+              ],
+            ));
   }
 
   Future saveToken(Token token) async {
@@ -315,7 +322,8 @@ class AlarmListManager {
   }
 
   Future saveAlarmServerToken(Token token) async {
-    final index = _alarmServerTokens.indexWhere((findToken) => token.id == findToken.id);
+    final index =
+        _alarmServerTokens.indexWhere((findToken) => token.id == findToken.id);
     if (index == -1) {
       _alarmServerTokens.add(token);
     } else {
@@ -332,18 +340,22 @@ class AlarmListManager {
   }
 
   void rebuildAlarmShockers() {
-    for(var alarm in _alarms) {
+    for (var alarm in _alarms) {
       // remove shockers which don't exist
-      alarm.shockers.removeWhere((element) => shockers.indexWhere((shocker) => shocker.id == element.shockerId) == -1);
-      for(var shocker in shockers) {
+      alarm.shockers.removeWhere((element) =>
+          shockers.indexWhere((shocker) => shocker.id == element.shockerId) ==
+          -1);
+      for (var shocker in shockers) {
         // check if shocker is already present in alarm
-        if(alarm.shockers.indexWhere((element) => element.shockerId == shocker.id) == -1) {
+        if (alarm.shockers
+                .indexWhere((element) => element.shockerId == shocker.id) ==
+            -1) {
           alarm.shockers.add(AlarmShocker()..shockerId = shocker.id);
         }
 
         // Set reference to shocker
-        for(var alarmShocker in alarm.shockers) {
-          if(alarmShocker.shockerId == shocker.id) {
+        for (var alarmShocker in alarm.shockers) {
+          if (alarmShocker.shockerId == shocker.id) {
             alarmShocker.shockerReference = shocker;
           }
         }
@@ -392,10 +404,10 @@ class AlarmListManager {
 
   Future<String?> deleteToken(Token token) async {
     String? error;
-    if(token.isSession) {
+    if (token.isSession) {
       // Invalidate session
       error = await OpenShockClient().logout(token);
-      if(error != null) return error;
+      if (error != null) return error;
     }
     _tokens.removeWhere((findToken) => token.id == findToken.id);
     await saveTokens();
@@ -408,15 +420,17 @@ class AlarmListManager {
   }
 
   Token? getToken(int id) {
-    for(Token token in _tokens) {
-      if(token.id == id) {
+    for (Token token in _tokens) {
+      if (token.id == id) {
         return token;
       }
     }
     return null;
   }
 
-  Future<String?> sendShock(ControlType type, Shocker shocker, int currentIntensity, int currentDuration, {String? customName, bool useWs = true}) async {
+  Future<String?> sendShock(ControlType type, Shocker shocker,
+      int currentIntensity, int currentDuration,
+      {String? customName, bool useWs = true}) async {
     Control control = Control();
     control.intensity = currentIntensity;
     control.duration = currentDuration;
@@ -424,25 +438,33 @@ class AlarmListManager {
     control.id = shocker.id;
     control.exclusive = true;
     Token? t = getToken(shocker.apiTokenId);
-    if(t == null) {
+    if (t == null) {
       return "Token not found";
     }
-    print("Sending ${type} to ${shocker.name} with intensity $currentIntensity and duration $currentDuration");
+    print(
+        "Sending ${type} to ${shocker.name} with intensity $currentIntensity and duration $currentDuration");
     OpenShockClient client = OpenShockClient();
-    return await client.sendControls(t, [control], this, customName: customName, useWs: !settings.useHttpShocking && useWs) ? null : "Failed to send shock, is your token still valid?";
+    return await client.sendControls(t, [control], this,
+            customName: customName, useWs: !settings.useHttpShocking && useWs)
+        ? null
+        : "Failed to send shock, is your token still valid?";
   }
 
-  Future<bool> login(String serverAddress, String email, String password) async {
-    Token? session = await OpenShockClient().login(serverAddress, email, password, this);
-    if(session != null) {
+  Future<bool> login(
+      String serverAddress, String email, String password) async {
+    Token? session =
+        await OpenShockClient().login(serverAddress, email, password, this);
+    if (session != null) {
       await saveToken(session);
     }
     return session != null;
   }
 
-  Future<ErrorContainer<Token>> alarmServerLogin(String serverAddress, String username, String password, bool register) async {
-    ErrorContainer<Token> session = await AlarmServerClient().loginOrRegister(serverAddress, username, password, register);
-    if(session.value != null) {
+  Future<ErrorContainer<Token>> alarmServerLogin(String serverAddress,
+      String username, String password, bool register) async {
+    ErrorContainer<Token> session = await AlarmServerClient()
+        .loginOrRegister(serverAddress, username, password, register);
+    if (session.value != null) {
       await saveAlarmServerToken(session.value!);
     }
     return session;
@@ -452,17 +474,22 @@ class AlarmListManager {
     return OpenShockClient().editShocker(shocker, edit, this);
   }
 
-
   Future<String?> renameHub(Hub hub, String text) {
     return OpenShockClient().renameHub(hub, text, this);
   }
 
-  Future<List<ShockerLog>> getShockerLogs(Shocker shocker, {int limit = 100}) async {
-    List<ShockerLog> logs = await OpenShockClient().getShockerLogs(shocker, this, 0, limit);
+  Future<List<ShockerLog>> getShockerLogs(Shocker shocker,
+      {int limit = 100}) async {
+        print("getting logs");
+    List<ShockerLog> logs =
+        await OpenShockClient().getShockerLogs(shocker, this, 0, limit);
+        print("got logs");
     shockerLog.putIfAbsent(shocker.id, () => []);
-    for(ShockerLog l in logs) {
+    for (ShockerLog l in logs) {
       // only add logs which are not already in the list
-      if(shockerLog.containsKey(shocker.id) && shockerLog[shocker.id]!.indexWhere((element) => element.id == l.id) == -1) {
+      if (shockerLog.containsKey(shocker.id) &&
+          shockerLog[shocker.id]!.indexWhere((element) => element.id == l.id) ==
+              -1) {
         shockerLog[shocker.id]?.add(l);
       }
     }
@@ -474,23 +501,77 @@ class AlarmListManager {
   }
 
   Future<List<OpenShockShareCode>> getShockerShareCodes(Shocker shocker) {
-    return OpenShockClient().getShockerShareCodes(shocker, this);
+    return OpenShockClient().getShockerShareCodes(shocker, this); 
   }
 
   Future<String?> deleteShareCode(OpenShockShareCode shareCode) {
     return OpenShockClient().deleteShareCode(shareCode, this);
   }
 
-
-
   Token? getAnyUserToken() {
-    for(var token in getTokens()) {
-      if(token.invalidSession) continue;
-      if(token.name.isNotEmpty) {
+    for (var token in getTokens()) {
+      if (token.invalidSession) continue;
+      if (token.name.isNotEmpty) {
         return token;
       }
     }
     return null;
+  }
+
+  Future<Token?> getSpecificUserToken() async {
+    // gets a specific token. Asks the user to choose if multiple are present
+    List<Token> validTokens = [];
+    for (var token in getTokens()) {
+      if (token.invalidSession) continue;
+      if (token.name.isNotEmpty) {
+        validTokens.add(token);
+      }
+    }
+    if (validTokens.isEmpty) return null;
+    if (validTokens.length == 1) return validTokens.first;
+    Token? selectedToken;
+    // we gotta show a pop up
+    ThemeData t = Theme.of(navigatorKey.currentContext!);
+    await showDialog(
+        context: navigatorKey.currentContext!,
+        builder: (context) => AlertDialog.adaptive(
+              title: Text("Select Account"),
+              content: Column(
+                spacing: 10,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("Select which account you want to use to continue"),
+                  ...validTokens.map((token) => GestureDetector(
+                    onTap: () {
+                      selectedToken = token;
+                      Navigator.of(context).pop();
+                    },
+                        child: PaddedCard(
+                            child: Column(
+                          children: [
+                            Text(
+                              token.name,
+                              style: t.textTheme.headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              token.server
+                                  .replaceAll("http://", "")
+                                  .replaceAll("https://", ""),
+                              style: t.textTheme.labelSmall,
+                            ),
+                          ],
+                        )),
+                      ))
+                ],
+              ),
+              actions: [
+                TextButton(onPressed: () {
+                  Navigator.of(context).pop();
+                }, child: Text("Cancel"))
+              ],
+            ));
+    return selectedToken;
   }
 
   bool hasValidAccount() {
@@ -503,13 +584,14 @@ class AlarmListManager {
 
   Future<List<OpenShockDevice>> getDevices() async {
     List<OpenShockDevice> devices = [];
-    for(var token in getTokens()) {
+    for (var token in getTokens()) {
       devices.addAll(await OpenShockClient().getDevices(token));
     }
     return devices;
   }
 
-  Future<String?> addShocker(String name, int rfId, String shockerType, OpenShockDevice? device) {
+  Future<String?> addShocker(
+      String name, int rfId, String shockerType, OpenShockDevice? device) {
     return OpenShockClient().addShocker(name, rfId, shockerType, device, this);
   }
 
@@ -519,11 +601,11 @@ class AlarmListManager {
 
   Future<String?> deleteShare(OpenShockShare share) {
     return OpenShockClient().deleteShare(share, this);
-    }
+  }
 
   Hub? getHub(String? hubId) {
-    for(var hub in hubs) {
-      if(hub.id == hubId) {
+    for (var hub in hubs) {
+      if (hub.id == hubId) {
         return hub;
       }
     }
@@ -553,17 +635,17 @@ class AlarmListManager {
   Function()? onRefresh;
   Function(OTAInstallProgress)? onOtaInstallProgress;
   Function()? otaInstallSucceeded;
-  
+
   static bool supportsWs() {
     return !kIsWeb;
   }
 
   Future updateHubStatusViaHttp() async {
-    for(var hub in hubs) {
+    for (var hub in hubs) {
       OpenShockClient().getLCGInfo(hub).then((OpenShockLCGResponse? res) {
         hub.online = res?.online ?? false;
 
-        if(hub.online && !onlineHubs.contains(hub.id)) {
+        if (hub.online && !onlineHubs.contains(hub.id)) {
           onlineHubs.add(hub.id);
         } else {
           onlineHubs.remove(hub.id);
@@ -574,50 +656,51 @@ class AlarmListManager {
   }
 
   Future startWS(Token t, {bool stopExisting = true}) async {
-    if(ws != null) {
-      if(!stopExisting) return;
-      await ws!.stopConnection();
+    if (ws[t.id] != null) {
+      if (!stopExisting) return;
+      await ws[t.id]!.stopConnection();
     }
-    ws = OpenShockWS(t);
-    await ws!.startConnection();
-    ws?.addMessageHandler("DeviceStatus", (List<dynamic>? list) {
-      if(list == null) return;
+    ws[t.id] = OpenShockWS(t);
+    await ws[t.id]!.startConnection();
+    ws[t.id]?.addMessageHandler("DeviceStatus", (List<dynamic>? list) {
+      if (list == null) return;
       deviceStatusHandler(list);
     });
-    ws?.addMessageHandler("Log", (List<dynamic>? list) {
-      if(list == null) return;
+    ws[t.id]?.addMessageHandler("Log", (List<dynamic>? list) {
+      if (list == null) return;
       OpenShockUser user = OpenShockUser.fromJson(list[0]);
-      for(Map<String, dynamic> shocker in list[1]){
+      for (Map<String, dynamic> shocker in list[1]) {
         WSShockerLog wslog = WSShockerLog.fromJson(shocker);
         ShockerLog log = ShockerLog.fromWs(wslog, user);
-        log.shockerReference = shockers.firstWhere((element) => element.id == wslog.shocker?.id);
+        log.shockerReference =
+            shockers.firstWhere((element) => element.id == wslog.shocker?.id);
         shockerLog.putIfAbsent(log.shockerReference?.id, () => []).add(log);
       }
-      if(reloadShockerLogs != null) {
+      if (reloadShockerLogs != null) {
         reloadShockerLogs!();
       }
     });
-    ws?.addMessageHandler("OtaInstallProgress", (List<dynamic>? list) {
+    ws[t.id]?.addMessageHandler("OtaInstallProgress", (List<dynamic>? list) {
       OTAInstallProgress progress = OTAInstallProgress();
       progress.hubId = list![0];
       progress.id = AlarmToneComponent.cast<int>(list[1]) ?? 0;
       progress.step = AlarmToneComponent.cast<int>(list[2]) ?? 0;
       progress.progress = AlarmToneComponent.cast<double>(list[3]) ?? 0.0;
-      if(onOtaInstallProgress != null) {
+      if (onOtaInstallProgress != null) {
         onOtaInstallProgress!(progress);
       }
     });
-    ws?.addMessageHandler("OtaInstallSucceeded", (List<dynamic>? list) {
-      if(otaInstallSucceeded != null) {
+    ws[t.id]?.addMessageHandler("OtaInstallSucceeded", (List<dynamic>? list) {
+      if (otaInstallSucceeded != null) {
         otaInstallSucceeded!();
       }
     });
-    ws?.addMessageHandler("DeviceUpdate", (List<dynamic>? list) {
-      if(list == null) return;
-      if(list.length < 1) return;
+    ws[t.id]?.addMessageHandler("DeviceUpdate", (List<dynamic>? list) {
+      if (list == null) return;
+      if (list.length < 1) return;
       String deviceId = list[0];
-      if(queuedUpdate) return;
-      queuedUpdate= true;
+      if (queuedUpdate) return;
+      queuedUpdate = true;
       Future.delayed(Duration(milliseconds: 500), () {
         queuedUpdate = false;
         updateShockerStore();
@@ -630,16 +713,16 @@ class AlarmListManager {
   Function(OpenShockDevice device)? onDeviceStatusUpdated;
 
   void deviceStatusHandler(List<dynamic> args) {
-    for(var arg in args[0]) {
+    for (var arg in args[0]) {
       OpenShockDevice d = OpenShockDevice.fromJson(arg);
-      for(Hub h in hubs) {
-        if(h.id == d.device) {
+      for (Hub h in hubs) {
+        if (h.id == d.device) {
           h.online = d.online;
           h.firmwareVersion = d.firmwareVersion;
         }
       }
       onDeviceStatusUpdated?.call(d);
-      if(d.online && !onlineHubs.contains(d.device)) {
+      if (d.online && !onlineHubs.contains(d.device)) {
         onlineHubs.add(d.device);
       } else {
         onlineHubs.remove(d.device);
@@ -648,15 +731,18 @@ class AlarmListManager {
     reloadAllMethod!();
   }
 
-  Future<String?> sendControls(List<Control> controls, {String? customName, bool useWs = true}) async {
+  Future<String?> sendControls(List<Control> controls,
+      {String? customName, bool useWs = true}) async {
     Map<int, List<Control>> controlsByToken = {};
-    for(var control in controls) {
+    for (var control in controls) {
       controlsByToken.putIfAbsent(control.apiTokenId, () => []).add(control);
     }
     OpenShockClient client = OpenShockClient();
-    for(var token in getTokens()) {
-      if(controlsByToken.containsKey(token.id)) {
-        if(!await client.sendControls(token, controlsByToken[token.id]!, this, customName: customName, useWs: !settings.useHttpShocking && useWs)) {
+    for (var token in getTokens()) {
+      if (controlsByToken.containsKey(token.id)) {
+        if (!await client.sendControls(token, controlsByToken[token.id]!, this,
+            customName: customName,
+            useWs: !settings.useHttpShocking && useWs)) {
           return "Failed to send shock to at least 1 shocker, is your token still valid?";
         }
       }
@@ -664,26 +750,31 @@ class AlarmListManager {
     return null;
   }
 
-  Future<String?> sendLiveControls(List<Control> controls, {String customName = "ShockAlarm", bool useWs = true}) async {
+  Future<String?> sendLiveControls(List<Control> controls,
+      {String customName = "ShockAlarm", bool useWs = true}) async {
     Map<String?, List<Control>> controlsByHub = {};
-    for(var control in controls) {
-      if(control.type == ControlType.sound && control.intensity <= 0) continue; // don't send sound as it seems to always play
-      controlsByHub.putIfAbsent(control.shockerReference?.hubId, () => []).add(control);
+    for (var control in controls) {
+      if (control.type == ControlType.sound && control.intensity <= 0)
+        continue; // don't send sound as it seems to always play
+      controlsByHub
+          .putIfAbsent(control.shockerReference?.hubId, () => [])
+          .add(control);
     }
-    for(String? key in controlsByHub.keys) {
-      if(!liveControlGatewayConnections.containsKey(key)) {
+    for (String? key in controlsByHub.keys) {
+      if (!liveControlGatewayConnections.containsKey(key)) {
         return "Not connected to live control gateway for ${getHub(key)?.name ?? key ?? "unspecified hub  "}";
       }
-      for(Control control in controlsByHub[key]!) {
-        liveControlGatewayConnections[key]?.sendControl(control.shockerReference!, control.type, control.intensity);
+      for (Control control in controlsByHub[key]!) {
+        liveControlGatewayConnections[key]?.sendControl(
+            control.shockerReference!, control.type, control.intensity);
       }
     }
     return null;
   }
 
-  Future<dynamic> startAnyWS() async {
-    for(var token in getTokens()) {
-      return await startWS(token, stopExisting: false);
+  Future<dynamic> startAllWS() async {
+    for (var token in getTokens()) {
+      await startWS(token, stopExisting: false);
     }
   }
 
@@ -696,17 +787,19 @@ class AlarmListManager {
     } else {
       alarmTones[index] = tone;
     }
-    if(updateServer) alarmManager?.saveTone(tone);
+    if (updateServer) alarmManager?.saveTone(tone);
     saveAlarmTones();
   }
 
   void saveLivePatterns() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("livePatterns", jsonEncode(livePatterns.map((e) => e.toJson()).toList()));
+    prefs.setString("livePatterns",
+        jsonEncode(livePatterns.map((e) => e.toJson()).toList()));
   }
 
   void saveLivePattern(LivePattern pattern) {
-    final index = livePatterns.indexWhere((findPattern) => pattern.id == findPattern.id);
+    final index =
+        livePatterns.indexWhere((findPattern) => pattern.id == findPattern.id);
     if (index == -1) {
       livePatterns.add(pattern);
     } else {
@@ -722,9 +815,9 @@ class AlarmListManager {
   }
 
   AlarmTone? getTone(int? id) {
-    if(id == null) return null;
-    for(var tone in alarmTones) {
-      if(tone.id == id) {
+    if (id == null) return null;
+    for (var tone in alarmTones) {
+      if (tone.id == id) {
         return tone;
       }
     }
@@ -732,10 +825,11 @@ class AlarmListManager {
   }
 
   Future<bool> loginToken(String serverAddress, String token) async {
-    Token tokentoken = Token(DateTime.now().millisecondsSinceEpoch, token, server: serverAddress, isSession: false);
+    Token tokentoken = Token(DateTime.now().millisecondsSinceEpoch, token,
+        server: serverAddress, isSession: false);
     OpenShockClient client = OpenShockClient();
     bool worked = await client.setInfoOfToken(tokentoken);
-    if(worked) {
+    if (worked) {
       saveToken(tokentoken);
     }
     return worked;
@@ -744,7 +838,7 @@ class AlarmListManager {
   Future updateShareLinks() async {
     List<OpenShockShareLink> links = [];
     OpenShockClient client = OpenShockClient();
-    for(Token token in getTokens()) {
+    for (Token token in getTokens()) {
       links.addAll(await client.getShareLinks(token));
     }
     shareLinks = links;
@@ -761,15 +855,16 @@ class AlarmListManager {
     return client.getShareLink(shareLink.tokenReference!, shareLink.id);
   }
 
-  Future<String?> addShockerToShareLink(Shocker? selectedShocker, OpenShockShareLink openShockShareLink) {
+  Future<String?> addShockerToShareLink(
+      Shocker? selectedShocker, OpenShockShareLink openShockShareLink) {
     OpenShockClient client = OpenShockClient();
     return client.addShockerToShareLink(selectedShocker!, openShockShareLink);
   }
 
-  Future<PairCode> createShareLink(String shareLinkName, DateTime dateTime) async {
+  Future<PairCode> createShareLink(
+      String shareLinkName, DateTime dateTime, Token? token) async {
     OpenShockClient client = OpenShockClient();
-    Token? token = getAnyUserToken();
-    if(token == null) return PairCode("No token found", null);
+    if (token == null) return PairCode("No token found", null);
     return client.createShareLink(token, shareLinkName, dateTime);
   }
 
@@ -782,7 +877,6 @@ class AlarmListManager {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getInt("page") ?? -1;
   }
-
 
   Shocker getSelectedShockerLimits() {
     Shocker limitedShocker = Shocker();
@@ -825,8 +919,8 @@ class AlarmListManager {
   }
 
   bool anyAlarmOn() {
-    for(var alarm in _alarms) {
-      if(alarm.active) {
+    for (var alarm in _alarms) {
+      if (alarm.active) {
         return true;
       }
     }
@@ -834,9 +928,9 @@ class AlarmListManager {
   }
 
   Token? getAlarmServerUserToken() {
-    for(var token in _alarmServerTokens) {
-      if(token.invalidSession) continue;
-      if(token.name.isNotEmpty) {
+    for (var token in _alarmServerTokens) {
+      if (token.invalidSession) continue;
+      if (token.name.isNotEmpty) {
         return token;
       }
     }
@@ -844,36 +938,43 @@ class AlarmListManager {
   }
 
   void dialogError(String title, String body) {
-    showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog.adaptive(title: Text(title),
-      content: Text(body),
-      actions: [
-        TextButton(onPressed: () {
-          Navigator.of(context).pop();
-        }, child: Text("Ok"))
-      ],
-    ));
+    showDialog(
+        context: navigatorKey.currentContext!,
+        builder: (context) => AlertDialog.adaptive(
+              title: Text(title),
+              content: Text(body),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Ok"))
+              ],
+            ));
   }
 
   Future addAlarmServerAlarms() async {
-    ErrorContainer<List<AlarmTone>> tones = await alarmManager?.getAlarmTones() ?? ErrorContainer([], null);
-    if(tones.error != null) {
+    ErrorContainer<List<AlarmTone>> tones =
+        await alarmManager?.getAlarmTones() ?? ErrorContainer([], null);
+    if (tones.error != null) {
       dialogError("Failed to get alarm tones", tones.error!);
       return;
     }
-    for(var tone in tones.value!) {
-      if(tone.id == -1) {
+    for (var tone in tones.value!) {
+      if (tone.id == -1) {
         tone.id = getNewToneId();
       }
       await saveTone(tone);
     }
 
-    ErrorContainer<List<Alarm>> alarms = await alarmManager?.getAlarms() ?? ErrorContainer([], null);
-    if(alarms.error != null) {
+    ErrorContainer<List<Alarm>> alarms =
+        await alarmManager?.getAlarms() ?? ErrorContainer([], null);
+    if (alarms.error != null) {
       dialogError("Failed to get alarms", tones.error!);
       return;
     }
-    for(var alarm in alarms.value!) {
-      if(alarm.id == -1) {
+    for (var alarm in alarms.value!) {
+      if (alarm.id == -1) {
         alarm.id = getNewAlarmId();
       }
       await saveAlarm(alarm);
@@ -883,26 +984,26 @@ class AlarmListManager {
   // {"arguments":["5ff90a57-711a-45f8-8952-6eb2f961a251","1.4.0"],"invocationId":"1","target":"OtaInstall","type":1}
 
   Future startHubUpdate(Hub hub, String version) async {
-    await startAnyWS();
-    await ws?.connection?.invoke('OtaInstall', args: [
-        hub.id,
-        version
-      ]);
+    await startAllWS();
+    await ws[getToken(hub.apiTokenId)?.id]?.connection?.invoke('OtaInstall', args: [hub.id, version]);
   }
+
   bool areSelectedShockersConnected() {
-    for(var shocker in getSelectedShockers()) {
-      if(!liveControlGatewayConnections.keys.contains(shocker.hubId)) {
+    for (var shocker in getSelectedShockers()) {
+      if (!liveControlGatewayConnections.keys.contains(shocker.hubId)) {
         return false;
       }
     }
     return true;
   }
 
-  Future<ErrorContainer<bool>> connectToLiveControlGatewayOfSelectedShockers() async {
-    for(var shocker in getSelectedShockers()) {
-      if(!liveControlGatewayConnections.keys.contains(shocker.hubId)) {
-        ErrorContainer<bool> error = await connectToLiveControlGateway(getHub(shocker.hubId)!);
-        if(error.error != null) return error;
+  Future<ErrorContainer<bool>>
+      connectToLiveControlGatewayOfSelectedShockers() async {
+    for (var shocker in getSelectedShockers()) {
+      if (!liveControlGatewayConnections.keys.contains(shocker.hubId)) {
+        ErrorContainer<bool> error =
+            await connectToLiveControlGateway(getHub(shocker.hubId)!);
+        if (error.error != null) return error;
       }
     }
     return ErrorContainer(true, null);

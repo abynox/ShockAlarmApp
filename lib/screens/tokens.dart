@@ -80,7 +80,7 @@ class TokenScreenState extends State<TokenScreen> {
               ));
       return;
     }
-    Token? OpenShockToken = AlarmListManager.getInstance().getAnyUserToken();
+    Token? OpenShockToken = await AlarmListManager.getInstance().getSpecificUserToken();
     if (OpenShockToken == null) {
       ErrorDialog.show("Login failed",
           "No OpenShock token found. Please log in to OpenShock first.");
@@ -502,7 +502,6 @@ class TokenScreenState extends State<TokenScreen> {
         child: ListView(
       children: <Widget>[
         Column(
-          spacing: 10,
           children: [
             Text(
               'Settings',
@@ -529,7 +528,6 @@ class TokenScreenState extends State<TokenScreen> {
 
         if (AlarmListManager.getInstance().settings.useAlarmServer) ...[
           Column(
-            spacing: 10,
             children: [
               for (var token in manager.getAlarmServerTokens())
                 TokenItem(
@@ -557,7 +555,7 @@ class TokenScreenState extends State<TokenScreen> {
           mainAxisSize: MainAxisSize.max,
           spacing: 10,
           children: [
-            if (manager.getTokens().isEmpty)
+            if (manager.getTokens().isEmpty || manager.settings.allowMultiServerLogin)
               FilledButton(
                 onPressed: () async {
                   await showDialog(
@@ -780,6 +778,26 @@ class TokenScreenState extends State<TokenScreen> {
                 onChanged: (value) {
                   setState(() {
                     manager.settings.liveControlsLogWorkaround = value;
+                    manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(children: [
+            Text("Allow login to multiple servers"),
+            IconButton(onPressed: () {
+              InfoDialog.show("Why?",
+              "OpenShock can be self hosted meaning multiple instances are available. You can use ShockAlarm to interact with all instances you want at once to easily control your friends shockers. Even if they are on a different instance from yours.");
+            }, icon: Icon(Icons.info))],),
+            Switch(
+                value: manager.settings.allowMultiServerLogin,
+                key: ValueKey("allowMultiServerLogin"),
+                onChanged: (value) {
+                  setState(() {
+                    manager.settings.allowMultiServerLogin = value;
                     manager.saveSettings();
                   });
                 })

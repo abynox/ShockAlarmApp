@@ -47,7 +47,7 @@ class ShockerItem extends StatefulWidget {
               context: context,
               builder: (context) => AlertDialog.adaptive(
                     title: Text("Edit shocker"),
-                    content: ShockerDetails(shocker: s, devices: devices),
+                    content: ShockerDetails(shocker: s, devices: devices, apiTokenId: shocker.apiTokenId,),
                     actions: [
                       TextButton(
                           onPressed: () {

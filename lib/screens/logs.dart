@@ -34,10 +34,12 @@ class LogScreenState extends State<LogScreen> {
     initialLoading = true;
     manager.reloadShockerLogs = () {
       List<ShockerLog> newLogs = [];
-      for (var shocker in shockers)
+      for (var shocker in shockers) {
         newLogs.addAll(manager.shockerLog[shocker.id] ?? []);
+      }
       newLogs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
       setState(() {
+        initialLoading = false;
         logs = newLogs;
       });
       if(reloadShockerLogs != null) {
@@ -46,6 +48,8 @@ class LogScreenState extends State<LogScreen> {
     };
     if(needsToLoadLogsOnStart()) {
       loadLogs();
+    } else {
+      manager.reloadShockerLogs?.call();
     }
   }
 

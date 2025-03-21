@@ -13,6 +13,7 @@ import 'package:shock_alarm_app/screens/share_link_edit.dart';
 import 'package:shock_alarm_app/screens/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
+import 'package:shock_alarm_app/stores/alarm_store.dart';
 
 import '../components/constrained_container.dart';
 import '../components/desktop_mobile_refresh_indicator.dart';
@@ -79,9 +80,10 @@ class ShareLinkCreationDialogState extends State<ShareLinkCreationDialog> {
                 ErrorDialog.show("Name is empty", "Please enter a name for the share link");
                 return;
               }
+              Token? token = await AlarmListManager.getInstance().getSpecificUserToken();
               LoadingDialog.show("Creating Share Link");
               PairCode error = await AlarmListManager.getInstance()
-                  .createShareLink(widget.shareLinkName, widget.expiresOn!);
+                  .createShareLink(widget.shareLinkName, widget.expiresOn!, token);
               if (error.error != null) {
                 Navigator.of(context).pop();
                 ErrorDialog.show("Error creating share link", error.error!);
@@ -94,7 +96,7 @@ class ShareLinkCreationDialogState extends State<ShareLinkCreationDialog> {
                       shareLink: OpenShockShareLink.fromId(
                           error.code!,
                           widget.shareLinkName,
-                          AlarmListManager.getInstance().getAnyUserToken()))));
+                          token))));
               AlarmListManager.getInstance().reloadShareLinksMethod!();
             },
             child: Text("Create")),

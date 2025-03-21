@@ -224,7 +224,7 @@ class _LiveControlsState extends State<LiveControls> {
                   isPlaying: isPlaying,
                   pattern: pattern,
                   logEvent: (duration, intensity) => widget.liveEventDone?.call(type, duration, intensity),
-                  respondInterval: 50,
+                  respondInterval: getRequestedTps(), // 10 tps from LCG
                   intensityLimit: widget.intensityLimit,
                 )
               ],
@@ -286,6 +286,14 @@ class _LiveControlsState extends State<LiveControls> {
                     child: Text("Save pattern"))
               ],
             ));
+  }
+  
+  double getRequestedTps() {
+    int highestTps = 4;
+    AlarmListManager.getInstance().liveControlGatewayConnections.values.forEach((element) {
+      if(element.tps > highestTps) highestTps = element.tps;
+    });
+    return 1000 / highestTps;
   }
 }
 

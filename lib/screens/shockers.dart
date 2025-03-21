@@ -143,7 +143,7 @@ class ShockerScreen extends StatefulWidget {
         builder: (context) {
           return AlertDialog.adaptive(
             title: Text("Add new shocker"),
-            content: ShockerDetails(shocker: newShocker, devices: devices),
+            content: ShockerDetails(shocker: newShocker, devices: devices,),
             actions: <Widget>[
               TextButton(
                   onPressed: () {

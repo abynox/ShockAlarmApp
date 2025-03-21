@@ -13,11 +13,13 @@ A web version (for IOS, ...) can be found [here](https://computerelite.github.io
 # Features
 ShockAlarm is a powerful tool for controlling your Shockers via OpenShock. It allows you to fully manage your shockers, logs, shares, hubs, share links, tokens and sessions.
 
-There is advanced functionaity like controling multiple shockers at the same time, specifying a random interval for intensity, duration and a delay (if you're into that), live controls with patterns and alarms.
+There is advanced functionaity like controling multiple shockers at the same time, specifying a random interval for intensity, duration and a delay, live controls with patterns and alarms.
 
 It's fully material you themed just like the standard Android apps you're already used to and provides a responsive ui with a nice design.
 
 Furthermore it fixes some layout flaws of the official OpenShock Frontend like having shared and own shockers in seperate tabs (which is annoying). On top it also has lots of info buttons you can press to get more insight on what something does.
+
+You can also log in on multiple OpenShock instances at once. ShockAlarm will show all shockers from all instances seamlessly at a glance!
 
 # Installation on Android
 ## Through Obtainium (recommended as you get the updates the fastest)

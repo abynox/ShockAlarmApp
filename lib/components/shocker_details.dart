@@ -2,14 +2,16 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
+import 'package:shock_alarm_app/stores/alarm_store.dart';
 
 import '../services/openshock.dart';
 
 class ShockerDetails extends StatefulWidget {
   OpenShockShocker shocker;
+  int? apiTokenId;
   List<OpenShockDevice> devices;
 
-  ShockerDetails({required this.shocker, required this.devices});
+  ShockerDetails({required this.shocker, required this.devices, this.apiTokenId});
   @override
   ShockerDetailsState createState() => ShockerDetailsState();
 }
@@ -42,7 +44,7 @@ class ShockerDetailsState extends State<ShockerDetails> {
               },
               initialSelection: widget.shocker.device,
               dropdownMenuEntries: [
-                for (OpenShockDevice device in widget.devices)
+                for (OpenShockDevice device in widget.devices.where((x) => widget.apiTokenId == null || (x.apiTokenReference?.id ?? 0) == widget.apiTokenId))
                   DropdownMenuEntry(label: device.name, value: device.id),
               ]),
           DropdownMenu<String>(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:signalr_core/signalr_core.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/io.dart';
@@ -130,11 +131,12 @@ class LiveControlWS {
   Function(Hub) onError;
   Hub hub;
   Token? token;
+  int tps = 10;
 
   LiveControlWS(String? host, this.hub, this.onError, this.token) {
     if(host == null || token == null) return;
-    print("connecting");
-    channel = IOWebSocketChannel.connect(Uri.parse('wss://$host/1/ws/live/${hub.id}'), headers: {
+    print("connecting to LCG");
+    channel = IOWebSocketChannel.connect(Uri.parse('${this.token!.server.startsWith("https") ? "wss" : "ws"}://$host/1/ws/live/${hub.id}'), headers: {
       "User-Agent": GetUserAgent(),
       "OpenShockSession": token?.token
     });
@@ -148,6 +150,9 @@ class LiveControlWS {
         if(json["ResponseType"] == "Ping") {
           // just echo back
           channel?.sink.add(jsonEncode({"RequestType": "Pong", "Data": json["Data"]}));
+        }
+        if(json["ResponseType"] == "TPS") {
+          tps = json["Data"]["Client"];
         }
         if(json["ResponseType"] == "LatencyAnnounce") {
           latency.insert(0, json["Data"]["OwnLatency"]);

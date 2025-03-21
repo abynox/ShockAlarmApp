@@ -49,7 +49,7 @@ class ShareLinkEditScreenState extends State<ShareLinkEditScreen> {
     List<Shocker> ownShockers = await AlarmListManager.getInstance()
         .shockers
         .where((element) =>
-            element.isOwn && !existingShockers.contains(element.id))
+            element.isOwn && !existingShockers.contains(element.id) && element.apiTokenId == widget.shareLink.tokenId )
         .toList();
     Shocker? selectedShocker = null;
     OpenShockShareLimits limits = OpenShockShareLimits();

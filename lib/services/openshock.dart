@@ -162,10 +162,10 @@ class OpenShockClient {
 
   Future<bool> sendControls(Token t, List<Control> list, AlarmListManager manager, {String? customName, bool useWs = true}) async {
     if(useWs) {
-      if(manager.ws == null || manager.ws?.t.id != t.id) {
+      if(manager.ws[t.id] == null) {
         await manager.startWS(t);
       }
-      return await manager.ws?.sendControls(list, customName) ?? false;
+      return await manager.ws[t.id]?.sendControls(list, customName) ?? false;
     }
     
     String body = jsonEncode({
@@ -406,7 +406,7 @@ class OpenShockClient {
 
   Future<String?> redeemShareCode(String code, AlarmListManager alarmListManager) async {
     // first get a valid token
-    Token? t = alarmListManager.getAnyUserToken();
+    Token? t = await alarmListManager.getSpecificUserToken();
     if(t == null) {
       return "No valid session token found";
     }
@@ -497,7 +497,7 @@ class OpenShockClient {
   }
 
   Future<CreatedHub> addHub(String name, AlarmListManager manager) async {
-    Token? t = manager.getAnyUserToken();
+    Token? t = await manager.getSpecificUserToken();
     if(t == null) return CreatedHub(null, "No valid token found");
     var response = await PostRequest(t, "/1/devices", "");
     if(response.statusCode != 201) {
@@ -604,11 +604,11 @@ class OpenShockClient {
   }
 
   Future<String?> setCaptivePortal(Hub hub, bool enable, Token? t) async {
-    if(AlarmListManager.getInstance().ws == null || AlarmListManager.getInstance().ws?.t.id != t?.id) {
+    if(AlarmListManager.getInstance().ws[t?.id] == null) {
       if(t == null) return "Token not found";
       await AlarmListManager.getInstance().startWS(t);
     }
-    return await AlarmListManager.getInstance().ws?.setCaptivePortal(hub, enable);
+    return await AlarmListManager.getInstance().ws[t!.id]?.setCaptivePortal(hub, enable);
   }
 
   Future<OpenShockLCGResponse?> getLCGInfo(Hub hub) async {

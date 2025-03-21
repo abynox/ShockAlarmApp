@@ -25,6 +25,7 @@ class Settings {
   bool showFirmwareVersion = false;
   bool allowTonesForControls = false;
   bool liveControlsLogWorkaround = false;
+  bool allowMultiServerLogin = false;
 
 
   Settings();
@@ -56,6 +57,8 @@ class Settings {
       allowTonesForControls = json["allowTonesForControls"];
     if(json["liveControlsLogWorkaround"] != null)
       liveControlsLogWorkaround = json["liveControlsLogWorkaround"];
+    if(json["allowMultiServerLogin"] != null)
+      allowMultiServerLogin = json["allowMultiServerLogin"];
   }
 
   Map<String, dynamic> toJson() {
@@ -72,7 +75,8 @@ class Settings {
       "showFirmwareVersion": showFirmwareVersion,
       "useAlarmServer": useAlarmServer,
       "allowTonesForControls": allowTonesForControls,
-      "liveControlsLogWorkaround": liveControlsLogWorkaround
+      "liveControlsLogWorkaround": liveControlsLogWorkaround,
+      "allowMultiServerLogin": allowMultiServerLogin
     };
   }
 }
