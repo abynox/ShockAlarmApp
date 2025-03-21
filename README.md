@@ -8,12 +8,12 @@
 
 A powerfull app for controling [OpenShock](https://openshock.org/) shockers and setting alarms with custom tones.
 
-A web version (for IOS, Windows, ...) can be found [here](https://computerelite.github.io/ShockAlarmApp/).
+A web version (for IOS, ...) can be found [here](https://computerelite.github.io/ShockAlarmApp/) (does not support live controls).
 
 # Features
-ShockAlarm is a powerful tool for controlling your Shockers via OpenShock. It allows you to fully manage your shockers, logs, shares, hubs, and share links.
+ShockAlarm is a powerful tool for controlling your Shockers via OpenShock. It allows you to fully manage your shockers, logs, shares, hubs, share links, tokens and sessions.
 
-There is advanced functionaity like controling multiple shockers at the same time and specifying a random interval for intensity, duration and a delay (if you're into that).
+There is advanced functionaity like controling multiple shockers at the same time, specifying a random interval for intensity, duration and a delay (if you're into that), live controls with patterns and alarms.
 
 It's fully material you themed just like the standard Android apps you're already used to and provides a responsive ui with a nice design.
 
@@ -79,7 +79,7 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Better desktop support (layout)
 - [ ] Better desktop support (dynamic layout)
 - [x] Show 3 point menu when 1 shocker is selected
-- [ ] Share codes sometimes can't be claimed when the app is already open
+- [x] Share codes sometimes can't be claimed when the app is already open (treating as fixed for now)
 - [x] Show loading animation when share codes are loading in after shares loaded
 - [x] Allow toggling of the captive portal
 - [x] Add alarm renaming
