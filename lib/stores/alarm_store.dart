@@ -28,6 +28,8 @@ class Token {
 
   bool invalidSession = false;
 
+  bool serverUnreachable = false;
+
   static Token fromJson(token) {
     Token t = Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "", isSession: token["isSession"] ?? false, userId: token["userId"] ?? "", invalidSession: token["invalidSession"] ?? false);
     if(token["tokenType"] != null)

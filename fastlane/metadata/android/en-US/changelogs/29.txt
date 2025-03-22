@@ -1,2 +1,6 @@
 **Changelog:**
 - Updated QR widget to have a max width of 500
+- Fixed app crash if one of the OpenShock servers isn't reachable
+- Improved UI/UX when not logged in/invalid session/unreachable server
+- Made layout in non grouped shocker control screen dynamically adjust to screen size
+- Added live control seperated by shockers in non grouped shocker view

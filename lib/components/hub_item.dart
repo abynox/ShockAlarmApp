@@ -47,23 +47,33 @@ class HubItem extends StatefulWidget {
                         return;
                       }
                       manager.onDeviceStatusUpdated = (OpenShockDevice device) {
-                        if(device.device != hubId) return;
-                        if(!device.online) return;
+                        if (device.device != hubId) return;
+                        if (!device.online) return;
                         // The hub has come online. We can close the pop up.
                         Navigator.of(navigatorKey.currentContext!).pop();
-                        showDialog(context: navigatorKey.currentContext!, builder: (context) => AlertDialog.adaptive(
-                          title: Text("Hub paired!"),
-                          content: Column(spacing: 10, mainAxisSize: MainAxisSize.min, children: [
-                            Text("Your hub has come online under your account! You can now use it."),
-                            Text("In case you didn't enter your pair code yet, here is your pair code again: ${pairCode.code}")
-                          ],),
-                          actions: [
-                            TextButton(onPressed: () {
-                              manager.onDeviceStatusUpdated = null;
-                              Navigator.of(context).pop();
-                            }, child: Text("Ok"))
-                          ],
-                        ));
+                        showDialog(
+                            context: navigatorKey.currentContext!,
+                            builder: (context) => AlertDialog.adaptive(
+                                  title: Text("Hub paired!"),
+                                  content: Column(
+                                    spacing: 10,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                          "Your hub has come online under your account! You can now use it."),
+                                      Text(
+                                          "In case you didn't enter your pair code yet, here is your pair code again: ${pairCode.code}")
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          manager.onDeviceStatusUpdated = null;
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text("Ok"))
+                                  ],
+                                ));
                         manager.onDeviceStatusUpdated = null;
                       };
                       Navigator.of(context).pop();
@@ -258,14 +268,16 @@ class HubItemState extends State<HubItem> {
         await OpenShockClient().getDeviceDetails(hub);
     Navigator.of(context).pop();
     if (device.error != null) {
-      ErrorDialog.show("Failed to get${isCurrent ? "" : " new"} token details", device.error!);
+      ErrorDialog.show("Failed to get${isCurrent ? "" : " new"} token details",
+          device.error!);
       return;
     }
     Navigator.of(context).pop();
     showDialog(
         context: navigatorKey.currentContext!,
         builder: (context) => AlertDialog.adaptive(
-              title: Text(isCurrent ? "Current hub token" : "Hub token regenerated!"),
+              title: Text(
+                  isCurrent ? "Current hub token" : "Hub token regenerated!"),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -329,6 +341,28 @@ class HubItemState extends State<HubItem> {
         MaterialPageRoute(builder: (context) => UpdateHubScreen(hub: hub)));
   }
 
+  @override void dispose() {
+    super.dispose();
+    AlarmListManager.getInstance()
+        .liveControlGatewayConnections[hub.id]
+        ?.onLatency = null;
+  }
+
+  @override
+  void didUpdateWidget(covariant HubItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (AlarmListManager.getInstance()
+        .liveControlGatewayConnections
+        .containsKey(hub.id)) {
+      AlarmListManager.getInstance()
+          .liveControlGatewayConnections[hub.id]!
+          .onLatency = () {
+        setState(() {});
+      };
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
@@ -352,10 +386,13 @@ class HubItemState extends State<HubItem> {
                               : Color(0xFFF01414),
                           size: 10,
                         ),
-                        Text(
-                            "${hub.name}${hub.firmwareVersion != "" && manager.settings.showFirmwareVersion ? " (v. ${hub.firmwareVersion})" : ""}",
+                        Text("${hub.name}",
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 20))
+                            style: TextStyle(fontSize: 20)),
+                        Text(
+                          "${hub.firmwareVersion != "" && manager.settings.showFirmwareVersion ? " (v. ${hub.firmwareVersion})" : ""}${AlarmListManager.getInstance().liveControlGatewayConnections.containsKey(hub.id) ? " (${"${AlarmListManager.getInstance().liveControlGatewayConnections[hub.id]!.getLatency()}ms"} latency)" : ""}",
+                          style: t.textTheme.labelMedium,
+                        )
                       ],
                     ),
                   ),
@@ -413,7 +450,7 @@ class HubItemState extends State<HubItem> {
                                     Text("OTA Update")
                                   ],
                                 )),
-                          PopupMenuItem(
+                          if (AlarmListManager.supportsWs())PopupMenuItem(
                               value: "captive",
                               child: Row(
                                 spacing: 10,

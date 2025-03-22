@@ -1,6 +1,5 @@
 import 'dart:convert';
-
-import 'package:shock_alarm_app/services/alarm_list_manager.dart';
+import 'package:shock_alarm_app/components/live_controls.dart';
 import 'package:signalr_core/signalr_core.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/io.dart';
@@ -129,12 +128,16 @@ class LiveControlWS {
   WebSocketChannel? channel;
   List<int> latency = [];
   Function(Hub) onError;
+  static Function()? onLatencyGlobal;
   Hub hub;
   Token? token;
   int tps = 10;
+  static Map<String, LiveControlSettings> liveControlSettings = {};
+  static Map<String, LivePattern> liveControlPatterns = {};
 
   LiveControlWS(String? host, this.hub, this.onError, this.token) {
     if(host == null || token == null) return;
+
     print("connecting to LCG");
     channel = IOWebSocketChannel.connect(Uri.parse('${this.token!.server.startsWith("https") ? "wss" : "ws"}://$host/1/ws/live/${hub.id}'), headers: {
       "User-Agent": GetUserAgent(),
@@ -161,6 +164,7 @@ class LiveControlWS {
             latency.removeLast();
           }
           onLatency?.call();
+          onLatencyGlobal?.call();
         }
       }
     }, onError: (error) {
@@ -170,6 +174,7 @@ class LiveControlWS {
   }
 
   void Function()? onLatency;
+
 
   int getLatency() {
     if(latency.isEmpty) return 0;

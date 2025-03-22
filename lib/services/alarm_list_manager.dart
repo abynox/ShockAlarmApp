@@ -205,9 +205,11 @@ class AlarmListManager {
     List<Hub> hubs = [];
     List<Token> tokensCopy = this._tokens.toList(); // create a copy
     bool tokenExpired = false;
+    bool serverUnreachable = false;
     for (var token in tokensCopy) {
       OpenShockClient client = OpenShockClient();
-      if (!await client.setInfoOfToken(token)) {
+      TokenGetResponseType t = await client.setInfoOfToken(token);
+      if (t == TokenGetResponseType.tokenExpired) {
         tokenExpired = true;
         token.invalidSession = true;
         // if another session of the same account exists remove that one
@@ -217,6 +219,12 @@ class AlarmListManager {
             tokenExpired = false;
           }
         }
+        continue;
+      }
+      if(t == TokenGetResponseType.serverUnreachable) {
+        // only show the message once per token 
+        if(!token.serverUnreachable)serverUnreachable = true;
+        token.serverUnreachable = true;
         continue;
       }
 
@@ -253,6 +261,9 @@ class AlarmListManager {
     if (tokenExpired) {
       showSessionExpired();
     }
+    if (serverUnreachable) {
+      showServerUnreachable();
+    }
     if (!supportsWs()) updateHubStatusViaHttp();
     return !tokenExpired;
   }
@@ -275,6 +286,9 @@ class AlarmListManager {
   }
 
   Future<ErrorContainer<bool>> connectToLiveControlGateway(Hub hub) async {
+    if(liveControlGatewayConnections.containsKey(hub.id)) {
+      return ErrorContainer(true, null);
+    }
     OpenShockLCGResponse? lcg = await OpenShockClient().getLCGInfo(hub);
     if (lcg == null) {
       return ErrorContainer(
@@ -290,6 +304,22 @@ class AlarmListManager {
     liveControlGatewayConnections[hub.id] = ws;
 
     return ErrorContainer(true, null);
+  }
+  void showServerUnreachable() {
+    showDialog(
+        context: navigatorKey.currentContext!,
+        builder: (context) => AlertDialog.adaptive(
+              title: Text("At least one OpenShock server is unreachable"),
+              content: Text(
+                  "At least one OpenShock server is unreachable. Please check your internet connection and the server address in the settings page for following servers: ${_tokens.where((x) => x.serverUnreachable).map((x) => x.server).join(", ")}"),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Ok"))
+              ],
+            ));
   }
 
   void showSessionExpired() {
@@ -712,6 +742,8 @@ class AlarmListManager {
 
   Function(OpenShockDevice device)? onDeviceStatusUpdated;
 
+  List<String> liveActiveForShockers = [];
+
   void deviceStatusHandler(List<dynamic> args) {
     for (var arg in args[0]) {
       OpenShockDevice d = OpenShockDevice.fromJson(arg);
@@ -824,12 +856,12 @@ class AlarmListManager {
     return null;
   }
 
-  Future<bool> loginToken(String serverAddress, String token) async {
+  Future<TokenGetResponseType> loginToken(String serverAddress, String token) async {
     Token tokentoken = Token(DateTime.now().millisecondsSinceEpoch, token,
         server: serverAddress, isSession: false);
     OpenShockClient client = OpenShockClient();
-    bool worked = await client.setInfoOfToken(tokentoken);
-    if (worked) {
+    TokenGetResponseType worked = await client.setInfoOfToken(tokentoken);
+    if (worked == TokenGetResponseType.success) {
       saveToken(tokentoken);
     }
     return worked;

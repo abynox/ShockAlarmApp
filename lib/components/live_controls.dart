@@ -7,8 +7,8 @@ import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
 import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
 import 'package:shock_alarm_app/screens/pattern_chooser.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
-import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
+import 'package:shock_alarm_app/services/openshockws.dart';
 
 class LiveControlSettings {
   bool loop = false;
@@ -49,26 +49,31 @@ class LivePattern {
 }
 
 class LiveControls extends StatefulWidget {
-  ControlsContainer controlsContainer;
   void Function(ControlType type, int intensity) onSendLive;
   bool soundAllowed;
   bool vibrateAllowed;
   bool shockAllowed;
   int intensityLimit;
-  LiveControlSettings settings;
   bool snapToZeroAfterDone;
+  Future Function() ensureConnection;
+  bool hubConnected;
+  bool showLatency = true;
   
   Function(ControlType, int, int)? liveEventDone;
+  
+  String saveId = "global";
 
   LiveControls(
       {super.key,
-      required this.controlsContainer,
       required this.onSendLive,
       required this.soundAllowed,
       required this.vibrateAllowed,
       required this.shockAllowed,
       required this.intensityLimit,
-      required this.settings,
+      required this.ensureConnection,
+      required this.hubConnected,
+      this.showLatency = true,
+      this.saveId = "global",
       this.liveEventDone,
       this.snapToZeroAfterDone = false});
 
@@ -82,8 +87,6 @@ class _LiveControlsState extends State<LiveControls> {
   ControlType type = ControlType.vibrate;
   bool connecting = false;
 
-  LivePattern pattern = LivePattern();
-
   void onLatency() {
     setState(() {});
   }
@@ -92,24 +95,32 @@ class _LiveControlsState extends State<LiveControls> {
     setState(() {
       connecting = true;
     });
-    ErrorContainer<bool> error = await AlarmListManager.getInstance()
-        .connectToLiveControlGatewayOfSelectedShockers();
-    if (error.error != null) {
-      ErrorDialog.show("Error connecting to hubs", error.error!);
+    await widget.ensureConnection.call();
+    if(widget.showLatency) {
+      LiveControlWS.onLatencyGlobal = onLatency;
     }
-    AlarmListManager.getInstance()
-        .liveControlGatewayConnections
-        .values
-        .forEach((element) {
-      element.onLatency = onLatency;
-    });
     setState(() {
       connecting = false;
     });
   }
 
+  @override
+  void initState() {
+    super.initState();
+
+    LiveControlWS.liveControlSettings.putIfAbsent(widget.saveId, () => LiveControlSettings());
+    LiveControlWS.liveControlPatterns.putIfAbsent(widget.saveId, () => LivePattern());
+  }
+
   bool isSavedPattern() {
-    return pattern.id != -1;
+    return LiveControlWS.liveControlPatterns[widget.saveId]!.id != -1;
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    LiveControlWS.onLatencyGlobal = null;
   }
 
   bool isPlaying = false;
@@ -144,7 +155,7 @@ class _LiveControlsState extends State<LiveControls> {
           }
         },
       ),
-      !AlarmListManager.getInstance().areSelectedShockersConnected()
+      !widget.hubConnected
           ? Column(
               children: [
                 connecting
@@ -164,8 +175,8 @@ class _LiveControlsState extends State<LiveControls> {
                               "Live control offers low latency controlling of your shocker with many events per second.\n\nHere you simply swipe in the area to control shockers in real time.\n\nFurthermore you can record patterns: A pattern is automatically recorded from when you touch the area until you release it. You can then save the pattern and play it back. Enabling loop will infinitely repeat the pattern once your finger is lifet off. Enabling float will make the intensity remain where it is when you lift your finger off.\n\n\nTo load a saved pattern click the load icon and tap on it. You'll see a preview of the pattern in the control box then. Press play to play the pattern then.");
                         },
                         icon: Icon(Icons.info)),
-                    Text("Latency: "),
-                    ...AlarmListManager.getInstance()
+                    if(widget.showLatency) Text("Latency: "),
+                    if(widget.showLatency) ...AlarmListManager.getInstance()
                         .liveControlGatewayConnections
                         .entries
                         .map((e) => Text(
@@ -178,19 +189,19 @@ class _LiveControlsState extends State<LiveControls> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Switch(
-                        value: widget.settings.loop,
+                        value: LiveControlWS.liveControlSettings[widget.saveId]!.loop,
                         onChanged: (value) {
                           setState(() {
-                            widget.settings.loop = value;
+                            LiveControlWS.liveControlSettings[widget.saveId]!.loop = value;
                           });
                         }),
                     Text("Loop"),
                     if (!isSavedPattern())
                       Switch(
-                          value: widget.settings.float,
+                          value: LiveControlWS.liveControlSettings[widget.saveId]!.float,
                           onChanged: (value) {
                             setState(() {
-                              widget.settings.float = value;
+                              LiveControlWS.liveControlSettings[widget.saveId]!.float = value;
                             });
                           }),
                     if (!isSavedPattern()) Text("Float"),
@@ -211,8 +222,8 @@ class _LiveControlsState extends State<LiveControls> {
                   ],
                 ),
                 DraggableCircle(
-                  loop: widget.settings.loop,
-                  float: widget.settings.float,
+                  loop: LiveControlWS.liveControlSettings[widget.saveId]!.loop,
+                  float: LiveControlWS.liveControlSettings[widget.saveId]!.float,
                   onSendLive: (intensity) {
                     widget.onSendLive(type, intensity);
                   },
@@ -222,7 +233,7 @@ class _LiveControlsState extends State<LiveControls> {
                     });
                   },
                   isPlaying: isPlaying,
-                  pattern: pattern,
+                  pattern: LiveControlWS.liveControlPatterns[widget.saveId]!,
                   logEvent: (duration, intensity) => widget.liveEventDone?.call(type, duration, intensity),
                   respondInterval: getRequestedTps(), // 10 tps from LCG
                   intensityLimit: widget.intensityLimit,
@@ -236,7 +247,7 @@ class _LiveControlsState extends State<LiveControls> {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return PatternChooser(onPatternSelected: (pattern) {
         setState(() {
-          this.pattern = pattern;
+          LiveControlWS.liveControlPatterns[widget.saveId] = pattern;
         });
       });
     }));
@@ -244,7 +255,7 @@ class _LiveControlsState extends State<LiveControls> {
 
   void savePattern() {
     TextEditingController nameController = TextEditingController();
-    if (pattern.pattern.isEmpty) {
+    if (LiveControlWS.liveControlPatterns[widget.saveId]!.pattern.isEmpty) {
       ErrorDialog.show("Pattern is empty",
           "A pattern is recorded from the moment you start dragging the circle. Please move the circle to record a pattern.");
       return;
@@ -264,7 +275,7 @@ class _LiveControlsState extends State<LiveControls> {
                   Container(
                     width: 200,
                     height: 200,
-                    child: PatternPreview(pattern: pattern),
+                    child: PatternPreview(pattern: LiveControlWS.liveControlPatterns[widget.saveId]!),
                   )
                 ],
               ),
@@ -276,11 +287,11 @@ class _LiveControlsState extends State<LiveControls> {
                     child: Text("Close")),
                 TextButton(
                     onPressed: () {
-                      pattern.name = nameController.text;
-                      pattern.id =
+                      LiveControlWS.liveControlPatterns[widget.saveId]!.name = nameController.text;
+                      LiveControlWS.liveControlPatterns[widget.saveId]!.id =
                           AlarmListManager.getInstance().getNewLivePatternId();
-                      AlarmListManager.getInstance().saveLivePattern(pattern);
-                      pattern = LivePattern();
+                      AlarmListManager.getInstance().saveLivePattern(LiveControlWS.liveControlPatterns[widget.saveId]!);
+                      LiveControlWS.liveControlPatterns[widget.saveId] = LivePattern();
                       Navigator.pop(context);
                     },
                     child: Text("Save pattern"))

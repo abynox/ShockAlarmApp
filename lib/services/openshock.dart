@@ -16,6 +16,9 @@ class DeviceContainer {
   DeviceContainer(this.hubs, this.shockers);
 }
 
+enum TokenGetResponseType {
+  success, tokenExpired, serverUnreachable
+}
 class OpenShockClient {
   Future<DeviceContainer> GetShockersForToken(Token t) async {
     var response = await GetRequest(t, "/1/shockers/own");
@@ -86,53 +89,75 @@ class OpenShockClient {
   }
 
 
-  Future<http.Response> GetRequest(Token t, String path) {
-    var url = Uri.parse(t.server + path);
-    return http.get(url, headers: {
-      if(t.isSession) "Cookie": "openShockSession=${t.token}"
-      else "OpenShockToken": t.token,
-      'User-Agent': GetUserAgent(),
-    });
+  Future<http.Response> GetRequest(Token t, String path) async {
+    try {
+      var url = Uri.parse(t.server + path);
+      return await http.get(url, headers: {
+        if(t.isSession) "Cookie": "openShockSession=${t.token}"
+        else "OpenShockToken": t.token,
+        'User-Agent': GetUserAgent(),
+      });
+    } catch(e) {
+      return http.Response("{}", 599);
+    }
   }
 
-  Future<http.Response> PostRequest(Token t, String path, String body) {
-    var url = Uri.parse(t.server + path);
-    return http.post(url, headers: {
-      if(t.isSession) "Cookie": "openShockSession=${t.token}"
-      else "OpenShockToken": t.token,
-      "Content-Type": "application/json",
-      'User-Agent': GetUserAgent(),
-    }, body: body);
+  Future<http.Response> PostRequest(Token t, String path, String body) async {
+    try {
+      var url = Uri.parse(t.server + path);
+      return await http.post(url, headers: {
+        if(t.isSession) "Cookie": "openShockSession=${t.token}"
+        else "OpenShockToken": t.token,
+        "Content-Type": "application/json",
+        'User-Agent': GetUserAgent(),
+      }, body: body);
+    } catch(e) {
+      return http.Response("{}", 599);
+    }
   }
 
-  Future<http.Response> PatchRequest(Token t, String path, String body) {
-    var url = Uri.parse(t.server + path);
-    return http.patch(url, headers: {
-      if(t.isSession) "Cookie": "openShockSession=${t.token}"
-      else "OpenShockToken": t.token,
-      "Content-Type": "application/json",
-      'User-Agent': GetUserAgent(),
-    }, body: body);
+  Future<http.Response> PatchRequest(Token t, String path, String body) async {
+    try {
+      var url = Uri.parse(t.server + path);
+      return await http.patch(url, headers: {
+        if(t.isSession) "Cookie": "openShockSession=${t.token}"
+        else "OpenShockToken": t.token,
+        "Content-Type": "application/json",
+        'User-Agent': GetUserAgent(),
+      }, body: body);
+    }catch(e) {
+      return http.Response("{}", 599);
+    }
   }
 
-  Future<http.Response> PutRequest(Token t, String path, String body) {
-    var url = Uri.parse(t.server + path);
-    return http.put(url, headers: {
-      if(t.isSession) "Cookie": "openShockSession=${t.token}"
-      else "OpenShockToken": t.token,
-      "Content-Type": "application/json",
-      'User-Agent': GetUserAgent(),
-    }, body: body);
+  Future<http.Response> PutRequest(Token t, String path, String body) async {
+    try {
+
+      var url = Uri.parse(t.server + path);
+      return await http.put(url, headers: {
+        if(t.isSession) "Cookie": "openShockSession=${t.token}"
+        else "OpenShockToken": t.token,
+        "Content-Type": "application/json",
+        'User-Agent': GetUserAgent(),
+      }, body: body);
+    } catch(e) {
+      return http.Response("{}", 599);
+    }
   }
 
-  Future<http.Response> DeleteRequest(Token t, String path, String body) {
-    var url = Uri.parse(t.server + path);
-    return http.delete(url, headers: {
-      if(t.isSession) "Cookie": "openShockSession=${t.token}"
-      else "OpenShockToken": t.token,
-      "Content-Type": "application/json",
-      'User-Agent': GetUserAgent(),
-    }, body: body);
+  Future<http.Response> DeleteRequest(Token t, String path, String body) async {
+    try {
+
+      var url = Uri.parse(t.server + path);
+      return await http.delete(url, headers: {
+        if(t.isSession) "Cookie": "openShockSession=${t.token}"
+        else "OpenShockToken": t.token,
+        "Content-Type": "application/json",
+        'User-Agent': GetUserAgent(),
+      }, body: body);
+    } catch(e) {
+      return http.Response("{}", 599);
+    }
   }
 
   Future<String?> setPauseStateOfShocker(Shocker s, AlarmListManager manager, bool paused) async {
@@ -176,21 +201,23 @@ class OpenShockClient {
     return response.statusCode == 200;
   }
 
-  Future<bool> setInfoOfToken(Token t) async {
-    var request = GetRequest(t, "/1/users/self");
-    var response = await request;
+
+  Future<TokenGetResponseType> setInfoOfToken(Token t) async {
+    var response = await GetRequest(t, "/1/users/self");
     String name = "Unknown";
     String id = "";
     if(response.statusCode == 401) {
-      return false;
+      return TokenGetResponseType.tokenExpired;
+    }
+    if(response.statusCode == 599) {
+      return TokenGetResponseType.serverUnreachable;
     }
     if(response.statusCode == 200) {
       var data = jsonDecode(response.body);
       name = data["data"]["name"];
       id = data["data"]["id"];
     }
-    request = GetRequest(t, "/1/tokens/self");
-    response = await request;
+    response = await GetRequest(t, "/1/tokens/self");
     String tokenName = "";
     if(response.statusCode == 200) {
       var data = jsonDecode(response.body);
@@ -198,7 +225,7 @@ class OpenShockClient {
     }
     t.name = t.isSession ? "$name" : "$name ($tokenName)";
     t.userId = id;
-    return true;
+    return TokenGetResponseType.success;
   }
 
   Future<Token?> login(String serverAddress, String email, String password, AlarmListManager manager) async {
@@ -1091,6 +1118,10 @@ class ShockerLog {
       return OpenShockClient.getIconForControlType(ControlType.live);
     }
     return OpenShockClient.getIconForControlType(type);
+  }
+
+  bool isLive() {
+    return controlledBy.customName?.contains("{live}") ?? false || type == ControlType.live;
   }
 }
 

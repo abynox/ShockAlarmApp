@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
+import 'package:shock_alarm_app/components/dynamic_child_layout.dart';
 import 'package:shock_alarm_app/components/shocker_details.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
 import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
@@ -287,6 +288,7 @@ class ShockerScreenState extends State<ShockerScreen> {
       List<Widget> shockerWidgets = [];
       for (var s in shocker.value) {
         shockerWidgets.add(ShockerItem(
+          //liveActive: AlarmListManager.getInstance().liveControlGatewayConnections.containsKey(shocker.key?.id ?? ""),
             shocker: s,
             manager: manager,
             onRebuild: rebuild,
@@ -294,13 +296,16 @@ class ShockerScreenState extends State<ShockerScreen> {
       }
       shockers.add(StickyHeader(
           header: ConstrainedContainer(
+            width: 1500,
               child: HubItem(
                   hub: shocker.key!,
                   manager: manager,
                   key: ValueKey(shocker.key!.getIdentifier(manager)),
                   onRebuild: rebuild)),
           content: ConstrainedContainer(
-              child: Column(
+            width: 1500,
+              child: DynamicChildLayout(
+                minWidth: 450,
             children: shockerWidgets,
           ))));
     }

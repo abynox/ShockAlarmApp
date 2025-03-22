@@ -102,6 +102,10 @@ class TokenItemState extends State<TokenItem> {
                         style: t.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text("${token.tokenType==TokenType.openshock? "OpenShock" : "AlarmServer"} (${token.server.replaceAll("http://", "").replaceAll("https://", "")})", style: t.textTheme.labelSmall,),
+                      if(token.serverUnreachable)
+                        Text("Couldn't reach server", style: t.textTheme.labelLarge?.copyWith(color: t.colorScheme.error)),
+                      if(token.invalidSession)
+                        Text("Invalid session, please log in again", style: t.textTheme.labelLarge?.copyWith(color: t.colorScheme.error)),
                     ],
                   ),
                   Row(

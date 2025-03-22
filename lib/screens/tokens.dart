@@ -400,12 +400,16 @@ class TokenScreenState extends State<TokenScreen> {
               TextButton(
                   onPressed: () async {
                     LoadingDialog.show("Logging in");
-                    bool worked = await manager.loginToken(
+                    TokenGetResponseType worked = await manager.loginToken(
                         serverController.text, tokenController.text);
-                    if (worked) {
+                    if (worked == TokenGetResponseType.success) {
                       Navigator.of(context).pop();
                       Navigator.of(context).pop();
                       AlarmListManager.getInstance().reloadAllMethod!();
+                    }else if(worked == TokenGetResponseType.serverUnreachable){
+                      Navigator.of(context).pop();
+                      ErrorDialog.show(
+                          "Login failed", "The server could not be reached or another networking error occurred. Check the server url and your internet connectin!");
                     } else {
                       Navigator.of(context).pop();
                       ErrorDialog.show(
@@ -555,7 +559,7 @@ class TokenScreenState extends State<TokenScreen> {
           mainAxisSize: MainAxisSize.max,
           spacing: 10,
           children: [
-            if (manager.getTokens().isEmpty || manager.settings.allowMultiServerLogin)
+            if (manager.getTokens().where((x) => !  x.invalidSession).isEmpty || manager.settings.allowMultiServerLogin)
               FilledButton(
                 onPressed: () async {
                   await showDialog(

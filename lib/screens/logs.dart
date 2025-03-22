@@ -210,7 +210,7 @@ class ShockerLogEntry extends StatelessWidget {
                 children: [
                   Text("${(log.duration / 100).round() / 10} s"),
                   Text(" @ "),
-                  Text("${log.type == ControlType.live ? "up to " : ""}${log.intensity}"),
+                  Text("${log.isLive() ? "up to " : ""}${log.intensity}"),
                 ],
               ),
               Chip(label: Text(log.shockerReference?.name ?? "Unknown")),

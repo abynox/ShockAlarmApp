@@ -11,6 +11,7 @@ import 'package:shock_alarm_app/components/shocker_item.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
 import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/screens/logs.dart';
+import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
@@ -37,7 +38,8 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
   @override
   void initState() {
     super.initState();
-    if (!AlarmListManager.supportsWs()) AlarmListManager.getInstance().updateHubStatusViaHttp();
+    if (!AlarmListManager.supportsWs())
+      AlarmListManager.getInstance().updateHubStatusViaHttp();
   }
 
   void onRebuild() {
@@ -74,15 +76,16 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
     manager.sendLiveControls(controls);
   }
 
-
-
   liveEventDone(ControlType type, int durationInMs, int maxIntensity) {
     List<Control> controls = [];
     for (Shocker s in manager.getSelectedShockers()) {
-      controls.add(s.getLimitedControls(ControlType.stop, maxIntensity, durationInMs));
+      controls.add(
+          s.getLimitedControls(ControlType.stop, maxIntensity, durationInMs)..duration = max(durationInMs, 30000));
     }
     // we create a log entry for transparency with the other user
-    if(manager.settings.liveControlsLogWorkaround) manager.sendControls(controls, customName: "{live}{${LiveControlWS.getControl(type)}}");
+    if (manager.settings.liveControlsLogWorkaround)
+      manager.sendControls(controls,
+          customName: "{live}{${LiveControlWS.getControl(type)}}");
   }
 
   bool loadingPause = false;
@@ -233,9 +236,14 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                               PopupMenuItem(
                                   value: "live",
                                   child: Row(
-                                        spacing: 10,
-                                        children: [OpenShockClient.getIconForControlType(ControlType.live), Text("${liveEnabled ? "Disable" : "Enable"} live controls (beta)")],
-                                      )),
+                                    spacing: 10,
+                                    children: [
+                                      OpenShockClient.getIconForControlType(
+                                          ControlType.live),
+                                      Text(
+                                          "${liveEnabled ? "Disable" : "Enable"} live controls (beta)")
+                                    ],
+                                  )),
                             ];
                           },
                           onSelected: (String value) {
@@ -248,12 +256,13 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                               }
                             }
                             if (value == "live") {
-
-                              context.findAncestorStateOfType<ScreenSelectorState>()
-                                                  ?.setPageSwipeEnabled(liveEnabled);
+                              context
+                                  .findAncestorStateOfType<
+                                      ScreenSelectorState>()
+                                  ?.setPageSwipeEnabled(liveEnabled);
                               setState(() {
                                 liveEnabled = !liveEnabled;
-                                if(!liveEnabled) {
+                                if (!liveEnabled) {
                                   manager.disconnectAllFromLiveControlGateway();
                                 }
                               });
@@ -262,28 +271,42 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                         ),
                       ],
                     ),
-                    liveEnabled ? LiveControls(
-                        controlsContainer: manager.controls,
-                        onSendLive: executeAllLive,
-                        soundAllowed: limitedShocker.soundAllowed,
-                        vibrateAllowed: limitedShocker.vibrateAllowed,
-                        shockAllowed: limitedShocker.shockAllowed,
-                        intensityLimit: limitedShocker.intensityLimit,
-                        settings: liveControlSettings,
-                        liveEventDone: liveEventDone,
-                    ) :
-                    ShockingControls(
-                        manager: manager,
-                        controlsContainer: manager.controls,
-                        durationLimit: limitedShocker.durationLimit,
-                        intensityLimit: limitedShocker.intensityLimit,
-                        soundAllowed: limitedShocker.soundAllowed,
-                        vibrateAllowed: limitedShocker.vibrateAllowed,
-                        shockAllowed: limitedShocker.shockAllowed,
-                        onDelayAction: executeAll,
-                        onProcessAction: executeAll,
-                        onSet: (container) {},
-                        key: ValueKey(DateTime.now().millisecondsSinceEpoch)),
+                    liveEnabled
+                        ? LiveControls(
+                            ensureConnection: () async {
+                              ErrorContainer<
+                                  bool> error = await AlarmListManager
+                                      .getInstance()
+                                  .connectToLiveControlGatewayOfSelectedShockers();
+                              if (error.error != null) {
+                                ErrorDialog.show(
+                                    "Error connecting to hubs", error.error!);
+                              }
+                              setState(() {
+                                
+                              });
+                            },
+                            hubConnected: AlarmListManager.getInstance().areSelectedShockersConnected(),
+                            onSendLive: executeAllLive,
+                            soundAllowed: limitedShocker.soundAllowed,
+                            vibrateAllowed: limitedShocker.vibrateAllowed,
+                            shockAllowed: limitedShocker.shockAllowed,
+                            intensityLimit: limitedShocker.intensityLimit,
+                            liveEventDone: liveEventDone,
+                          )
+                        : ShockingControls(
+                            manager: manager,
+                            controlsContainer: manager.controls,
+                            durationLimit: limitedShocker.durationLimit,
+                            intensityLimit: limitedShocker.intensityLimit,
+                            soundAllowed: limitedShocker.soundAllowed,
+                            vibrateAllowed: limitedShocker.vibrateAllowed,
+                            shockAllowed: limitedShocker.shockAllowed,
+                            onDelayAction: executeAll,
+                            onProcessAction: executeAll,
+                            onSet: (container) {},
+                            key: ValueKey(
+                                DateTime.now().millisecondsSinceEpoch)),
                   ],
                 ),
               )
