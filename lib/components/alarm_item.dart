@@ -42,7 +42,7 @@ class AlarmItemState extends State<AlarmItem> {
 
   void _save() async {
     manager.saveAlarm(alarm);
-    if(manager.anyAlarmOn() && isAndroid()) {
+    if (manager.anyAlarmOn() && isAndroid()) {
       // The permission is only available on Android.
       // Web and Linux will use the alarm server for scheduling.
       // When adding a native linux alarming package this should be updated.
@@ -55,23 +55,23 @@ class AlarmItemState extends State<AlarmItem> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    return GestureDetector(
-      onTap: () => {
-        setState(() {
-          expanded = !expanded;
-          if(!expanded) {
-            _save();
-          }
-        })
-      },
-      child: Card(
-        color: t.colorScheme.onInverseSurface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              children: [
-                Row(
+    return Card(
+      color: t.colorScheme.onInverseSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: () => {
+                  setState(() {
+                    expanded = !expanded;
+                    if (!expanded) {
+                      _save();
+                    }
+                  })
+                },
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Column(
@@ -119,7 +119,7 @@ class AlarmItemState extends State<AlarmItem> {
                             onPressed: () {
                               setState(() {
                                 expanded = !expanded;
-                                if(!expanded) {
+                                if (!expanded) {
                                   _save();
                                 }
                               });
@@ -139,14 +139,15 @@ class AlarmItemState extends State<AlarmItem> {
                     )
                   ],
                 ),
-                if (expanded)
-                  Column(
-                    children: [
-                      EditAlarmDays(
-                        alarm: this.alarm,
-                        onRebuild: onRebuild,
-                      ),
-                      if(!manager.settings.useAlarmServer)
+              ),
+              if (expanded)
+                Column(
+                  children: [
+                    EditAlarmDays(
+                      alarm: this.alarm,
+                      onRebuild: onRebuild,
+                    ),
+                    if (!manager.settings.useAlarmServer)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -162,46 +163,43 @@ class AlarmItemState extends State<AlarmItem> {
                           )
                         ],
                       ),
-                      Text(alarm.shockers
-                              .where((x) {
-                                return x.enabled;
-                              })
-                              .length
-                              .toString() +
-                          " shockers active"),
-                      Column(
-                          children: alarm.shockers.map((alarmShocker) {
-                        return AlarmShockerWidget(
-                            alarmShocker: alarmShocker,
-                            manager: manager,
-                            onRebuild: onRebuild);
-                      }).toList()),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          IconButton(
-                            onPressed: _delete,
-                            icon: Icon(Icons.delete),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              alarm.onAlarmStopped(manager, needStop: true);
-                            },
-                            icon: Icon(Icons.stop),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              alarm.trigger(manager, false);
-                            },
-                            icon: Icon(Icons.play_arrow),
-                          )
-                        ],
-                      )
-                    ],
-                  ),
-              ],
-            )),
-      ),
+                    Text("${alarm.shockers
+                            .where((x) {
+                              return x.enabled;
+                            })
+                            .length} shockers active"),
+                    Column(
+                        children: alarm.shockers.map((alarmShocker) {
+                      return AlarmShockerWidget(
+                          alarmShocker: alarmShocker,
+                          manager: manager,
+                          onRebuild: onRebuild);
+                    }).toList()),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          onPressed: _delete,
+                          icon: Icon(Icons.delete),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            alarm.onAlarmStopped(manager, needStop: true);
+                          },
+                          icon: Icon(Icons.stop),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            alarm.trigger(manager, false);
+                          },
+                          icon: Icon(Icons.play_arrow),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+            ],
+          )),
     );
   }
 }
@@ -283,10 +281,11 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                                   color: t.colorScheme.error,
                                 )),
                             onTap: () {
-                              InfoDialog.show ("Shocker is paused",
-                              alarmShocker.shockerReference?.isOwn ?? false
-                              ? "This shocker was pause by you. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. Unpause it so it can be triggered."
-                              : "This shocker was paused by the owner. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. It needs to be unpaused so it can be triggered.");
+                              InfoDialog.show(
+                                  "Shocker is paused",
+                                  alarmShocker.shockerReference?.isOwn ?? false
+                                      ? "This shocker was pause by you. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. Unpause it so it can be triggered."
+                                      : "This shocker was paused by the owner. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. It needs to be unpaused so it can be triggered.");
                             },
                           ),
                         Switch(

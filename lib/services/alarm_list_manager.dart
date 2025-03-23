@@ -782,8 +782,7 @@ class AlarmListManager {
     return null;
   }
 
-  Future<String?> sendLiveControls(List<Control> controls,
-      {String customName = "ShockAlarm", bool useWs = true}) async {
+  Future<String?> sendLiveControls(List<Control> controls) async {
     Map<String?, List<Control>> controlsByHub = {};
     for (var control in controls) {
       if (control.type == ControlType.sound && control.intensity <= 0)
@@ -796,10 +795,8 @@ class AlarmListManager {
       if (!liveControlGatewayConnections.containsKey(key)) {
         return "Not connected to live control gateway for ${getHub(key)?.name ?? key ?? "unspecified hub  "}";
       }
-      for (Control control in controlsByHub[key]!) {
-        liveControlGatewayConnections[key]?.sendControl(
-            control.shockerReference!, control.type, control.intensity);
-      }
+      liveControlGatewayConnections[key]?.sendControls(
+          controlsByHub[key]!);
     }
     return null;
   }

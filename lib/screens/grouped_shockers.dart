@@ -293,6 +293,7 @@ class GroupedShockerScreenState extends State<GroupedShockerScreen> {
                             shockAllowed: limitedShocker.shockAllowed,
                             intensityLimit: limitedShocker.intensityLimit,
                             liveEventDone: liveEventDone,
+                            showLatency: true,
                           )
                         : ShockingControls(
                             manager: manager,

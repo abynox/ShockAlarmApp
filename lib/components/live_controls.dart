@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
 import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
 import 'package:shock_alarm_app/screens/pattern_chooser.dart';
@@ -58,9 +59,9 @@ class LiveControls extends StatefulWidget {
   Future Function() ensureConnection;
   bool hubConnected;
   bool showLatency = true;
-  
+
   Function(ControlType, int, int)? liveEventDone;
-  
+
   String saveId = "global";
 
   LiveControls(
@@ -96,9 +97,6 @@ class _LiveControlsState extends State<LiveControls> {
       connecting = true;
     });
     await widget.ensureConnection.call();
-    if(widget.showLatency) {
-      LiveControlWS.onLatencyGlobal = onLatency;
-    }
     setState(() {
       connecting = false;
     });
@@ -108,8 +106,13 @@ class _LiveControlsState extends State<LiveControls> {
   void initState() {
     super.initState();
 
-    LiveControlWS.liveControlSettings.putIfAbsent(widget.saveId, () => LiveControlSettings());
-    LiveControlWS.liveControlPatterns.putIfAbsent(widget.saveId, () => LivePattern());
+    LiveControlWS.liveControlSettings
+        .putIfAbsent(widget.saveId, () => LiveControlSettings());
+    LiveControlWS.liveControlPatterns
+        .putIfAbsent(widget.saveId, () => LivePattern());
+    if (widget.showLatency) {
+      LiveControlWS.onLatencyGlobal = onLatency;
+    }
   }
 
   bool isSavedPattern() {
@@ -175,13 +178,14 @@ class _LiveControlsState extends State<LiveControls> {
                               "Live control offers low latency controlling of your shocker with many events per second.\n\nHere you simply swipe in the area to control shockers in real time.\n\nFurthermore you can record patterns: A pattern is automatically recorded from when you touch the area until you release it. You can then save the pattern and play it back. Enabling loop will infinitely repeat the pattern once your finger is lifet off. Enabling float will make the intensity remain where it is when you lift your finger off.\n\n\nTo load a saved pattern click the load icon and tap on it. You'll see a preview of the pattern in the control box then. Press play to play the pattern then.");
                         },
                         icon: Icon(Icons.info)),
-                    if(widget.showLatency) Text("Latency: "),
-                    if(widget.showLatency) ...AlarmListManager.getInstance()
-                        .liveControlGatewayConnections
-                        .entries
-                        .map((e) => Text(
-                            "${AlarmListManager.getInstance().getHub(e.key)?.name}: ${e.value.getLatency()} ms, "))
-                        .toList()
+                    if (widget.showLatency) Text("Latency: "),
+                    if (widget.showLatency)
+                      ...AlarmListManager.getInstance()
+                          .liveControlGatewayConnections
+                          .entries
+                          .map((e) => Text(
+                              "${AlarmListManager.getInstance().getHub(e.key)?.name}: ${e.value.getLatency()} ms, "))
+                          .toList()
                   ],
                 ),
                 Row(
@@ -189,19 +193,23 @@ class _LiveControlsState extends State<LiveControls> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Switch(
-                        value: LiveControlWS.liveControlSettings[widget.saveId]!.loop,
+                        value: LiveControlWS
+                            .liveControlSettings[widget.saveId]!.loop,
                         onChanged: (value) {
                           setState(() {
-                            LiveControlWS.liveControlSettings[widget.saveId]!.loop = value;
+                            LiveControlWS.liveControlSettings[widget.saveId]!
+                                .loop = value;
                           });
                         }),
                     Text("Loop"),
                     if (!isSavedPattern())
                       Switch(
-                          value: LiveControlWS.liveControlSettings[widget.saveId]!.float,
+                          value: LiveControlWS
+                              .liveControlSettings[widget.saveId]!.float,
                           onChanged: (value) {
                             setState(() {
-                              LiveControlWS.liveControlSettings[widget.saveId]!.float = value;
+                              LiveControlWS.liveControlSettings[widget.saveId]!
+                                  .float = value;
                             });
                           }),
                     if (!isSavedPattern()) Text("Float"),
@@ -223,7 +231,8 @@ class _LiveControlsState extends State<LiveControls> {
                 ),
                 DraggableCircle(
                   loop: LiveControlWS.liveControlSettings[widget.saveId]!.loop,
-                  float: LiveControlWS.liveControlSettings[widget.saveId]!.float,
+                  float:
+                      LiveControlWS.liveControlSettings[widget.saveId]!.float,
                   onSendLive: (intensity) {
                     widget.onSendLive(type, intensity);
                   },
@@ -234,7 +243,8 @@ class _LiveControlsState extends State<LiveControls> {
                   },
                   isPlaying: isPlaying,
                   pattern: LiveControlWS.liveControlPatterns[widget.saveId]!,
-                  logEvent: (duration, intensity) => widget.liveEventDone?.call(type, duration, intensity),
+                  logEvent: (duration, intensity) =>
+                      widget.liveEventDone?.call(type, duration, intensity),
                   respondInterval: getRequestedTps(), // 10 tps from LCG
                   intensityLimit: widget.intensityLimit,
                 )
@@ -275,7 +285,9 @@ class _LiveControlsState extends State<LiveControls> {
                   Container(
                     width: 200,
                     height: 200,
-                    child: PatternPreview(pattern: LiveControlWS.liveControlPatterns[widget.saveId]!),
+                    child: PatternPreview(
+                        pattern:
+                            LiveControlWS.liveControlPatterns[widget.saveId]!),
                   )
                 ],
               ),
@@ -287,22 +299,28 @@ class _LiveControlsState extends State<LiveControls> {
                     child: Text("Close")),
                 TextButton(
                     onPressed: () {
-                      LiveControlWS.liveControlPatterns[widget.saveId]!.name = nameController.text;
+                      LiveControlWS.liveControlPatterns[widget.saveId]!.name =
+                          nameController.text;
                       LiveControlWS.liveControlPatterns[widget.saveId]!.id =
                           AlarmListManager.getInstance().getNewLivePatternId();
-                      AlarmListManager.getInstance().saveLivePattern(LiveControlWS.liveControlPatterns[widget.saveId]!);
-                      LiveControlWS.liveControlPatterns[widget.saveId] = LivePattern();
+                      AlarmListManager.getInstance().saveLivePattern(
+                          LiveControlWS.liveControlPatterns[widget.saveId]!);
+                      LiveControlWS.liveControlPatterns[widget.saveId] =
+                          LivePattern();
                       Navigator.pop(context);
                     },
                     child: Text("Save pattern"))
               ],
             ));
   }
-  
+
   double getRequestedTps() {
     int highestTps = 4;
-    AlarmListManager.getInstance().liveControlGatewayConnections.values.forEach((element) {
-      if(element.tps > highestTps) highestTps = element.tps;
+    AlarmListManager.getInstance()
+        .liveControlGatewayConnections
+        .values
+        .forEach((element) {
+      if (element.tps > highestTps) highestTps = element.tps;
     });
     return 1000 / highestTps;
   }
@@ -390,28 +408,33 @@ class DraggableCircle extends StatefulWidget {
   _DraggableCircleState createState() => _DraggableCircleState();
 }
 
-class _DraggableCircleState extends State<DraggableCircle> {
+class _DraggableCircleState extends State<DraggableCircle>
+    with TickerProviderStateMixin {
   double posX = 100; // Initial X position
   double posY = 100; // Initial Y position
   double value = 0;
 
   int startMs = 0;
-  late Timer timer;
 
   List<FlSpot> samples = [];
   List<FlSpot> verticalLines = [];
-  int sampleLimitCount = 100;
+  int sampleLimitCount = 1000;
+  double spannedTime = 2000;
   int lastResponse = 0;
   bool sentZero = false;
   bool notifiedEnd = false;
   int maxIntensity = 0;
   int? logTimeStart;
 
+  late Ticker _ticker;
+
   @override
   void dispose() {
-    timer.cancel();
+    _ticker.dispose();
     super.dispose();
   }
+
+  int lastMs = 0;
 
   @override
   void initState() {
@@ -420,48 +443,56 @@ class _DraggableCircleState extends State<DraggableCircle> {
       samples.add(FlSpot(i.toDouble(), 0));
     }
     setValue(0);
-    timer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+    _ticker = createTicker((elapsed) {
+      int deltaTime = elapsed.inMilliseconds - lastMs;
+      lastMs = elapsed.inMilliseconds;
       if (onTick != null) {
         onTick!();
       }
       setState(() {
         for (int i = 0; i < sampleLimitCount - 1; i++) {
-          samples[i] = FlSpot(i.toDouble(), samples[i + 1].y);
+          samples[i] = FlSpot(samples[i + 1].x - deltaTime, samples[i + 1].y);
         }
         for (int i = 0; i < verticalLines.length; i++) {
-          verticalLines[i] = FlSpot(verticalLines[i].x - 1, verticalLines[i].y);
+          verticalLines[i] =
+              FlSpot(verticalLines[i].x - deltaTime, verticalLines[i].y);
           if (verticalLines[i].x < 0) {
             verticalLines.removeAt(i);
           }
         }
-        samples[sampleLimitCount - 1] =
-            FlSpot(sampleLimitCount.toDouble(), value.toDouble());
+        samples[sampleLimitCount - 1] = FlSpot(spannedTime, value);
       });
       int now = DateTime.now().millisecondsSinceEpoch;
       if (now - lastResponse > widget.respondInterval) {
-        lastResponse = now;
-        if (sentZero && value.toInt() == 0) {
-          if(!notifiedEnd) {
-            notifiedEnd = true;
-            int lengthInMs = logTimeStart == null ? 0 : now - logTimeStart!;
-            if(maxIntensity != 0) widget.logEvent?.call(lengthInMs, maxIntensity);
-            maxIntensity = 0;
-            logTimeStart = null;
-          }
-          return; // don't spam the ws when not active
-        }
-        logTimeStart ??= now;
-        notifiedEnd = false;
-        if(value > maxIntensity) maxIntensity = value.toInt();
-        widget.onSendLive(value.toInt());
-        sentZero = value.toInt() == 0;
+        sendResponse();
       }
     });
+    _ticker.start();
+  }
+
+  void sendResponse() {
+    int now = DateTime.now().millisecondsSinceEpoch;
+    lastResponse = now;
+    if (sentZero && value.toInt() == 0) {
+      if (!notifiedEnd) {
+        notifiedEnd = true;
+        int lengthInMs = logTimeStart == null ? 0 : now - logTimeStart!;
+        if (maxIntensity != 0) widget.logEvent?.call(lengthInMs, maxIntensity);
+        maxIntensity = 0;
+        logTimeStart = null;
+      }
+      return; // don't spam the ws when not active
+    }
+    logTimeStart ??= now;
+    notifiedEnd = false;
+    if (value > maxIntensity) maxIntensity = value.toInt();
+    widget.onSendLive(value.toInt());
+    sentZero = value.toInt() == 0;
   }
 
   void spawnVerticalLine() {
-    verticalLines.add(FlSpot(sampleLimitCount.toDouble(),
-        DateTime.now().millisecondsSinceEpoch.toDouble()));
+    verticalLines.add(
+        FlSpot(spannedTime, DateTime.now().millisecondsSinceEpoch.toDouble()));
   }
 
   void checkBounds() {
@@ -475,12 +506,12 @@ class _DraggableCircleState extends State<DraggableCircle> {
         widget.intensityLimit);
   }
 
-  double getYForValue(int value) {
+  double getYForValue(double value) {
     return (1 - (value / widget.intensityLimit)) *
         (widget.height - widget.circleDiameter);
   }
 
-  void setValue(int value) {
+  void setValue(double value) {
     setState(() {
       posY = getYForValue(value);
       checkBounds();
@@ -527,7 +558,7 @@ class _DraggableCircleState extends State<DraggableCircle> {
     int next = widget.pattern.pattern.keys.firstWhere(
         (element) => element > elapsed,
         orElse: () => widget.pattern.pattern.keys.last);
-    setValue(widget.pattern.pattern[next]!.toInt());
+    setValue(widget.pattern.pattern[next]!);
   }
 
   void startPlay() {
@@ -559,7 +590,9 @@ class _DraggableCircleState extends State<DraggableCircle> {
       posY = details.localPosition.dy - widget.circleDiameter / 2;
       checkBounds();
     });
-
+    if (start) {
+      sendResponse();
+    }
     // save stroke data point
     widget.pattern.pattern[DateTime.now().millisecondsSinceEpoch - startMs] =
         value;
@@ -591,31 +624,20 @@ class _DraggableCircleState extends State<DraggableCircle> {
                       style: t.textTheme.headlineLarge?.copyWith(
                           color: Color(0x22FFFFFF),
                           fontSize: widget.width / 5))),
-              Positioned(
-                left: posX,
-                top: posY,
-                child: Container(
-                  width: widget.circleDiameter,
-                  height: widget.circleDiameter,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: t.colorScheme.tertiary, width: 3),
-                  ),
-                  child: Center(child: Text(value.toInt().toString())),
-                ),
-              ),
               if (samples.isNotEmpty)
                 LineChart(
                   LineChartData(
                     minY: 0,
                     maxY: widget.intensityLimit.toDouble(),
                     minX: 0,
-                    maxX: sampleLimitCount.toDouble(),
+                    maxX: spannedTime,
                     extraLinesData: ExtraLinesData(verticalLines: [
                       if (widget.pattern.id != -1)
                         VerticalLine(
                           x: (DateTime.now().millisecondsSinceEpoch -
-                                      lookStrokeStart) / widget.pattern.getMaxTime() * 100,
+                                  lookStrokeStart) /
+                              widget.pattern.getMaxTime() *
+                              spannedTime,
                           color: t.colorScheme.tertiary,
                           strokeWidth: 1,
                           dashArray: [5, 15],
@@ -642,13 +664,7 @@ class _DraggableCircleState extends State<DraggableCircle> {
                         dotData: const FlDotData(
                           show: false,
                         ),
-                        gradient: LinearGradient(
-                          colors: [
-                            widget.graphColor.withValues(alpha: 0),
-                            widget.graphColor
-                          ],
-                          stops: const [0.1, 0.5],
-                        ),
+                        color: widget.graphColor,
                         barWidth: 4,
                         isCurved: false,
                       ),
@@ -658,18 +674,14 @@ class _DraggableCircleState extends State<DraggableCircle> {
                             return FlSpot(
                                 e.key.toDouble() /
                                     widget.pattern.getMaxTime() *
-                                    100,
+                                    spannedTime,
                                 e.value);
                           }).toList(),
                           dotData: const FlDotData(
                             show: false,
                           ),
-                          gradient: LinearGradient(
-                            colors: [
-                              widget.graphPreviewColor.withValues(alpha: 0.2)
-                            ],
-                            stops: const [0.1],
-                          ),
+                          color:
+                              widget.graphPreviewColor.withValues(alpha: 0.2),
                           barWidth: 4,
                           isCurved: false,
                         )
@@ -680,6 +692,19 @@ class _DraggableCircleState extends State<DraggableCircle> {
                   ),
                   key: ValueKey(DateTime.now().millisecondsSinceEpoch),
                 ),
+              Positioned(
+                left: posX,
+                top: posY,
+                child: Container(
+                  width: widget.circleDiameter,
+                  height: widget.circleDiameter,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: t.colorScheme.tertiary, width: 3),
+                  ),
+                  child: Center(child: Text(value.toInt().toString())),
+                ),
+              ),
             ],
           ),
         ));

@@ -58,21 +58,21 @@ class ToneItemState extends State<ToneItem> {
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    return GestureDetector(
-      onTap: () => {
-        setState(() {
-          expanded = !expanded;
-          if(!expanded) _save();
-        })
-      },
-      child: Card(
-        color: t.colorScheme.onInverseSurface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              children: [
-                Row(
+    return Card(
+      color: t.colorScheme.onInverseSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: () => {
+                  setState(() {
+                    expanded = !expanded;
+                    if (!expanded) _save();
+                  })
+                },
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Column(
@@ -125,50 +125,50 @@ class ToneItemState extends State<ToneItem> {
                     )
                   ],
                 ),
-                if (expanded)
-                  Column(
-                    children: [
-                      Column(
-                          children: tone.components.map((component) {
-                        return ToneComponentItem(
-                          component: component,
-                          manager: manager,
-                          onRebuild: onRebuild,
-                          onDelete: onDeleteComponent,
-                          key: ValueKey(component.getId()),
-                        );
-                      }).toList()),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (builder) => DeleteDialog(
-                                      onDelete: () {
-                                        _delete();
-                                        Navigator.of(context).pop();
-                                      },
-                                      title: "Delete tone",
-                                      body:
-                                          "Are you sure you want to delete this tone?"));
-                            },
-                            icon: Icon(Icons.delete),
-                          ),
-                          IconButton(
-                              onPressed: addComponent, icon: Icon(Icons.add)),
-                          IconButton(
-                            onPressed: _save,
-                            icon: Icon(Icons.save),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-              ],
-            )),
-      ),
+              ),
+              if (expanded)
+                Column(
+                  children: [
+                    Column(
+                        children: tone.components.map((component) {
+                      return ToneComponentItem(
+                        component: component,
+                        manager: manager,
+                        onRebuild: onRebuild,
+                        onDelete: onDeleteComponent,
+                        key: ValueKey(component.getId()),
+                      );
+                    }).toList()),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (builder) => DeleteDialog(
+                                    onDelete: () {
+                                      _delete();
+                                      Navigator.of(context).pop();
+                                    },
+                                    title: "Delete tone",
+                                    body:
+                                        "Are you sure you want to delete this tone?"));
+                          },
+                          icon: Icon(Icons.delete),
+                        ),
+                        IconButton(
+                            onPressed: addComponent, icon: Icon(Icons.add)),
+                        IconButton(
+                          onPressed: _save,
+                          icon: Icon(Icons.save),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+            ],
+          )),
     );
   }
 }
@@ -281,7 +281,11 @@ class SecondTextField extends StatelessWidget {
   String label = "";
   Function(int) onSet;
 
-  SecondTextField({Key? key, required this.timeMs, required this.onSet, required this.label})
+  SecondTextField(
+      {Key? key,
+      required this.timeMs,
+      required this.onSet,
+      required this.label})
       : super(key: key);
 
   @override

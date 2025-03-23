@@ -44,8 +44,8 @@ class OpenShockWS {
                   client: httpClient,
                   skipNegotiation: true,
                   transport: HttpTransportType.webSockets))
-          .withAutomaticReconnect([0, 1000, 2000, 5000, 10000, 10000, 15000, 30000, 60000])
-          .build();
+          .withAutomaticReconnect(
+              [0, 1000, 2000, 5000, 10000, 10000, 15000, 30000, 60000]).build();
 
       await connection!.start();
       print('Connection started');
@@ -64,8 +64,9 @@ class OpenShockWS {
     }
   }
 
-    // Add a message handler for a specific event
-  void addMessageHandler(String methodName, void Function(List<dynamic>? arguments) handler) {
+  // Add a message handler for a specific event
+  void addMessageHandler(
+      String methodName, void Function(List<dynamic>? arguments) handler) {
     if (connection != null) {
       connection!.on(methodName, handler);
       print('Handler added for $methodName');
@@ -85,24 +86,24 @@ class OpenShockWS {
   }
 
   Future<bool> establishConnection(int depth) async {
-    if(depth > 3) {
+    if (depth > 3) {
       return false;
     }
-    if(connection == null || connection!.state != HubConnectionState.connected) {
+    if (connection == null ||
+        connection!.state != HubConnectionState.connected) {
       await startConnection();
-      return establishConnection( depth + 1);
+      return establishConnection(depth + 1);
     }
     return true;
   }
 
-  Future<bool> sendControls(List<Control> controls, String? customName, {int depth = 0}) async {
-    if(!await establishConnection(0)) return false;
+  Future<bool> sendControls(List<Control> controls, String? customName,
+      {int depth = 0}) async {
+    if (!await establishConnection(0)) return false;
     try {
       // Wrap the Map in a List
-      await connection!.invoke('ControlV2', args: [
-        controls.map((e) => e.toJsonWS()).toList(),
-        customName
-      ]);
+      await connection!.invoke('ControlV2',
+          args: [controls.map((e) => e.toJsonWS()).toList(), customName]);
     } catch (e) {
       return false;
     }
@@ -111,12 +112,10 @@ class OpenShockWS {
   }
 
   Future<String?> setCaptivePortal(Hub hub, bool enable) async {
-    if(!await establishConnection(0)) return "Connection failed";
+    if (!await establishConnection(0)) return "Connection failed";
     try {
       // Wrap the Map in a List
-      await connection!.invoke('CaptivePortal', args: [
-        hub.id, enable
-      ]);
+      await connection!.invoke('CaptivePortal', args: [hub.id, enable]);
     } catch (e) {
       return "Failed to set captive portal";
     }
@@ -136,31 +135,35 @@ class LiveControlWS {
   static Map<String, LivePattern> liveControlPatterns = {};
 
   LiveControlWS(String? host, this.hub, this.onError, this.token) {
-    if(host == null || token == null) return;
+    if (host == null || token == null) return;
 
     print("connecting to LCG");
-    channel = IOWebSocketChannel.connect(Uri.parse('${this.token!.server.startsWith("https") ? "wss" : "ws"}://$host/1/ws/live/${hub.id}'), headers: {
-      "User-Agent": GetUserAgent(),
-      "OpenShockSession": token?.token
-    });
+    channel = IOWebSocketChannel.connect(
+        Uri.parse(
+            '${this.token!.server.startsWith("https") ? "wss" : "ws"}://$host/1/ws/live/${hub.id}'),
+        headers: {
+          "User-Agent": GetUserAgent(),
+          "OpenShockSession": token?.token
+        });
 
     channel?.stream.listen((data) {
       print(data);
       // Handle ping event
       // check if data is string and if so parse the json
-      if(data is String) {
+      if (data is String) {
         Map<String, dynamic> json = jsonDecode(data);
-        if(json["ResponseType"] == "Ping") {
+        if (json["ResponseType"] == "Ping") {
           // just echo back
-          channel?.sink.add(jsonEncode({"RequestType": "Pong", "Data": json["Data"]}));
+          channel?.sink
+              .add(jsonEncode({"RequestType": "Pong", "Data": json["Data"]}));
         }
-        if(json["ResponseType"] == "TPS") {
+        if (json["ResponseType"] == "TPS") {
           tps = json["Data"]["Client"];
         }
-        if(json["ResponseType"] == "LatencyAnnounce") {
+        if (json["ResponseType"] == "LatencyAnnounce") {
           latency.insert(0, json["Data"]["OwnLatency"]);
           // only keep history of 50 latencies
-          if(latency.length > 50) {
+          if (latency.length > 50) {
             latency.removeLast();
           }
           onLatency?.call();
@@ -175,9 +178,8 @@ class LiveControlWS {
 
   void Function()? onLatency;
 
-
   int getLatency() {
-    if(latency.isEmpty) return 0;
+    if (latency.isEmpty) return 0;
     return latency[0];
   }
 
@@ -186,7 +188,7 @@ class LiveControlWS {
   }
 
   void sendControl(Shocker s, ControlType type, int intensity) {
-    if(channel == null) return;
+    if (channel == null) return;
     channel?.sink.add(jsonEncode({
       "RequestType": "Frame",
       "Data": {
@@ -197,8 +199,22 @@ class LiveControlWS {
     }));
   }
 
+  void sendControls(List<Control> list) {
+    if (channel == null) return;
+    channel?.sink.add(jsonEncode({
+      "RequestType": "BulkFrame",
+      "Data": list
+          .map((e) => {
+                "Shocker": e.shockerReference!.id,
+                "Type": getControl(e.type),
+                "Intensity": e.intensity
+              })
+          .toList()
+    }));
+  }
+
   static String getControl(ControlType type) {
-    switch(type) {
+    switch (type) {
       case ControlType.shock:
         return "shock";
       case ControlType.vibrate:

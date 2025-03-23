@@ -7,6 +7,7 @@ import 'package:shock_alarm_app/components/shocker_details.dart';
 import 'package:shock_alarm_app/dialogs/ErrorDialog.dart';
 import 'package:shock_alarm_app/dialogs/InfoDialog.dart';
 import 'package:shock_alarm_app/dialogs/LoadingDialog.dart';
+import 'package:shock_alarm_app/screens/home.dart';
 import 'package:shock_alarm_app/services/PatternGenerator.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
 import '../screens/logs.dart';
@@ -233,22 +234,22 @@ class ShockerItemState extends State<ShockerItem>
     List<ShockerAction> actions = shocker.isOwn
         ? ShockerItem.ownShockerActions
         : ShockerItem.foreignShockerActions;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (shocker.paused) return;
-          expanded = !expanded;
-        });
-        onRebuild();
-      },
-      child: Card(
-        color: t.colorScheme.onInverseSurface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              children: [
-                Row(
+    return Card(
+      color: t.colorScheme.onInverseSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (shocker.paused) return;
+                    expanded = !expanded;
+                  });
+                  onRebuild();
+                },
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Expanded(
@@ -305,6 +306,13 @@ class ShockerItemState extends State<ShockerItem>
                                       .add(shocker.id);
                                 }
                               });
+                              context
+                                  .findAncestorStateOfType<
+                                      ScreenSelectorState>()
+                                  ?.setPageSwipeEnabled(
+                                      AlarmListManager.getInstance()
+                                          .liveActiveForShockers
+                                          .isEmpty);
                             }
                           },
                         ),
@@ -355,63 +363,61 @@ class ShockerItemState extends State<ShockerItem>
                     )
                   ],
                 ),
-                if (expanded)
-                  AlarmListManager.getInstance()
-                          .liveActiveForShockers
-                          .contains(shocker.id)
-                      ? LiveControls(
-                          showLatency: false,
-                          onSendLive: onSendLive,
-                          soundAllowed: shocker.soundAllowed,
-                          vibrateAllowed: shocker.vibrateAllowed,
-                          shockAllowed: shocker.shockAllowed,
-                          intensityLimit: shocker.intensityLimit,
-                          saveId: shocker.id,
-                          ensureConnection: ensureConnection,
-                          hubConnected: AlarmListManager.getInstance()
-                              .liveControlGatewayConnections
-                              .containsKey(shocker.hubId))
-                      : ShockingControls(
-                          manager: manager,
-                          controlsContainer: shocker.controls,
-                          key: ValueKey(
-                              shocker.getIdentifier() + "-shocking-controls"),
-                          durationLimit: shocker.durationLimit,
-                          intensityLimit: shocker.intensityLimit,
-                          shockAllowed: shocker.shockAllowed,
-                          vibrateAllowed: shocker.vibrateAllowed,
-                          soundAllowed: shocker.soundAllowed,
-                          onDelayAction: (type, intensity, duration) {
-                            manager
-                                .sendShock(type, shocker, intensity, duration)
-                                .then((errorMessage) {
-                              if (errorMessage == null) return;
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: Text(errorMessage),
-                                duration: Duration(seconds: 3),
-                              ));
-                            });
-                          },
-                          onProcessAction: (type, intensity, duration) {
-                            manager
-                                .sendShock(type, shocker, intensity, duration)
-                                .then((errorMessage) {
-                              if (errorMessage == null) return;
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: Text(errorMessage),
-                                duration: Duration(seconds: 3),
-                              ));
-                            });
-                          },
-                          onSet: (container) {
-                            setState(() {});
-                          },
-                        )
-              ],
-            )),
-      ),
+              ),
+              if (expanded)
+                AlarmListManager.getInstance()
+                        .liveActiveForShockers
+                        .contains(shocker.id)
+                    ? LiveControls(
+                        showLatency: false,
+                        onSendLive: onSendLive,
+                        soundAllowed: shocker.soundAllowed,
+                        vibrateAllowed: shocker.vibrateAllowed,
+                        shockAllowed: shocker.shockAllowed,
+                        intensityLimit: shocker.intensityLimit,
+                        saveId: shocker.id,
+                        ensureConnection: ensureConnection,
+                        hubConnected: AlarmListManager.getInstance()
+                            .liveControlGatewayConnections
+                            .containsKey(shocker.hubId))
+                    : ShockingControls(
+                        manager: manager,
+                        controlsContainer: shocker.controls,
+                        key: ValueKey(
+                            shocker.getIdentifier() + "-shocking-controls"),
+                        durationLimit: shocker.durationLimit,
+                        intensityLimit: shocker.intensityLimit,
+                        shockAllowed: shocker.shockAllowed,
+                        vibrateAllowed: shocker.vibrateAllowed,
+                        soundAllowed: shocker.soundAllowed,
+                        onDelayAction: (type, intensity, duration) {
+                          manager
+                              .sendShock(type, shocker, intensity, duration)
+                              .then((errorMessage) {
+                            if (errorMessage == null) return;
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(errorMessage),
+                              duration: Duration(seconds: 3),
+                            ));
+                          });
+                        },
+                        onProcessAction: (type, intensity, duration) {
+                          manager
+                              .sendShock(type, shocker, intensity, duration)
+                              .then((errorMessage) {
+                            if (errorMessage == null) return;
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(errorMessage),
+                              duration: Duration(seconds: 3),
+                            ));
+                          });
+                        },
+                        onSet: (container) {
+                          setState(() {});
+                        },
+                      )
+            ],
+          )),
     );
   }
 
