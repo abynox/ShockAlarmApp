@@ -35,6 +35,11 @@ class AlarmListManager {
   ControlsContainer controls = ControlsContainer();
 
   AlarmListManager() {
+    setAlarmImplementation();
+  }
+
+  void setAlarmImplementation() {
+
     if (isAndroid() && !settings.useAlarmServer) {
       alarmManager = AndroidAlarmManager();
     } else {
@@ -117,6 +122,7 @@ class AlarmListManager {
     if (reloadAllMethod != null) {
       reloadAllMethod!();
     }
+    setAlarmImplementation();
   }
 
   Token? getTokenByToken(String? token) {

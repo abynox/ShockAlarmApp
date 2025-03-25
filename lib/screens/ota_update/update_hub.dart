@@ -29,6 +29,7 @@ class _UpdateHubScreenState extends State<UpdateHubScreen> {
   void initState() {
     super.initState();
     FirmwareGetter.getAvailableFirmware().then((value) {
+      if(!mounted) return;
       setState(() {
         firmware = value;
       });
