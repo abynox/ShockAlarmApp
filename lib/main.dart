@@ -7,7 +7,7 @@ import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shock_alarm_app/stores/alarm_store.dart';
-import 'screens/home.dart';
+import 'screens/screen_selector.dart';
 import 'services/alarm_list_manager.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
@@ -174,7 +174,7 @@ class MyAppState extends State<MyApp> {
           colorScheme: darkColorScheme,
         ): ThemeData.dark(),
         themeMode: themeMode,
-        home: ScreenSelector(manager: AlarmListManager.getInstance())
+        home: ScreenSelectorScreen(manager: AlarmListManager.getInstance())
       );
     });
   }

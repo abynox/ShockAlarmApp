@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:shock_alarm_app/components/live_controls.dart';
+import 'package:shock_alarm_app/screens/shockers/live/live_controls.dart';
 import 'package:signalr_core/signalr_core.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/io.dart';

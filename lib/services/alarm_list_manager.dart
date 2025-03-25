@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shock_alarm_app/components/card.dart';
-import 'package:shock_alarm_app/components/live_controls.dart';
+import 'package:shock_alarm_app/components/padded_card.dart';
+import 'package:shock_alarm_app/screens/shockers/live/live_controls.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
