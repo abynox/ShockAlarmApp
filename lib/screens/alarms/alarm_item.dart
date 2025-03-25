@@ -240,124 +240,128 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
         })
       },
       child: PaddedCard(
+          color: t.colorScheme.surface,
           child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
+            children: [
               Row(
-                spacing: 10,
-                children: [
-                  Text(
-                    alarmShocker.shockerReference?.name ?? "Unknown",
-                    style: t.textTheme.headlineSmall,
-                  ),
-                  Chip(
-                      label: Text(
-                          alarmShocker.shockerReference?.hubReference?.name ??
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Row(
+                    spacing: 10,
+                    children: [
+                      Text(
+                        alarmShocker.shockerReference?.name ?? "Unknown",
+                        style: t.textTheme.headlineSmall,
+                      ),
+                      Chip(
+                          label: Text(alarmShocker
+                                  .shockerReference?.hubReference?.name ??
                               "Unknown")),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      if (isPaused)
+                        GestureDetector(
+                          child: Chip(
+                              label: Text("paused"),
+                              backgroundColor: t.colorScheme.errorContainer,
+                              side: BorderSide.none,
+                              avatar: Icon(
+                                Icons.info,
+                                color: t.colorScheme.error,
+                              )),
+                          onTap: () {
+                            InfoDialog.show(
+                                "Shocker is paused",
+                                alarmShocker.shockerReference?.isOwn ?? false
+                                    ? "This shocker was pause by you. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. Unpause it so it can be triggered."
+                                    : "This shocker was paused by the owner. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. It needs to be unpaused so it can be triggered.");
+                          },
+                        ),
+                      Switch(
+                        value: alarmShocker.enabled,
+                        onChanged: enable,
+                      ),
+                    ],
+                  )
                 ],
               ),
-              Row(
-                children: [
-                  if (isPaused)
-                    GestureDetector(
-                      child: Chip(
-                          label: Text("paused"),
-                          backgroundColor: t.colorScheme.errorContainer,
-                          side: BorderSide.none,
-                          avatar: Icon(
-                            Icons.info,
-                            color: t.colorScheme.error,
-                          )),
-                      onTap: () {
-                        InfoDialog.show(
-                            "Shocker is paused",
-                            alarmShocker.shockerReference?.isOwn ?? false
-                                ? "This shocker was pause by you. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. Unpause it so it can be triggered."
-                                : "This shocker was paused by the owner. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. It needs to be unpaused so it can be triggered.");
+              if (alarmShocker.enabled)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 5,
+                  children: [
+                    DropdownMenu<ControlType?>(
+                      dropdownMenuEntries: [
+                        DropdownMenuEntry(
+                          label: "Tone",
+                          value: null,
+                        ),
+                        if (alarmShocker.shockerReference?.shockAllowed ??
+                            false)
+                          DropdownMenuEntry(
+                            label: "Shock",
+                            value: ControlType.shock,
+                          ),
+                        if (alarmShocker.shockerReference?.vibrateAllowed ??
+                            false)
+                          DropdownMenuEntry(
+                            label: "Vibration",
+                            value: ControlType.vibrate,
+                          ),
+                        if (alarmShocker.shockerReference?.soundAllowed ??
+                            false)
+                          DropdownMenuEntry(
+                            label: "Sound",
+                            value: ControlType.sound,
+                          ),
+                      ],
+                      initialSelection: alarmShocker.type,
+                      onSelected: (value) {
+                        setState(() {
+                          alarmShocker.type = value;
+                        });
                       },
                     ),
-                  Switch(
-                    value: alarmShocker.enabled,
-                    onChanged: enable,
-                  ),
-                ],
-              )
-            ],
-          ),
-          if (alarmShocker.enabled)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 5,
-              children: [
-                DropdownMenu<ControlType?>(
-                  dropdownMenuEntries: [
-                    DropdownMenuEntry(
-                      label: "Tone",
-                      value: null,
-                    ),
-                    if (alarmShocker.shockerReference?.shockAllowed ?? false)
-                      DropdownMenuEntry(
-                        label: "Shock",
-                        value: ControlType.shock,
+                    if (alarmShocker.type == null)
+                      DropdownMenu<int?>(
+                        dropdownMenuEntries: manager.alarmTones.map((tone) {
+                          return DropdownMenuEntry(
+                              label: tone.name, value: tone.id);
+                        }).toList(),
+                        initialSelection: alarmShocker.toneId,
+                        onSelected: (value) {
+                          setState(() {
+                            alarmShocker.toneId = value;
+                          });
+                        },
                       ),
-                    if (alarmShocker.shockerReference?.vibrateAllowed ?? false)
-                      DropdownMenuEntry(
-                        label: "Vibration",
-                        value: ControlType.vibrate,
-                      ),
-                    if (alarmShocker.shockerReference?.soundAllowed ?? false)
-                      DropdownMenuEntry(
-                        label: "Sound",
-                        value: ControlType.sound,
+                    if (alarmShocker.type != null)
+                      IntensityDurationSelector(
+                        key: ValueKey(alarmShocker.type),
+                        controlsContainer: ControlsContainer.fromInts(
+                            intensity: alarmShocker.intensity,
+                            duration: alarmShocker.duration),
+                        onSet: (ControlsContainer container) {
+                          setState(() {
+                            alarmShocker.duration =
+                                container.durationRange.start.toInt();
+                            alarmShocker.intensity =
+                                container.intensityRange.start.toInt();
+                          });
+                        },
+                        maxDuration:
+                            alarmShocker.shockerReference?.durationLimit ?? 300,
+                        maxIntensity:
+                            alarmShocker.shockerReference?.intensityLimit ?? 0,
+                        showIntensity: alarmShocker.type != ControlType.sound,
+                        type: alarmShocker.type ?? ControlType.shock,
                       ),
                   ],
-                  initialSelection: alarmShocker.type,
-                  onSelected: (value) {
-                    setState(() {
-                      alarmShocker.type = value;
-                    });
-                  },
                 ),
-                if (alarmShocker.type == null)
-                  DropdownMenu<int?>(
-                    dropdownMenuEntries: manager.alarmTones.map((tone) {
-                      return DropdownMenuEntry(
-                          label: tone.name, value: tone.id);
-                    }).toList(),
-                    initialSelection: alarmShocker.toneId,
-                    onSelected: (value) {
-                      setState(() {
-                        alarmShocker.toneId = value;
-                      });
-                    },
-                  ),
-                if (alarmShocker.type != null)
-                  IntensityDurationSelector(
-                    key: ValueKey(alarmShocker.type),
-                    controlsContainer: ControlsContainer.fromInts(
-                        intensity: alarmShocker.intensity,
-                        duration: alarmShocker.duration),
-                    onSet: (ControlsContainer container) {
-                      setState(() {
-                        alarmShocker.duration =
-                            container.durationRange.start.toInt();
-                        alarmShocker.intensity =
-                            container.intensityRange.start.toInt();
-                      });
-                    },
-                    maxDuration:
-                        alarmShocker.shockerReference?.durationLimit ?? 300,
-                    maxIntensity:
-                        alarmShocker.shockerReference?.intensityLimit ?? 0,
-                    showIntensity: alarmShocker.type != ControlType.sound,
-                    type: alarmShocker.type ?? ControlType.shock,
-                  ),
-              ],
-            ),
-        ],
-      )),
+            ],
+          )),
     );
   }
 }
