@@ -777,6 +777,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Row(
+              children: [
+                Text("Lerp intensity"),
+                IconButton(
+                    onPressed: () {
+                      InfoDialog.show("What is this?",
+                          "Lerping the intensity means you'll always be prompted to choose the intensity from 0 - 100, no matter the limit on the shocker. It'll then be mapped based on the actual limit of each shocker.\n\nExample: Limit of 50, input of 100 -> 50% intensity\nLimit of 50, input of 50 -> 25% intensity");
+                    },
+                    icon: Icon(Icons.info))
+              ],
+            ),
+            Switch(
+                value: widget.manager.settings.lerpIntensity,
+                key: ValueKey("lerpIntensity"),
+                onChanged: (value) {
+                  setState(() {
+                    widget.manager.settings.lerpIntensity = value;
+                    widget.manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Text("Send logs for live control (workaround)"),
             Switch(
                 value: widget.manager.settings.liveControlsLogWorkaround,

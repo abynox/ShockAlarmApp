@@ -10,7 +10,7 @@ import 'package:shock_alarm_app/services/openshock.dart';
 import '../services/alarm_list_manager.dart';
 import 'alarms/alarms.dart';
 import 'share_links/share_links.dart';
-import 'settings/settings.dart';
+import 'settings/settings_screen.dart';
 import '../stores/alarm_store.dart';
 import 'package:universal_html/html.dart' as html;
 

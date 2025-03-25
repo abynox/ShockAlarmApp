@@ -10,6 +10,7 @@ import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
 import 'package:shock_alarm_app/screens/screen_selector.dart';
 import 'package:shock_alarm_app/services/PatternGenerator.dart';
+import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
 import '../logs/logs.dart';
 import '../shares/shares.dart';
@@ -416,9 +417,12 @@ class ShockerItemState extends State<ShockerItem>
   }
 
   Future ensureConnection() async {
-    print("${shocker.hubReference!.name} connecting");
-    await AlarmListManager.getInstance()
+    ErrorContainer<bool> error = await AlarmListManager.getInstance()
         .connectToLiveControlGateway(shocker.hubReference!);
+    if (error.error != null) {
+      ErrorDialog.show("Failed to connect to hub", error.error!);
+      return;
+    }
     setState(() {});
   }
 

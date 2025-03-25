@@ -1373,7 +1373,14 @@ class Shocker {
       Control c = Control();
       c.id = this.id;
       c.type = type;
-      c.intensity = min(this.intensityLimit, intensity);
+      if(AlarmListManager.getInstance().settings.lerpIntensity) {
+        c.intensity = (intensity / 100 * this.intensityLimit).round();
+        if(intensity > 0 && c.intensity == 0) {
+          c.intensity = 1;
+        }
+      } else {
+        c.intensity = min(this.intensityLimit, intensity);
+      }
       c.duration = min(this.durationLimit, duration);
       c.apiTokenId = this.apiTokenId;
       c.shockerReference = this;

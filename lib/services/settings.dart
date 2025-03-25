@@ -26,6 +26,7 @@ class Settings {
   bool allowTonesForControls = false;
   bool liveControlsLogWorkaround = false;
   bool allowMultiServerLogin = false;
+  bool lerpIntensity = false;
 
 
   Settings();
@@ -59,6 +60,8 @@ class Settings {
       liveControlsLogWorkaround = json["liveControlsLogWorkaround"];
     if(json["allowMultiServerLogin"] != null)
       allowMultiServerLogin = json["allowMultiServerLogin"];
+    if(json["lerpIntensity"] != null)
+      lerpIntensity = json["lerpIntensity"];
   }
 
   Map<String, dynamic> toJson() {
@@ -76,7 +79,8 @@ class Settings {
       "useAlarmServer": useAlarmServer,
       "allowTonesForControls": allowTonesForControls,
       "liveControlsLogWorkaround": liveControlsLogWorkaround,
-      "allowMultiServerLogin": allowMultiServerLogin
+      "allowMultiServerLogin": allowMultiServerLogin,
+      "lerpIntensity": lerpIntensity
     };
   }
 }

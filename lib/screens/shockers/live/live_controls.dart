@@ -625,72 +625,75 @@ class _DraggableCircleState extends State<DraggableCircle>
                           color: Color(0x22FFFFFF),
                           fontSize: widget.width / 5))),
               if (samples.isNotEmpty)
-                LineChart(
-                  LineChartData(
-                    minY: 0,
-                    maxY: widget.intensityLimit.toDouble(),
-                    minX: 0,
-                    maxX: spannedTime,
-                    extraLinesData: ExtraLinesData(verticalLines: [
-                      if (widget.pattern.id != -1)
-                        VerticalLine(
-                          x: (DateTime.now().millisecondsSinceEpoch -
-                                  lookStrokeStart) /
-                              widget.pattern.getMaxTime() *
-                              spannedTime,
-                          color: t.colorScheme.tertiary,
-                          strokeWidth: 1,
-                          dashArray: [5, 15],
-                        ),
-                      ...verticalLines.map((element) {
-                        return VerticalLine(
-                          x: element.x,
-                          color: t.colorScheme.secondary,
-                          strokeWidth: 2,
-                          dashArray: [5, 5],
-                        );
-                      }).toList()
-                    ]),
-                    lineTouchData: const LineTouchData(enabled: false),
-                    clipData: const FlClipData.all(),
-                    gridData: const FlGridData(
-                      show: true,
-                      drawVerticalLine: false,
-                    ),
-                    borderData: FlBorderData(show: false),
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: samples,
-                        dotData: const FlDotData(
-                          show: false,
-                        ),
-                        color: widget.graphColor,
-                        barWidth: 4,
-                        isCurved: false,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: LineChart(
+                    LineChartData(
+                      minY: 0,
+                      maxY: widget.intensityLimit.toDouble(),
+                      minX: 0,
+                      maxX: spannedTime,
+                      extraLinesData: ExtraLinesData(verticalLines: [
+                        if (widget.pattern.id != -1)
+                          VerticalLine(
+                            x: (DateTime.now().millisecondsSinceEpoch -
+                                    lookStrokeStart) /
+                                widget.pattern.getMaxTime() *
+                                spannedTime,
+                            color: t.colorScheme.tertiary,
+                            strokeWidth: 1,
+                            dashArray: [5, 15],
+                          ),
+                        ...verticalLines.map((element) {
+                          return VerticalLine(
+                            x: element.x,
+                            color: t.colorScheme.secondary,
+                            strokeWidth: 2,
+                            dashArray: [5, 5],
+                          );
+                        }).toList()
+                      ]),
+                      lineTouchData: const LineTouchData(enabled: false),
+                      clipData: const FlClipData.all(),
+                      gridData: const FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
                       ),
-                      if (widget.pattern.id != -1)
+                      borderData: FlBorderData(show: false),
+                      lineBarsData: [
                         LineChartBarData(
-                          spots: widget.pattern.pattern.entries.map((e) {
-                            return FlSpot(
-                                e.key.toDouble() /
-                                    widget.pattern.getMaxTime() *
-                                    spannedTime,
-                                e.value);
-                          }).toList(),
+                          spots: samples,
                           dotData: const FlDotData(
                             show: false,
                           ),
-                          color:
-                              widget.graphPreviewColor.withValues(alpha: 0.2),
+                          color: widget.graphColor,
                           barWidth: 4,
                           isCurved: false,
-                        )
-                    ],
-                    titlesData: const FlTitlesData(
-                      show: false,
+                        ),
+                        if (widget.pattern.id != -1)
+                          LineChartBarData(
+                            spots: widget.pattern.pattern.entries.map((e) {
+                              return FlSpot(
+                                  e.key.toDouble() /
+                                      widget.pattern.getMaxTime() *
+                                      spannedTime,
+                                  e.value);
+                            }).toList(),
+                            dotData: const FlDotData(
+                              show: false,
+                            ),
+                            color:
+                                widget.graphPreviewColor.withValues(alpha: 0.2),
+                            barWidth: 4,
+                            isCurved: false,
+                          )
+                      ],
+                      titlesData: const FlTitlesData(
+                        show: false,
+                      ),
                     ),
+                    key: ValueKey(DateTime.now().millisecondsSinceEpoch),
                   ),
-                  key: ValueKey(DateTime.now().millisecondsSinceEpoch),
                 ),
               Positioned(
                 left: posX,

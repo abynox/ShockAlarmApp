@@ -933,6 +933,7 @@ class AlarmListManager {
         limitedShocker.vibrateAllowed = true;
       }
     }
+    if(settings.lerpIntensity) limitedShocker.intensityLimit = 100;
     return limitedShocker;
   }
 

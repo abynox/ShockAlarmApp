@@ -41,11 +41,13 @@ class _SharesScreenState extends State<SharesScreen> {
 
   Future<void> loadShares() async {
     final newShares = await manager.getShockerShares(shocker);
+    if(!context.mounted) return;
     setState(() {
       shares = newShares;
     });
 
     final newShareCodes = await manager.getShockerShareCodes(shocker);
+    if(!context.mounted) return;
     setState(() {
       shareCodes = newShareCodes;
     });

@@ -1,0 +1,5 @@
+**Changelog:**
+- Fixed overdraw over the edge
+- Internal code restructure
+- Added ability to lerp intensity (aka always show 100%)
+- Added error dialogs when live connection in individual shocker view fails
