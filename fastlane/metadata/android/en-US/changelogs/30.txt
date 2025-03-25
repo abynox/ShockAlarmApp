@@ -3,3 +3,4 @@
 - Internal code restructure
 - Added ability to lerp intensity (aka always show 100%)
 - Added error dialogs when live connection in individual shocker view fails
+- Fixed Alarm Server on Android

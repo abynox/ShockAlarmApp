@@ -860,6 +860,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   setState(() {
                     widget.manager.settings.useAlarmServer = value;
                     widget.manager.saveSettings();
+                    widget.manager.setAlarmImplementation();
                     widget.manager.pageSelectorReloadMethod!();
                   });
                 })
