@@ -39,7 +39,7 @@ class LogScreenState extends State<LogScreen> {
         newLogs.addAll(manager.shockerLog[shocker.id] ?? []);
       }
       newLogs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
-      if(!context.mounted) return;
+    if(!mounted) return;
       setState(() {
         initialLoading = false;
         logs = newLogs;
@@ -75,7 +75,7 @@ class LogScreenState extends State<LogScreen> {
       newLogs.addAll(await manager.getShockerLogs(shocker));
     }
     newLogs.sort((a, b) => b.createdOn.compareTo(a.createdOn));
-    if(!context.mounted) return;
+    if(!mounted) return;
     setState(() {
       logs = newLogs;
       initialLoading = false;

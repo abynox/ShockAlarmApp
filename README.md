@@ -85,7 +85,7 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Add ui to rename tones
 - [x] Better desktop support (keybinds)
 - [x] Better desktop support (layout)
-- [ ] Better desktop support (dynamic layout)
+- [x] Better desktop support (dynamic layout)
 - [x] Show 3 point menu when 1 shocker is selected
 - [x] Share codes sometimes can't be claimed when the app is already open (treating as fixed for now)
 - [x] Show loading animation when share codes are loading in after shares loaded
@@ -101,7 +101,7 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Allow alarm tones to be used as patterns
 - [x] Request permissions only when needed
 - [x] fix reloading problems in settings after login?
-- [ ] (Big controls mode)
+- [ ] ~~(Big controls mode)~~ fuck this shit, there's no space
 - [x] Improved login for web (aka using token requests)
 - [x] Web support (alarms not working)
 - [x] Linux support (alarms not working)
