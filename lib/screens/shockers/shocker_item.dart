@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
+import 'package:shock_alarm_app/components/predefined_spacing.dart';
 import 'package:shock_alarm_app/dialogs/delete_dialog.dart';
 import 'package:shock_alarm_app/screens/shockers/live/live_controls.dart';
 import 'package:shock_alarm_app/screens/shockers/shocker_details.dart';
@@ -773,7 +774,7 @@ class ShockingControlsState extends State<ShockingControls>
     return Column(
       children: [
         if (widget.manager.settings.allowTonesForControls)
-          DropdownMenu<int?>(
+          ...[DropdownMenu<int?>(
             dropdownMenuEntries: dme,
             initialSelection: AlarmListManager.getInstance().selectedTone?.id,
             onSelected: (value) {
@@ -782,6 +783,7 @@ class ShockingControlsState extends State<ShockingControls>
               });
             },
           ),
+          PredefinedSpacing(padding: PredefinedSpacing.paddingExtraSmall())],
         if (AlarmListManager.getInstance().selectedTone == null)
           IntensityDurationSelector(
             controlsContainer: widget.controlsContainer,

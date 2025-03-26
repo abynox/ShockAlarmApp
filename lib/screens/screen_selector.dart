@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/page_padding.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/shockers/shock_screen_selector.dart';
 import 'package:shock_alarm_app/screens/shockers/individual/shockers.dart';
@@ -22,7 +23,8 @@ class ScreenSelectorScreen extends StatefulWidget {
   bool setPageSwipeEnabled = true;
 
   @override
-  State<StatefulWidget> createState() => ScreenSelectorScreenState(manager: manager);
+  State<StatefulWidget> createState() =>
+      ScreenSelectorScreenState(manager: manager);
 }
 
 class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
@@ -94,7 +96,7 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
     if (!initialReload) {
       _selectedIndex = min(_selectedIndex, screens.length);
       setState(() {});
-      if (mounted) _tap(_selectedIndex);
+      if (mounted) _tap(_selectedIndex, true);
     }
   }
 
@@ -172,7 +174,7 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
         if (!supportsAlarms) _selectedIndex -= 1;
       }
       setState(() {});
-      _tap(_selectedIndex);
+      _tap(_selectedIndex, true);
     });
     manager.updateShockerStore();
     super.initState();
@@ -227,10 +229,10 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
 
   ScreenSelectorScreenState({required this.manager});
 
-  void _tap(int index) {
+  void _tap(int index, bool switchPage) {
     index = max(0, min(index, screens.length - 1));
     setState(() {
-      pageController.jumpToPage(index);
+      if (switchPage) pageController.jumpToPage(index);
       _selectedIndex = index;
     });
     AlarmListManager.getInstance().savePageIndex(index);
@@ -242,21 +244,13 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
   Widget build(BuildContext context) {
     manager.startAllWS();
     return Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.only(
-            bottom: 15,
-            left: 15,
-            right: 15,
-            top: 15,
-          ),
-          child: PageView(
-            children: screens,
-            onPageChanged: _tap,
-            controller: pageController,
-            physics: widget.setPageSwipeEnabled
-                ? null
-                : NeverScrollableScrollPhysics(),
-          ),
+        body: PageView(
+          onPageChanged: (index) => _tap(index, false),
+          controller: pageController,
+          physics: widget.setPageSwipeEnabled
+              ? null
+              : NeverScrollableScrollPhysics(),
+          children: screens.map((e) => PagePadding(child: e)).toList(),
         ),
         appBar: null,
         floatingActionButton: floatingActionButtons.elementAt(_selectedIndex),
@@ -264,7 +258,7 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
           items: navigationBarItems,
           type: BottomNavigationBarType.fixed,
           currentIndex: _selectedIndex,
-          onTap: _tap,
+          onTap: (index) => _tap(index, true),
         ));
   }
 

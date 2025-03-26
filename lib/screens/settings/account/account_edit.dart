@@ -79,6 +79,8 @@ class _AccountEditScreenState extends State<AccountEditScreen> {
                             token: token,
                             userToken: widget.token,
                             onUpdated: updateData)),
+                      if(tokens?.isEmpty ?? false)
+                        Text("No Api Tokens created yet", style: t.textTheme.headlineSmall,),
                       PredefinedSpacing(),
                       Text(
                         "Sessions",
@@ -92,7 +94,9 @@ class _AccountEditScreenState extends State<AccountEditScreen> {
                         ...sessions!.map((session) => AccountSession(
                             session: session,
                             token: widget.token,
-                            onDeleted: updateData))
+                            onDeleted: updateData)),
+                      if(sessions?.isEmpty ?? false)
+                        Text("No sessions yet", style: t.textTheme.headlineSmall,),
                     ])))),
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
