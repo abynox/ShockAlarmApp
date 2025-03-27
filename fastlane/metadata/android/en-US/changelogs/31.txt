@@ -1,0 +1,2 @@
+**Changelog:**
+- Added option for seperate intensity sliders for shock and vibrate

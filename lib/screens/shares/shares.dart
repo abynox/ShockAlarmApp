@@ -299,6 +299,7 @@ class ShockerShareEntryEditorState extends State<ShockerShareEntryEditor> {
           Column(spacing: 10, children: [
             Text("Limits", style: t.textTheme.headlineMedium),
             IntensityDurationSelector(
+              showSeperateIntensities: false,
                 controlsContainer: ControlsContainer.fromInts(
                     duration: limits.limits.duration ?? 30000,
                     intensity: limits.limits.intensity ?? 100),

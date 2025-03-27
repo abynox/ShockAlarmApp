@@ -240,6 +240,7 @@ class ToneComponentItemState extends State<ToneComponentItem> {
               ),
               IntensityDurationSelector(
                 key: ValueKey(widget.component.type),
+                showSeperateIntensities: false,
                 controlsContainer: ControlsContainer.fromInts(
                     intensity: widget.component.intensity,
                     duration: widget.component.duration),

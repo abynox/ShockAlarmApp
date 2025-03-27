@@ -16,9 +16,8 @@ class DeviceContainer {
   DeviceContainer(this.hubs, this.shockers);
 }
 
-enum TokenGetResponseType {
-  success, tokenExpired, serverUnreachable
-}
+enum TokenGetResponseType { success, tokenExpired, serverUnreachable }
+
 class OpenShockClient {
   Future<DeviceContainer> GetShockersForToken(Token t) async {
     var response = await GetRequest(t, "/1/shockers/own");
@@ -26,7 +25,8 @@ class OpenShockClient {
     List<Hub> hubs = [];
 
     if (response.statusCode == 200) {
-      OpenShockDevicesData deviceData = OpenShockDevicesData.fromJson(jsonDecode(response.body));
+      OpenShockDevicesData deviceData =
+          OpenShockDevicesData.fromJson(jsonDecode(response.body));
       for (var element in deviceData.data!) {
         Hub h = Hub.fromOpenShockDevice(element);
         h.isOwn = true;
@@ -45,9 +45,10 @@ class OpenShockClient {
 
     response = await GetRequest(t, "/1/shockers/shared");
     if (response.statusCode == 200) {
-      OpenShockContainerData deviceData = OpenShockContainerData.fromJson(jsonDecode(response.body));
+      OpenShockContainerData deviceData =
+          OpenShockContainerData.fromJson(jsonDecode(response.body));
       for (var element in deviceData.data!) {
-        for(var device in element.devices) {
+        for (var device in element.devices) {
           Hub h = Hub.fromOpenShockDevice(device);
           h.apiTokenId = t.id;
           hubs.add(h);
@@ -68,7 +69,7 @@ class OpenShockClient {
 
   static getIconForControlType(ControlType type, {Color? color, double? size}) {
     IconData icon = Icons.stop;
-    switch(type) {
+    switch (type) {
       case ControlType.stop:
         icon = Icons.stop;
         break;
@@ -85,19 +86,24 @@ class OpenShockClient {
         icon = Icons.wifi_tethering;
         break;
     }
-    return Icon(icon, color: color, size: size,);
+    return Icon(
+      icon,
+      color: color,
+      size: size,
+    );
   }
-
 
   Future<http.Response> GetRequest(Token t, String path) async {
     try {
       var url = Uri.parse(t.server + path);
       return await http.get(url, headers: {
-        if(t.isSession) "Cookie": "openShockSession=${t.token}"
-        else "OpenShockToken": t.token,
+        if (t.isSession)
+          "Cookie": "openShockSession=${t.token}"
+        else
+          "OpenShockToken": t.token,
         'User-Agent': GetUserAgent(),
       });
-    } catch(e) {
+    } catch (e) {
       return http.Response("{}", 599);
     }
   }
@@ -105,13 +111,17 @@ class OpenShockClient {
   Future<http.Response> PostRequest(Token t, String path, String body) async {
     try {
       var url = Uri.parse(t.server + path);
-      return await http.post(url, headers: {
-        if(t.isSession) "Cookie": "openShockSession=${t.token}"
-        else "OpenShockToken": t.token,
-        "Content-Type": "application/json",
-        'User-Agent': GetUserAgent(),
-      }, body: body);
-    } catch(e) {
+      return await http.post(url,
+          headers: {
+            if (t.isSession)
+              "Cookie": "openShockSession=${t.token}"
+            else
+              "OpenShockToken": t.token,
+            "Content-Type": "application/json",
+            'User-Agent': GetUserAgent(),
+          },
+          body: body);
+    } catch (e) {
       return http.Response("{}", 599);
     }
   }
@@ -119,55 +129,64 @@ class OpenShockClient {
   Future<http.Response> PatchRequest(Token t, String path, String body) async {
     try {
       var url = Uri.parse(t.server + path);
-      return await http.patch(url, headers: {
-        if(t.isSession) "Cookie": "openShockSession=${t.token}"
-        else "OpenShockToken": t.token,
-        "Content-Type": "application/json",
-        'User-Agent': GetUserAgent(),
-      }, body: body);
-    }catch(e) {
+      return await http.patch(url,
+          headers: {
+            if (t.isSession)
+              "Cookie": "openShockSession=${t.token}"
+            else
+              "OpenShockToken": t.token,
+            "Content-Type": "application/json",
+            'User-Agent': GetUserAgent(),
+          },
+          body: body);
+    } catch (e) {
       return http.Response("{}", 599);
     }
   }
 
   Future<http.Response> PutRequest(Token t, String path, String body) async {
     try {
-
       var url = Uri.parse(t.server + path);
-      return await http.put(url, headers: {
-        if(t.isSession) "Cookie": "openShockSession=${t.token}"
-        else "OpenShockToken": t.token,
-        "Content-Type": "application/json",
-        'User-Agent': GetUserAgent(),
-      }, body: body);
-    } catch(e) {
+      return await http.put(url,
+          headers: {
+            if (t.isSession)
+              "Cookie": "openShockSession=${t.token}"
+            else
+              "OpenShockToken": t.token,
+            "Content-Type": "application/json",
+            'User-Agent': GetUserAgent(),
+          },
+          body: body);
+    } catch (e) {
       return http.Response("{}", 599);
     }
   }
 
   Future<http.Response> DeleteRequest(Token t, String path, String body) async {
     try {
-
       var url = Uri.parse(t.server + path);
-      return await http.delete(url, headers: {
-        if(t.isSession) "Cookie": "openShockSession=${t.token}"
-        else "OpenShockToken": t.token,
-        "Content-Type": "application/json",
-        'User-Agent': GetUserAgent(),
-      }, body: body);
-    } catch(e) {
+      return await http.delete(url,
+          headers: {
+            if (t.isSession)
+              "Cookie": "openShockSession=${t.token}"
+            else
+              "OpenShockToken": t.token,
+            "Content-Type": "application/json",
+            'User-Agent': GetUserAgent(),
+          },
+          body: body);
+    } catch (e) {
       return http.Response("{}", 599);
     }
   }
 
-  Future<String?> setPauseStateOfShocker(Shocker s, AlarmListManager manager, bool paused) async {
+  Future<String?> setPauseStateOfShocker(
+      Shocker s, AlarmListManager manager, bool paused) async {
     Token? t = manager.getToken(s.apiTokenId);
-    if(t == null) return "Token not found";
-    String body = jsonEncode({
-      "pause": paused
-    });
+    if (t == null) return "Token not found";
+    String body = jsonEncode({"pause": paused});
     var response = await PostRequest(t, "/1/shockers/${s.id}/pause", body);
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       s.paused = paused;
       manager.saveTokens();
       manager.reloadAllMethod!();
@@ -175,24 +194,29 @@ class OpenShockClient {
     return getErrorCode(response, "Failed to set pause state");
   }
 
-  Future<ErrorContainer<String>> createApiToken(Token? t, OpenShockApiToken toCreate) async {
-    if(t == null) return ErrorContainer(null, "Token not found");
-    var response = await PostRequest(t, "/1/tokens", jsonEncode(toCreate.toJson(getValidUntil: true)));
-    if(response.statusCode != 200) {
-      return ErrorContainer(null, getErrorCode(response, "Failed to create token"));
+  Future<ErrorContainer<String>> createApiToken(
+      Token? t, OpenShockApiToken toCreate) async {
+    if (t == null) return ErrorContainer(null, "Token not found");
+    var response = await PostRequest(
+        t, "/1/tokens", jsonEncode(toCreate.toJson(getValidUntil: true)));
+    if (response.statusCode != 200) {
+      return ErrorContainer(
+          null, getErrorCode(response, "Failed to create token"));
     }
     String? token = jsonDecode(response.body)["token"];
     return ErrorContainer(token, null);
   }
 
-  Future<bool> sendControls(Token t, List<Control> list, AlarmListManager manager, {String? customName, bool useWs = true}) async {
-    if(useWs) {
-      if(manager.ws[t.id] == null) {
+  Future<bool> sendControls(
+      Token t, List<Control> list, AlarmListManager manager,
+      {String? customName, bool useWs = true}) async {
+    if (useWs) {
+      if (manager.ws[t.id] == null) {
         await manager.startWS(t);
       }
       return await manager.ws[t.id]?.sendControls(list, customName) ?? false;
     }
-    
+
     String body = jsonEncode({
       "shocks": list.map((e) => e.toJson()).toList(),
       "customName": customName
@@ -201,25 +225,24 @@ class OpenShockClient {
     return response.statusCode == 200;
   }
 
-
   Future<TokenGetResponseType> setInfoOfToken(Token t) async {
     var response = await GetRequest(t, "/1/users/self");
     String name = "Unknown";
     String id = "";
-    if(response.statusCode == 401) {
+    if (response.statusCode == 401) {
       return TokenGetResponseType.tokenExpired;
     }
-    if(response.statusCode == 599) {
+    if (response.statusCode == 599) {
       return TokenGetResponseType.serverUnreachable;
     }
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       name = data["data"]["name"];
       id = data["data"]["id"];
     }
     response = await GetRequest(t, "/1/tokens/self");
     String tokenName = "";
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       tokenName = data["name"];
     }
@@ -228,23 +251,24 @@ class OpenShockClient {
     return TokenGetResponseType.success;
   }
 
-  Future<Token?> login(String serverAddress, String email, String password, AlarmListManager manager) async {
-    if(serverAddress.endsWith("/")) {
+  Future<Token?> login(String serverAddress, String email, String password,
+      AlarmListManager manager) async {
+    if (serverAddress.endsWith("/")) {
       serverAddress = serverAddress.substring(0, serverAddress.length - 1);
     }
-    var response = await http.post(Uri.parse("$serverAddress/1/account/login"), body: jsonEncode({
-      "password": password,
-      "email": email
-    }), headers: {
-      "Content-Type": "application/json",
-      'User-Agent': GetUserAgent(),
-    });
+    var response = await http.post(Uri.parse("$serverAddress/1/account/login"),
+        body: jsonEncode({"password": password, "email": email}),
+        headers: {
+          "Content-Type": "application/json",
+          'User-Agent': GetUserAgent(),
+        });
     Token? token;
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       response.headers["set-cookie"]?.split(";").forEach((element) {
-        if(element.startsWith("openShockSession=")) {
+        if (element.startsWith("openShockSession=")) {
           var sessionId = element.substring("openShockSession=".length);
-          token = Token(DateTime.now().millisecondsSinceEpoch, sessionId, server: serverAddress, isSession: true);
+          token = Token(DateTime.now().millisecondsSinceEpoch, sessionId,
+              server: serverAddress, isSession: true);
         }
       });
     }
@@ -253,21 +277,22 @@ class OpenShockClient {
 
   Future<OpenShockShocker?> getShockerDetails(Shocker shocker) async {
     Token? t = AlarmListManager.getInstance().getToken(shocker.apiTokenId);
-    if(t == null) {
+    if (t == null) {
       return null;
     }
     var response = await GetRequest(t, "/1/shockers/${shocker.id}");
 
-    if(response.statusCode != 200) {
+    if (response.statusCode != 200) {
       return null;
     }
     // replace name of response
     return OpenShockShocker.fromJson(jsonDecode(response.body)["data"]);
   }
 
-  Future<String?> editShocker(Shocker shocker, OpenShockShocker edit, AlarmListManager manager) async {
+  Future<String?> editShocker(
+      Shocker shocker, OpenShockShocker edit, AlarmListManager manager) async {
     Token? t = manager.getToken(shocker.apiTokenId);
-    if(t == null) {
+    if (t == null) {
       return "Token not found";
     }
     // replace name of response
@@ -279,7 +304,7 @@ class OpenShockClient {
     });
 
     var response = await PatchRequest(t, "/1/shockers/${shocker.id}", body);
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       shocker.name = edit.name;
       manager.saveTokens();
       return null;
@@ -289,12 +314,12 @@ class OpenShockClient {
 
   Future<ErrorContainer<OpenShockDevice>> getDeviceDetails(Hub hub) async {
     Token? t = AlarmListManager.getInstance().getToken(hub.apiTokenId);
-    if(t == null) {
+    if (t == null) {
       return ErrorContainer(null, "Token not found");
     }
     var response = await GetRequest(t, "/1/devices/${hub.id}");
 
-    if(response.statusCode != 200) {
+    if (response.statusCode != 200) {
       return ErrorContainer(null, "${response.statusCode} - failed to get hub");
     }
     // replace name of response
@@ -303,15 +328,15 @@ class OpenShockClient {
     return ErrorContainer(device, null);
   }
 
-
-  Future<String?> renameHub(Hub hub, String text, AlarmListManager manager) async {
+  Future<String?> renameHub(
+      Hub hub, String text, AlarmListManager manager) async {
     Token? t = manager.getToken(hub.apiTokenId);
-    if(t == null) {
+    if (t == null) {
       return Future.value("Token not found");
-    } 
+    }
     var response = await GetRequest(t, "/1/devices/${hub.id}");
 
-    if(response.statusCode != 200) {
+    if (response.statusCode != 200) {
       return "${response.statusCode} - failed to get hub";
     }
     // replace name of response
@@ -320,7 +345,7 @@ class OpenShockClient {
     String body = jsonEncode(responseBody);
 
     response = await PatchRequest(t, "/1/devices/${hub.id}", body);
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       hub.name = text;
       manager.saveTokens();
       return null;
@@ -328,16 +353,18 @@ class OpenShockClient {
     return getErrorCode(response, "Failed to rename shocker");
   }
 
-  Future<List<ShockerLog>> getShockerLogs(Shocker shocker, AlarmListManager manager, int offset, int limit) async {
+  Future<List<ShockerLog>> getShockerLogs(
+      Shocker shocker, AlarmListManager manager, int offset, int limit) async {
     Token? t = manager.getToken(shocker.apiTokenId);
-    if(t == null) {
+    if (t == null) {
       return [];
     }
-    var response = await GetRequest(t, "/1/shockers/${shocker.id}/logs?offset=$offset&limit=$limit");
-    if(response.statusCode == 200) {
+    var response = await GetRequest(
+        t, "/1/shockers/${shocker.id}/logs?offset=$offset&limit=$limit");
+    if (response.statusCode == 200) {
       List<ShockerLog> logs = [];
       var data = jsonDecode(response.body);
-      for(var log in data["data"]) {
+      for (var log in data["data"]) {
         ShockerLog s = ShockerLog.fromJson(log);
         s.shockerReference = shocker;
         logs.add(s);
@@ -347,16 +374,17 @@ class OpenShockClient {
     return [];
   }
 
-  Future<List<OpenShockShare>> getShockerShares(Shocker shocker, AlarmListManager manager) async {
+  Future<List<OpenShockShare>> getShockerShares(
+      Shocker shocker, AlarmListManager manager) async {
     Token? t = manager.getToken(shocker.apiTokenId);
-    if(t == null) {
+    if (t == null) {
       return [];
     }
     var response = await GetRequest(t, "/1/shockers/${shocker.id}/shares");
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       List<OpenShockShare> shares = [];
       var data = jsonDecode(response.body);
-      for(var share in data["data"]) {
+      for (var share in data["data"]) {
         OpenShockShare s = OpenShockShare.fromJson(share);
         s.shockerReference = shocker;
         shares.add(s);
@@ -366,16 +394,17 @@ class OpenShockClient {
     return [];
   }
 
-  Future<List<OpenShockShareCode>> getShockerShareCodes(Shocker shocker, AlarmListManager manager) async {
+  Future<List<OpenShockShareCode>> getShockerShareCodes(
+      Shocker shocker, AlarmListManager manager) async {
     Token? t = manager.getToken(shocker.apiTokenId);
-    if(t == null) {
+    if (t == null) {
       return [];
     }
     var response = await GetRequest(t, "/1/shockers/${shocker.id}/shareCodes");
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       List<OpenShockShareCode> codes = [];
       var data = jsonDecode(response.body);
-      for(var code in data["data"]) {
+      for (var code in data["data"]) {
         OpenShockShareCode shareCode = OpenShockShareCode.fromJson(code);
         shareCode.shockerReference = shocker;
         codes.add(shareCode);
@@ -385,30 +414,32 @@ class OpenShockClient {
     return [];
   }
 
-  Future<String?> setPauseStateOfShare(OpenShockShare share, AlarmListManager manager, bool pause) async {
-    if(share.shockerReference == null) return "Shocker not found";
+  Future<String?> setPauseStateOfShare(
+      OpenShockShare share, AlarmListManager manager, bool pause) async {
+    if (share.shockerReference == null) return "Shocker not found";
     Shocker s = share.shockerReference!;
     Token? t = manager.getToken(s.apiTokenId);
-    if(t == null) return "Token not found";
-    String body = jsonEncode({
-      "pause": pause
-    });
-    var response = await PostRequest(t, "/1/shockers/${s.id}/shares/${share.sharedWith.id}/pause", body);
-    if(response.statusCode == 200) {
+    if (t == null) return "Token not found";
+    String body = jsonEncode({"pause": pause});
+    var response = await PostRequest(
+        t, "/1/shockers/${s.id}/shares/${share.sharedWith.id}/pause", body);
+    if (response.statusCode == 200) {
       share.paused = pause;
       return null;
     }
     return getErrorCode(response, "Failed to set pause state");
   }
 
-  Future<String?> setLimitsOfShare(OpenShockShare share, OpenShockShareLimits limits, AlarmListManager manager) async {
-    if(share.shockerReference == null) return "Shocker not found";
+  Future<String?> setLimitsOfShare(OpenShockShare share,
+      OpenShockShareLimits limits, AlarmListManager manager) async {
+    if (share.shockerReference == null) return "Shocker not found";
     Shocker s = share.shockerReference!;
     Token? t = manager.getToken(s.apiTokenId);
-    if(t == null) return "Token not found";
+    if (t == null) return "Token not found";
     String body = jsonEncode(limits.toJson());
-    var response = await PatchRequest(t, "/1/shockers/${s.id}/shares/${share.sharedWith.id}", body);
-    if(response.statusCode == 200) {
+    var response = await PatchRequest(
+        t, "/1/shockers/${s.id}/shares/${share.sharedWith.id}", body);
+    if (response.statusCode == 200) {
       share.limits = limits.limits;
       share.permissions = limits.permissions;
       return null;
@@ -416,34 +447,42 @@ class OpenShockClient {
     return getErrorCode(response, "Failed to set limits");
   }
 
-  Future<String?> addShare(Shocker shocker, OpenShockShareLimits limits, AlarmListManager manager) async {
+  Future<String?> addShare(Shocker shocker, OpenShockShareLimits limits,
+      AlarmListManager manager) async {
     Token? t = manager.getToken(shocker.apiTokenId);
-    if(t == null) return "Token not found";
+    if (t == null) return "Token not found";
     String body = jsonEncode(limits.toJson());
-    return getErrorCode(await PostRequest(t, "/1/shockers/${shocker.id}/shares", body), "Failed to create share");
+    return getErrorCode(
+        await PostRequest(t, "/1/shockers/${shocker.id}/shares", body),
+        "Failed to create share");
   }
 
-  Future<String?> deleteShareCode(OpenShockShareCode shareCode, AlarmListManager alarmListManager) async {
-    if(shareCode.shockerReference == null) return "Shocker not found";
+  Future<String?> deleteShareCode(
+      OpenShockShareCode shareCode, AlarmListManager alarmListManager) async {
+    if (shareCode.shockerReference == null) return "Shocker not found";
     Shocker s = shareCode.shockerReference!;
     Token? t = alarmListManager.getToken(s.apiTokenId);
-    if(t == null) return "Token not found";
-    return getErrorCode(await DeleteRequest(t, "/1/shares/code/${shareCode.id}", ""), "Failed to delete share code");
+    if (t == null) return "Token not found";
+    return getErrorCode(
+        await DeleteRequest(t, "/1/shares/code/${shareCode.id}", ""),
+        "Failed to delete share code");
   }
 
-  Future<String?> redeemShareCode(String code, AlarmListManager alarmListManager) async {
+  Future<String?> redeemShareCode(
+      String code, AlarmListManager alarmListManager) async {
     // first get a valid token
     Token? t = await alarmListManager.getSpecificUserToken();
-    if(t == null) {
+    if (t == null) {
       return "No valid session token found";
     }
-    return getErrorCode(await PostRequest(t, "/1/shares/code/${code}", ""), "Failed to redeem share code. Did you copy it correctly?");
+    return getErrorCode(await PostRequest(t, "/1/shares/code/${code}", ""),
+        "Failed to redeem share code. Did you copy it correctly?");
   }
 
   Future<List<OpenShockDevice>> getDevices(Token t) async {
     var response = await GetRequest(t, "/1/devices");
     List<OpenShockDevice> devices = [];
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       jsonDecode(response.body)["data"].forEach((element) {
         OpenShockDevice device = OpenShockDevice.fromJson(element);
         device.apiTokenReference = t;
@@ -454,27 +493,26 @@ class OpenShockClient {
   }
 
   String? getErrorCode(var response, String defaultError) {
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       return null;
     }
-    if(response.statusCode == 401) {
+    if (response.statusCode == 401) {
       return "${response.statusCode} - Your session expired. To continue using the app log in again.";
     }
-    try{
+    try {
       var data = jsonDecode(response.body);
-      if(data["message"] != null) {
+      if (data["message"] != null) {
         return "${response.statusCode} - ${data["message"]}";
       }
-    } catch (e) {
-
-    }
+    } catch (e) {}
     return "${response.statusCode} - $defaultError";
   }
 
-  Future<String?> addShocker(String name, int rfId, String shockerType, OpenShockDevice? device, AlarmListManager alarmListManager) async {
-    if(device == null) return "No device selected";
+  Future<String?> addShocker(String name, int rfId, String shockerType,
+      OpenShockDevice? device, AlarmListManager alarmListManager) async {
+    if (device == null) return "No device selected";
     Token? t = device.apiTokenReference;
-    if(t == null) return "Token not found";
+    if (t == null) return "Token not found";
     String body = jsonEncode({
       "name": name,
       "rfId": rfId,
@@ -482,42 +520,49 @@ class OpenShockClient {
       "device": device.id
     });
     var response = await PostRequest(t, "/1/shockers", body);
-    if(response.statusCode == 201) {
+    if (response.statusCode == 201) {
       return null;
     }
     return getErrorCode(response, "Failed to create shocker");
   }
 
-  Future<String?> deleteShocker(Shocker shocker, AlarmListManager alarmListManager) async {
+  Future<String?> deleteShocker(
+      Shocker shocker, AlarmListManager alarmListManager) async {
     Token? t = alarmListManager.getToken(shocker.apiTokenId);
-    if(t == null) return "Token not found";
+    if (t == null) return "Token not found";
     var response = await DeleteRequest(t, "/1/shockers/${shocker.id}", "");
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       alarmListManager.shockers.remove(shocker);
       alarmListManager.saveShockers();
     }
     return getErrorCode(response, "Failed to delete shocker");
   }
 
-  Future<String?> deleteShare(OpenShockShare share, AlarmListManager alarmListManager) async {
-    if(share.shockerReference == null) return "Shocker not found";
+  Future<String?> deleteShare(
+      OpenShockShare share, AlarmListManager alarmListManager) async {
+    if (share.shockerReference == null) return "Shocker not found";
     Shocker s = share.shockerReference!;
     Token? t = alarmListManager.getToken(s.apiTokenId);
-    if(t == null) return "Token not found";
-    return getErrorCode(await DeleteRequest(t, "/1/shockers/${s.id}/shares/${share.sharedWith.id}", ""), "Failed to delete share");
+    if (t == null) return "Token not found";
+    return getErrorCode(
+        await DeleteRequest(
+            t, "/1/shockers/${s.id}/shares/${share.sharedWith.id}", ""),
+        "Failed to delete share");
   }
 
   Future<String?> deleteHub(Hub hub, AlarmListManager alarmListManager) async {
     Token? t = alarmListManager.getToken(hub.apiTokenId);
-    if(t == null) return Future.value("Token not found");
-    return getErrorCode(await DeleteRequest(t, "/1/devices/${hub.id}", ""), "Failed to delete hub");
+    if (t == null) return Future.value("Token not found");
+    return getErrorCode(await DeleteRequest(t, "/1/devices/${hub.id}", ""),
+        "Failed to delete hub");
   }
 
-  Future<PairCode> getPairCode(Hub hub, AlarmListManager alarmListManager) async {
+  Future<PairCode> getPairCode(
+      Hub hub, AlarmListManager alarmListManager) async {
     Token? t = alarmListManager.getToken(hub.apiTokenId);
-    if(t == null) return PairCode("Token not found", null);
+    if (t == null) return PairCode("Token not found", null);
     var response = await GetRequest(t, "/1/devices/${hub.id}/pair");
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       return PairCode.fromJson(jsonDecode(response.body));
     }
     return PairCode(getErrorCode(response, "Failed to get pair code"), null);
@@ -525,9 +570,9 @@ class OpenShockClient {
 
   Future<CreatedHub> addHub(String name, AlarmListManager manager) async {
     Token? t = await manager.getSpecificUserToken();
-    if(t == null) return CreatedHub(null, "No valid token found");
+    if (t == null) return CreatedHub(null, "No valid token found");
     var response = await PostRequest(t, "/1/devices", "");
-    if(response.statusCode != 201) {
+    if (response.statusCode != 201) {
       return CreatedHub(null, getErrorCode(response, "Failed to create hub"));
     }
     CreatedHub hub = CreatedHub(response.body.replaceAll("\"", ""), null);
@@ -549,9 +594,10 @@ class OpenShockClient {
   Future<List<OpenShockShareLink>> getShareLinks(Token token) async {
     var response = await GetRequest(token, "/1/shares/links");
     List<OpenShockShareLink> links = [];
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       jsonDecode(response.body)["data"].forEach((element) {
-        OpenShockShareLink link = OpenShockShareLink.fromJson(element, tokenReference: token);
+        OpenShockShareLink link =
+            OpenShockShareLink.fromJson(element, tokenReference: token);
         links.add(link);
       });
     }
@@ -560,104 +606,123 @@ class OpenShockClient {
 
   Future<OpenShockShareLink?> getShareLink(Token token, String id) async {
     var response = await GetRequest(token, "/1/public/shares/links/$id");
-    if(response.statusCode == 200) {
-      OpenShockShareLink link = OpenShockShareLink.fromJson(jsonDecode(response.body)["data"] , tokenReference: token);
+    if (response.statusCode == 200) {
+      OpenShockShareLink link = OpenShockShareLink.fromJson(
+          jsonDecode(response.body)["data"],
+          tokenReference: token);
       return link;
     }
     return null;
   }
 
-  Future<String?> addShockerToShareLink(Shocker shocker, OpenShockShareLink shareLink) async {
+  Future<String?> addShockerToShareLink(
+      Shocker shocker, OpenShockShareLink shareLink) async {
     Token? t = shareLink.tokenReference;
-    if(t == null) return "Token not found";
-    var response = await PostRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}", "");
-    if(response.statusCode == 200) {
+    if (t == null) return "Token not found";
+    var response = await PostRequest(
+        t, "/1/shares/links/${shareLink.id}/${shocker.id}", "");
+    if (response.statusCode == 200) {
       return null;
     }
     return getErrorCode(response, "Failed to add shocker");
   }
 
-  Future<String?> setPauseStateOfShareLinkShocker(OpenShockShareLink shareLink, Shocker shocker, bool paused) async {
+  Future<String?> setPauseStateOfShareLinkShocker(
+      OpenShockShareLink shareLink, Shocker shocker, bool paused) async {
     Token? t = shareLink.tokenReference;
-    if(t == null) return "Token not found";
-    var response = await PostRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}/pause", jsonEncode({
-      "pause": paused
-    }));
-    if(response.statusCode == 200) {
+    if (t == null) return "Token not found";
+    var response = await PostRequest(
+        t,
+        "/1/shares/links/${shareLink.id}/${shocker.id}/pause",
+        jsonEncode({"pause": paused}));
+    if (response.statusCode == 200) {
       return null;
     }
     return getErrorCode(response, "Failed to set pause state");
   }
 
-  Future<String?> removeShockerFromShareLink(OpenShockShareLink shareLink, Shocker shocker) async {
+  Future<String?> removeShockerFromShareLink(
+      OpenShockShareLink shareLink, Shocker shocker) async {
     Token? t = shareLink.tokenReference;
-    if(t == null) return "Token not found";
-    var response = await DeleteRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}", "");
-    if(response.statusCode == 200) {
+    if (t == null) return "Token not found";
+    var response = await DeleteRequest(
+        t, "/1/shares/links/${shareLink.id}/${shocker.id}", "");
+    if (response.statusCode == 200) {
       return null;
     }
     return getErrorCode(response, "Failed to remove shocker");
   }
 
-  Future<String?> setLimitsOfShareLinkShocker(OpenShockShareLink shareLink, Shocker shocker, OpenShockShareLimits limits) async {
+  Future<String?> setLimitsOfShareLinkShocker(OpenShockShareLink shareLink,
+      Shocker shocker, OpenShockShareLimits limits) async {
     Token? t = shareLink.tokenReference;
-    if(t == null) return "Token not found";
-    var response = await PatchRequest(t, "/1/shares/links/${shareLink.id}/${shocker.id}", jsonEncode(limits.toJson()));
-    if(response.statusCode == 200) {
+    if (t == null) return "Token not found";
+    var response = await PatchRequest(
+        t,
+        "/1/shares/links/${shareLink.id}/${shocker.id}",
+        jsonEncode(limits.toJson()));
+    if (response.statusCode == 200) {
       return null;
     }
     return getErrorCode(response, "Failed to update shocker limits");
   }
 
-  Future<PairCode> createShareLink(Token t, String shareLinkName, DateTime dateTime) async {
-    var response = await PostRequest(t, "/1/shares/links", jsonEncode({
-      "name": shareLinkName,
-      "expiresOn": dateTime.toIso8601String()
-    }));
-    if(response.statusCode == 200) {
+  Future<PairCode> createShareLink(
+      Token t, String shareLinkName, DateTime dateTime) async {
+    var response = await PostRequest(
+        t,
+        "/1/shares/links",
+        jsonEncode(
+            {"name": shareLinkName, "expiresOn": dateTime.toIso8601String()}));
+    if (response.statusCode == 200) {
       return PairCode(null, jsonDecode(response.body)['data']);
     }
-    return PairCode(getErrorCode(response, "Failed to create share link"), null);
+    return PairCode(
+        getErrorCode(response, "Failed to create share link"), null);
   }
 
   Future<String?> deleteShareLink(OpenShockShareLink shareLink) async {
     Token? t = shareLink.tokenReference;
-    if(t == null) return "Token not found";
-    var response = await DeleteRequest(t, "/1/shares/links/${shareLink.id}", "");
-    if(response.statusCode == 200) {
+    if (t == null) return "Token not found";
+    var response =
+        await DeleteRequest(t, "/1/shares/links/${shareLink.id}", "");
+    if (response.statusCode == 200) {
       return null;
     }
-    return getErrorCode(response, "Failed to delete share link");    
+    return getErrorCode(response, "Failed to delete share link");
   }
 
   Future<String?> setCaptivePortal(Hub hub, bool enable, Token? t) async {
-    if(AlarmListManager.getInstance().ws[t?.id] == null) {
-      if(t == null) return "Token not found";
+    if (AlarmListManager.getInstance().ws[t?.id] == null) {
+      if (t == null) return "Token not found";
       await AlarmListManager.getInstance().startWS(t);
     }
-    return await AlarmListManager.getInstance().ws[t!.id]?.setCaptivePortal(hub, enable);
+    return await AlarmListManager.getInstance()
+        .ws[t!.id]
+        ?.setCaptivePortal(hub, enable);
   }
 
   Future<OpenShockLCGResponse?> getLCGInfo(Hub hub) async {
     Token? t = AlarmListManager.getInstance().getToken(hub.apiTokenId);
-    if(t == null) return null;
+    if (t == null) return null;
     var response = await GetRequest(t, "/1/devices/${hub.id}/lcg");
-    if(response.statusCode == 200) {
-      return OpenShockLCGResponse.fromJson(jsonDecode(response.body)["data"])..online = true;
+    if (response.statusCode == 200) {
+      return OpenShockLCGResponse.fromJson(jsonDecode(response.body)["data"])
+        ..online = true;
     }
-    if(response.statusCode == 412) {
+    if (response.statusCode == 412) {
       return OpenShockLCGResponse()..online = true;
     }
     // 404 and internal server error means offline
     return OpenShockLCGResponse()..online = false;
   }
 
-  Future<List<OpenShockOTAUpdate>> getOTAUpdateHistory(Hub hub)async {
+  Future<List<OpenShockOTAUpdate>> getOTAUpdateHistory(Hub hub) async {
     Token? t = AlarmListManager.getInstance().getToken(hub.apiTokenId);
-    if(t == null) return [];
+    if (t == null) return [];
     var response = await GetRequest(t, "/1/devices/${hub.id}/ota");
     List<OpenShockOTAUpdate> updates = [];
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       jsonDecode(response.body)["data"].forEach((element) {
         updates.add(OpenShockOTAUpdate.fromJson(element));
       });
@@ -665,10 +730,10 @@ class OpenShockClient {
     return updates;
   }
 
-  Future<List<OpenShockApiToken>> getApiTokens(Token token)async {
+  Future<List<OpenShockApiToken>> getApiTokens(Token token) async {
     var response = await GetRequest(token, "/1/tokens");
     List<OpenShockApiToken> updates = [];
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       jsonDecode(response.body).forEach((element) {
         updates.add(OpenShockApiToken.fromJson(element));
       });
@@ -676,51 +741,61 @@ class OpenShockClient {
     return updates;
   }
 
-  Future<ErrorContainer<bool>> deleteApiToken(Token t, OpenShockApiToken apiToken) async {
+  Future<ErrorContainer<bool>> deleteApiToken(
+      Token t, OpenShockApiToken apiToken) async {
     var response = await DeleteRequest(t, "/1/tokens/${apiToken.id}", "");
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       return ErrorContainer(true, null);
     }
-    return ErrorContainer(null, getErrorCode(response, "Failed to delete token"));
+    return ErrorContainer(
+        null, getErrorCode(response, "Failed to delete token"));
   }
 
-  Future<ErrorContainer<bool>> updateApiToken(Token token, OpenShockApiToken apiToken) async {
+  Future<ErrorContainer<bool>> updateApiToken(
+      Token token, OpenShockApiToken apiToken) async {
     print(jsonEncode(apiToken.toJson()));
-    var response = await PatchRequest(token, "/1/tokens/${apiToken.id}", jsonEncode(apiToken.toJson()));
-    if(response.statusCode == 200) {
+    var response = await PatchRequest(
+        token, "/1/tokens/${apiToken.id}", jsonEncode(apiToken.toJson()));
+    if (response.statusCode == 200) {
       return ErrorContainer(true, null);
     }
-    return ErrorContainer(null, getErrorCode(response, "Failed to update token"));
+    return ErrorContainer(
+        null, getErrorCode(response, "Failed to update token"));
   }
 
-  Future<ErrorContainer<bool>> deleteSession(Token token, OpenShockUserSession session) async {
+  Future<ErrorContainer<bool>> deleteSession(
+      Token token, OpenShockUserSession session) async {
     var response = await DeleteRequest(token, "/1/sessions/${session.id}", "");
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       return ErrorContainer(true, null);
     }
-    return ErrorContainer(null, getErrorCode(response, "Failed to delete session"));
+    return ErrorContainer(
+        null, getErrorCode(response, "Failed to delete session"));
   }
 
-  Future<ErrorContainer<List<OpenShockUserSession>>> getSessions(Token token) async {
+  Future<ErrorContainer<List<OpenShockUserSession>>> getSessions(
+      Token token) async {
     var response = await GetRequest(token, "/1/sessions/");
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       List<OpenShockUserSession> sessions = [];
       jsonDecode(response.body).forEach((element) {
         sessions.add(OpenShockUserSession.fromJson(element));
       });
       return ErrorContainer(sessions, null);
     }
-    return ErrorContainer(null, getErrorCode(response, "Failed to get session"));
+    return ErrorContainer(
+        null, getErrorCode(response, "Failed to get session"));
   }
 
   Future<ErrorContainer<bool>> regenerateDeviceToken(Hub hub) async {
     Token? t = AlarmListManager.getInstance().getToken(hub.apiTokenId);
-    if(t == null) return ErrorContainer(false, "Token not found");
+    if (t == null) return ErrorContainer(false, "Token not found");
     var response = await PutRequest(t, "/1/devices/${hub.id}", "");
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       return ErrorContainer(true, null);
     }
-    return ErrorContainer(false, getErrorCode(response, "Failed to regenerate token"));
+    return ErrorContainer(
+        false, getErrorCode(response, "Failed to regenerate token"));
   }
 }
 
@@ -748,12 +823,14 @@ class OpenShockOTAUpdate {
 }
 
 List<String> availableApiTokenPermissions = [
-  "shockers.use","shockers.pause","shockers.edit","devices.auth","devices.edit"
+  "shockers.use",
+  "shockers.pause",
+  "shockers.edit",
+  "devices.auth",
+  "devices.edit"
 ];
 
-enum OpenShockOtaUpdateStatus {
-  Started, Running, Finished, Error, Timeout
-}
+enum OpenShockOtaUpdateStatus { Started, Running, Finished, Error, Timeout }
 
 class OpenShockLCGResponse {
   String? gateway;
@@ -768,10 +845,7 @@ class OpenShockLCGResponse {
   }
 
   toJson() {
-    return {
-      "gateway": gateway,
-      "country": country
-    };
+    return {"gateway": gateway, "country": country};
   }
 }
 
@@ -790,16 +864,19 @@ class OpenShockApiToken {
     return {
       "name": name,
       "permissions": permissions,
-      if(getValidUntil) "validUntil": validUntil?.toIso8601String()
+      if (getValidUntil) "validUntil": validUntil?.toIso8601String()
     };
   }
 
   OpenShockApiToken.fromJson(Map<String, dynamic> json) {
     name = json["name"];
     permissions = List<String>.from(json["permissions"]);
-    validUntil = json["validUntil"] == null ? null : DateTime.parse(json["validUntil"]);
-    lastUsed = json["lastUsed"] == null ? null : DateTime.parse(json["lastUsed"]);
-    createdOn = json["createdOn"] == null ? null : DateTime.parse(json["createdOn"]);
+    validUntil =
+        json["validUntil"] == null ? null : DateTime.parse(json["validUntil"]);
+    lastUsed =
+        json["lastUsed"] == null ? null : DateTime.parse(json["lastUsed"]);
+    createdOn =
+        json["createdOn"] == null ? null : DateTime.parse(json["createdOn"]);
     id = json["id"];
   }
 }
@@ -817,7 +894,8 @@ class OpenShockUserSession {
     expires = json["expires"] == null ? null : DateTime.parse(json["expires"]);
     id = json["id"];
     ip = json["ip"];
-    lastUsed = json["lastUsed"] == null ? null : DateTime.parse(json["lastUsed"]);
+    lastUsed =
+        json["lastUsed"] == null ? null : DateTime.parse(json["lastUsed"]);
     userAgent = json["userAgent"];
   }
 }
@@ -826,7 +904,7 @@ class OpenShockShareLink {
   DateTime createdOn = DateTime.now();
   DateTime? expiresOn;
   OpenShockUser? author;
-  String id  = "";
+  String id = "";
   String name = "";
   List<Shocker> shockers = [];
   Token? tokenReference;
@@ -839,32 +917,33 @@ class OpenShockShareLink {
 
   String getLink() {
     String host = "https://openshock.app";
-    if(tokenReference != null) {
+    if (tokenReference != null) {
       host = tokenReference!.server.replaceAll("//api.", "//");
     }
-    if(host.endsWith("/")) {
+    if (host.endsWith("/")) {
       host = host.substring(0, host.length - 1);
-    } 
+    }
     return "$host/s/$id";
   }
 
-  OpenShockShareLink.fromJson(Map<String, dynamic> json, {this.tokenReference}) {
+  OpenShockShareLink.fromJson(Map<String, dynamic> json,
+      {this.tokenReference}) {
     id = json["id"];
-    if(json["createdOn"] != null) {
+    if (json["createdOn"] != null) {
       createdOn = DateTime.parse(json["createdOn"]);
     }
-    if(json["expiresOn"] != null) {
+    if (json["expiresOn"] != null) {
       expiresOn = DateTime.parse(json["expiresOn"]);
     }
-    if(json["author"] != null) {
+    if (json["author"] != null) {
       author = OpenShockUser.fromJson(json["author"]);
     }
-    
-    if(json["devices"] != null) {
-      
-      for(var device in json["devices"]) {
-        OpenShockDevice d = OpenShockDevice.fromJson(device, tokenReference: tokenReference);
-        for(OpenShockShocker s in d.shockers) {
+
+    if (json["devices"] != null) {
+      for (var device in json["devices"]) {
+        OpenShockDevice d =
+            OpenShockDevice.fromJson(device, tokenReference: tokenReference);
+        for (OpenShockShocker s in d.shockers) {
           Shocker shocker = Shocker.fromOpenShockShocker(s);
           shocker.hubId = d.id;
           shocker.hubReference = AlarmListManager.getInstance().getHub(d.id);
@@ -874,7 +953,7 @@ class OpenShockShareLink {
       }
     }
     name = json["name"];
-    if(json["tokenId"] != null) {
+    if (json["tokenId"] != null) {
       tokenId = json["tokenId"];
     }
   }
@@ -897,6 +976,7 @@ class CreatedHub {
 
   CreatedHub(this.hubId, this.error);
 }
+
 class PairCode {
   String? code;
   String? error;
@@ -913,7 +993,7 @@ enum ControlType {
   shock, // 1
   vibrate, // 2
   sound, // 3
-  live 
+  live
 }
 
 class OpenShockShareCode {
@@ -935,10 +1015,7 @@ class OpenShockShareLimits {
 
   dynamic toJson() {
     return {
-      "limits": {
-        "intensity": limits.intensity,
-        "duration": limits.duration
-      },
+      "limits": {"intensity": limits.intensity, "duration": limits.duration},
       "permissions": {
         "shock": permissions.shock,
         "vibrate": permissions.vibrate,
@@ -981,7 +1058,7 @@ class Control {
 
   toJson() {
     String type = "";
-    switch(this.type) {
+    switch (this.type) {
       case ControlType.stop:
         type = "Stop";
         break;
@@ -997,7 +1074,7 @@ class Control {
       case ControlType.live:
         type = "Live";
         break;
-    } 
+    }
     return {
       "id": id,
       "exclusive": exclusive,
@@ -1009,7 +1086,7 @@ class Control {
 
   toJsonWS() {
     int type = 0;
-    switch(this.type) {
+    switch (this.type) {
       case ControlType.stop:
         type = 0;
         break;
@@ -1025,7 +1102,7 @@ class Control {
       case ControlType.live:
         type = 4;
         break;
-    } 
+    }
     return {
       "id": id,
       "duration": duration,
@@ -1058,7 +1135,7 @@ class ShockerLog {
   OpenShockUser controlledBy = OpenShockUser();
   int intensity = 0;
   int duration = 0;
-  
+
   Shocker? shockerReference;
 
   ShockerLog.fromWs(WSShockerLog log, OpenShockUser user) {
@@ -1072,7 +1149,7 @@ class ShockerLog {
   ShockerLog.fromJson(Map<String, dynamic> json) {
     id = json["id"];
     createdOn = DateTime.parse(json["createdOn"]);
-    switch(json["type"]) {
+    switch (json["type"]) {
       case "Shock":
         type = ControlType.shock;
         break;
@@ -1095,33 +1172,38 @@ class ShockerLog {
   }
 
   String getName() {
-    return controlledBy.customName != null && !controlledBy.customName!.contains("{") && !controlledBy.customName!.contains("}") ? "${controlledBy.customName} [${controlledBy.name}]" : controlledBy.name;
+    return controlledBy.customName != null &&
+            !controlledBy.customName!.contains("{") &&
+            !controlledBy.customName!.contains("}")
+        ? "${controlledBy.customName} [${controlledBy.name}]"
+        : controlledBy.name;
   }
 
   Icon? getLiveIcon() {
-    if(type != ControlType.stop && type != ControlType.live) return null;
+    if (type != ControlType.stop && type != ControlType.live) return null;
     String? control = controlledBy.customName;
-    if(control == null) return null;
-    if(control.contains("{vibrate}")) {
+    if (control == null) return null;
+    if (control.contains("{vibrate}")) {
       return OpenShockClient.getIconForControlType(ControlType.vibrate);
     }
-    if(control.contains("{sound}")) {
+    if (control.contains("{sound}")) {
       return OpenShockClient.getIconForControlType(ControlType.sound);
     }
-    if(control.contains("{shock}")) {
+    if (control.contains("{shock}")) {
       return OpenShockClient.getIconForControlType(ControlType.shock);
     }
   }
 
   Icon getTypeIcon() {
-    if(controlledBy.customName?.contains("{live}") ?? false) {
+    if (controlledBy.customName?.contains("{live}") ?? false) {
       return OpenShockClient.getIconForControlType(ControlType.live);
     }
     return OpenShockClient.getIconForControlType(type);
   }
 
   bool isLive() {
-    return controlledBy.customName?.contains("{live}") ?? false || type == ControlType.live;
+    return controlledBy.customName?.contains("{live}") ??
+        false || type == ControlType.live;
   }
 }
 
@@ -1138,11 +1220,10 @@ class OpenShockUser {
     id = json["id"];
     name = json["name"];
     image = json["image"];
-    if(json["connectionId"] != null)
-      connectionId = json["connectionId"];
+    if (json["connectionId"] != null) connectionId = json["connectionId"];
     customName = json["customName"];
   }
-  
+
   toJson() {
     return {
       "id": id,
@@ -1174,12 +1255,10 @@ class Hub {
     name = json["name"];
     id = json["id"];
     isOwn = json["isOwn"];
-    if(json["apiTokenId"] != null)
-      apiTokenId = json["apiTokenId"];
-    if(json["firmwareVersion"] != null)
+    if (json["apiTokenId"] != null) apiTokenId = json["apiTokenId"];
+    if (json["firmwareVersion"] != null)
       firmwareVersion = json["firmwareVersion"];
-    if(json["online"] != null)
-      online = json["online"];
+    if (json["online"] != null) online = json["online"];
   }
 
   Map<String, dynamic> toJson() {
@@ -1195,39 +1274,55 @@ class Hub {
 
   getIdentifier(AlarmListManager manager) {
     online = manager.onlineHubs.contains(this.id);
-    
+
     return "$id-$apiTokenId-$isOwn-$online";
   }
 }
 
 class ControlsContainer {
-
   RangeValues durationRange;
   RangeValues intensityRange;
+  RangeValues vibrateIntensityRange;
   RangeValues delayRange = RangeValues(0, 0);
 
-  String getStringRepresentation(RangeValues values, bool trunance, {String unit = ""}) {
-    if(values.end == values.start) {
+  String getStringRepresentation(RangeValues values, bool trunance,
+      {String unit = ""}) {
+    if (values.end == values.start) {
       return "${trunance ? values.start.toInt() : values.start}${unit}";
     }
     return "${trunance ? values.start.toInt() : values.start}${unit} - ${trunance ? values.end.toInt() : values.end}${unit}";
   }
 
   void limitTo(int duration, int intensity) {
-    durationRange = RangeValues(min(durationRange.start, duration.toDouble()), min(durationRange.end, duration.toDouble()));
-    intensityRange = RangeValues(min(intensityRange.start, intensity.toDouble()), min(intensityRange.end, intensity.toDouble()));
-    if(!AlarmListManager.getInstance().settings.useRangeSliderForIntensity) {
+    durationRange = RangeValues(min(durationRange.start, duration.toDouble()),
+        min(durationRange.end, duration.toDouble()));
+    intensityRange = RangeValues(
+        min(intensityRange.start, intensity.toDouble()),
+        min(intensityRange.end, intensity.toDouble()));
+    vibrateIntensityRange = RangeValues(
+        min(vibrateIntensityRange.start, intensity.toDouble()),
+        min(vibrateIntensityRange.end, intensity.toDouble()));
+    if (!AlarmListManager.getInstance().settings.useRangeSliderForIntensity) {
       intensityRange = RangeValues(intensityRange.start, intensityRange.start);
+      vibrateIntensityRange =
+          RangeValues(vibrateIntensityRange.start, vibrateIntensityRange.start);
     }
-    if(!AlarmListManager.getInstance().settings.useRangeSliderForDuration) {
+    if (!AlarmListManager.getInstance().settings.useRangeSliderForDuration) {
       durationRange = RangeValues(durationRange.start, durationRange.start);
     }
   }
 
-  ControlsContainer({this.durationRange = const RangeValues(300, 300), this.intensityRange = const RangeValues(25, 25)});
+  ControlsContainer(
+      {this.durationRange = const RangeValues(300, 300),
+      this.intensityRange = const RangeValues(25, 25),
+      this.vibrateIntensityRange = const RangeValues(25, 25)});
 
   void setIntensity(double value) {
     intensityRange = RangeValues(value, value);
+  }
+
+  void setVibrateIntensity(double value) {
+    vibrateIntensityRange = RangeValues(value, value);
   }
 
   void setDuration(int mapDuration) {
@@ -1235,38 +1330,50 @@ class ControlsContainer {
   }
 
   String getDurationString() {
-    RangeValues durationRange = RangeValues(this.durationRange.start / 1000, this.durationRange.end / 1000);
+    RangeValues durationRange = RangeValues(
+        this.durationRange.start / 1000, this.durationRange.end / 1000);
     return getStringRepresentation(durationRange, false, unit: " s");
   }
 
   static fromInts({required int intensity, required int duration}) {
-    return ControlsContainer(durationRange: RangeValues(duration.toDouble(), duration.toDouble()), intensityRange: RangeValues(intensity.toDouble(), intensity.toDouble()));
+    return ControlsContainer(
+        durationRange: RangeValues(duration.toDouble(), duration.toDouble()),
+        intensityRange:
+            RangeValues(intensity.toDouble(), intensity.toDouble()));
   }
 
   int getRandomDuration() {
-    if(durationRange.start == durationRange.end) {
+    if (durationRange.start == durationRange.end) {
       return durationRange.start.toInt();
     }
-    return Random().nextInt((durationRange.end - durationRange.start).toInt()) + durationRange.start.toInt();
+    return Random().nextInt((durationRange.end - durationRange.start).toInt()) +
+        durationRange.start.toInt();
   }
 
   int getRandomIntensity() {
-    if(intensityRange.start == intensityRange.end) {
+    if (intensityRange.start == intensityRange.end) {
       return intensityRange.start.toInt();
     }
-    return Random().nextInt((intensityRange.end - intensityRange.start).toInt()) + intensityRange.start.toInt();
+    return Random()
+            .nextInt((intensityRange.end - intensityRange.start).toInt()) +
+        intensityRange.start.toInt();
+  }
+
+  int getRandomVibrateIntensity() {
+    if (vibrateIntensityRange.start == vibrateIntensityRange.end) {
+      return vibrateIntensityRange.start.toInt();
+    }
+    return Random()
+            .nextInt((vibrateIntensityRange.end - vibrateIntensityRange.start).toInt()) +
+        vibrateIntensityRange.start.toInt();
   }
 }
 
-enum PauseReason {
-  shocker,
-  share,
-  shareLink
-}
+enum PauseReason { shocker, share, shareLink }
 
 class Shocker {
   Shocker() {}
-  
+
   String id = "";
   String name = "";
   String hubId = "";
@@ -1282,16 +1389,16 @@ class Shocker {
   bool isOwn = false;
   List<PauseReason> pauseReasons = [];
   ControlsContainer controls = ControlsContainer();
-  
+
   String getPausedLevels() {
     List<String> levels = [];
-    if(pauseReasons.contains(PauseReason.shocker)) {
+    if (pauseReasons.contains(PauseReason.shocker)) {
       levels.add("Shocker");
     }
-    if(pauseReasons.contains(PauseReason.share)) {
+    if (pauseReasons.contains(PauseReason.share)) {
       levels.add("Share");
     }
-    if(pauseReasons.contains(PauseReason.shareLink)) {
+    if (pauseReasons.contains(PauseReason.shareLink)) {
       levels.add("Share Link");
     }
     return levels.join(", ");
@@ -1302,26 +1409,26 @@ class Shocker {
     name = shocker.name;
 
     paused = shocker.isPaused;
-    if(shocker.paused != null) {
-      if(shocker.paused! & 1 != 0) {
+    if (shocker.paused != null) {
+      if (shocker.paused! & 1 != 0) {
         pauseReasons.add(PauseReason.shocker);
       }
-      if(shocker.paused! & 2 != 0) {
+      if (shocker.paused! & 2 != 0) {
         pauseReasons.add(PauseReason.share);
       }
-      if(shocker.paused! & 4 != 0) {
+      if (shocker.paused! & 4 != 0) {
         pauseReasons.add(PauseReason.shareLink);
       }
     }
 
-    if(shocker.permissions != null) {
+    if (shocker.permissions != null) {
       shockAllowed = shocker.permissions!.shock;
       vibrateAllowed = shocker.permissions!.vibrate;
       soundAllowed = shocker.permissions!.sound;
       print(shocker.permissions!.live);
       liveAllowed = shocker.permissions!.live;
     }
-    if(shocker.limits != null) {
+    if (shocker.limits != null) {
       durationLimit = shocker.limits!.duration ?? 30000;
       intensityLimit = shocker.limits!.intensity ?? 100;
     }
@@ -1349,8 +1456,7 @@ class Shocker {
     Shocker s = Shocker();
     s.id = shocker["id"];
     s.name = shocker["name"];
-    if(shocker["hubId"] != null)
-      s.hubId = shocker["hubId"];
+    if (shocker["hubId"] != null) s.hubId = shocker["hubId"];
     s.apiTokenId = shocker["apiTokenId"];
     s.paused = shocker["paused"];
     s.shockAllowed = shocker["shockAllowed"];
@@ -1358,10 +1464,8 @@ class Shocker {
     s.soundAllowed = shocker["soundAllowed"];
     s.durationLimit = shocker["durationLimit"];
     s.intensityLimit = shocker["intensityLimit"];
-    if(shocker["liveAllowed"] != null)
-      s.liveAllowed = shocker["liveAllowed"];
-    if(shocker["isOwn"] != null)
-      s.isOwn = shocker["isOwn"];
+    if (shocker["liveAllowed"] != null) s.liveAllowed = shocker["liveAllowed"];
+    if (shocker["isOwn"] != null) s.isOwn = shocker["isOwn"];
     return s;
   }
 
@@ -1370,33 +1474,33 @@ class Shocker {
   }
 
   Control getLimitedControls(ControlType type, int intensity, int duration) {
-      Control c = Control();
-      c.id = this.id;
-      c.type = type;
-      if(AlarmListManager.getInstance().settings.lerpIntensity) {
-        c.intensity = (intensity / 100 * this.intensityLimit).round();
-        if(intensity > 0 && c.intensity == 0) {
-          c.intensity = 1;
-        }
-      } else {
-        c.intensity = min(this.intensityLimit, intensity);
+    Control c = Control();
+    c.id = this.id;
+    c.type = type;
+    if (AlarmListManager.getInstance().settings.lerpIntensity) {
+      c.intensity = (intensity / 100 * this.intensityLimit).round();
+      if (intensity > 0 && c.intensity == 0) {
+        c.intensity = 1;
       }
-      c.duration = min(this.durationLimit, duration);
-      c.apiTokenId = this.apiTokenId;
-      c.shockerReference = this;
-      if(!this.shockAllowed && type == ControlType.shock) {
+    } else {
+      c.intensity = min(this.intensityLimit, intensity);
+    }
+    c.duration = min(this.durationLimit, duration);
+    c.apiTokenId = this.apiTokenId;
+    c.shockerReference = this;
+    if (!this.shockAllowed && type == ControlType.shock) {
+      c.type = ControlType.vibrate;
+    }
+    if (!this.vibrateAllowed && type == ControlType.vibrate) {
+      c.type = ControlType.stop;
+    }
+    if (!this.soundAllowed && type == ControlType.sound) {
+      c.type = ControlType.stop;
+      if (this.vibrateAllowed) {
         c.type = ControlType.vibrate;
       }
-      if(!this.vibrateAllowed && type == ControlType.vibrate) {
-        c.type = ControlType.stop;
-      }
-      if(!this.soundAllowed && type == ControlType.sound) {
-        c.type = ControlType.stop;
-        if(this.vibrateAllowed) {
-          c.type = ControlType.vibrate;
-        }
-      }
-      return c;
+    }
+    return c;
   }
 
   void setLimits(OpenShockShareLimits limits) {
@@ -1409,144 +1513,114 @@ class Shocker {
   }
 }
 
+class OpenShockDevicesData {
+  List<OpenShockDevice>? data;
 
-class OpenShockDevicesData
-{
-    List<OpenShockDevice>? data;
-
-    OpenShockDevicesData.fromJson(Map<String, dynamic> json)
-    {
-        if (json['data'] != null)
-        {
-            data = [];
-            json['data'].forEach((v) {
-                data!.add(OpenShockDevice.fromJson(v));
-            });
-        }
+  OpenShockDevicesData.fromJson(Map<String, dynamic> json) {
+    if (json['data'] != null) {
+      data = [];
+      json['data'].forEach((v) {
+        data!.add(OpenShockDevice.fromJson(v));
+      });
     }
+  }
 }
 
-class OpenShockContainerData
-{
-    List<OpenShockDevicesContainer>? data;
+class OpenShockContainerData {
+  List<OpenShockDevicesContainer>? data;
 
-    OpenShockContainerData.fromJson(Map<String, dynamic> json)
-    {
-        if (json['data'] != null)
-        {
-            data = [];
-            json['data'].forEach((v) {
-                data!.add(OpenShockDevicesContainer.fromJson(v));
-            });
-        }
+  OpenShockContainerData.fromJson(Map<String, dynamic> json) {
+    if (json['data'] != null) {
+      data = [];
+      json['data'].forEach((v) {
+        data!.add(OpenShockDevicesContainer.fromJson(v));
+      });
     }
+  }
 }
 
-class OpenShockDevicesContainer
-{
-    List<OpenShockDevice> devices = [];
+class OpenShockDevicesContainer {
+  List<OpenShockDevice> devices = [];
 
-    OpenShockDevicesContainer.fromJson(Map<String, dynamic> json)
-    {
-        if (json['devices'] != null)
-        {
-            json['devices'].forEach((v) {
-                devices.add(OpenShockDevice.fromJson(v));
-            });
-        }
+  OpenShockDevicesContainer.fromJson(Map<String, dynamic> json) {
+    if (json['devices'] != null) {
+      json['devices'].forEach((v) {
+        devices.add(OpenShockDevice.fromJson(v));
+      });
     }
+  }
 }
 
-class OpenShockDevice
-{
-    String name = "";
-    String id = "";
-    String device = "";
-    String token = "";
-    bool online = false;
-    String firmwareVersion = "";
-    List<OpenShockShocker> shockers = [];
-    
-    Token? apiTokenReference;
+class OpenShockDevice {
+  String name = "";
+  String id = "";
+  String device = "";
+  String token = "";
+  bool online = false;
+  String firmwareVersion = "";
+  List<OpenShockShocker> shockers = [];
 
-    OpenShockDevice.fromJson(Map<String, dynamic> json, {Token? tokenReference = null})
-    {
-      if(json['name'] != null)
-        name = json['name'];
-      if(json['id'] != null)
-        id = json['id'];
-      if(json['online'] != null)
-        online = json['online'];
-      if(json['firmwareVersion'] != null)
-        firmwareVersion = json['firmwareVersion'];
-      if(json['device'] != null)
-        device = json['device'];
-      if(json['token'] != null)
-        token = json['token'];
-      if (json['shockers'] != null)
-      {
-        json['shockers'].forEach((v) {
-            shockers.add(OpenShockShocker.fromJson(v));
-        });
-      }
-      apiTokenReference = tokenReference;
+  Token? apiTokenReference;
+
+  OpenShockDevice.fromJson(Map<String, dynamic> json,
+      {Token? tokenReference = null}) {
+    if (json['name'] != null) name = json['name'];
+    if (json['id'] != null) id = json['id'];
+    if (json['online'] != null) online = json['online'];
+    if (json['firmwareVersion'] != null)
+      firmwareVersion = json['firmwareVersion'];
+    if (json['device'] != null) device = json['device'];
+    if (json['token'] != null) token = json['token'];
+    if (json['shockers'] != null) {
+      json['shockers'].forEach((v) {
+        shockers.add(OpenShockShocker.fromJson(v));
+      });
     }
-    
-    Map<String, dynamic> toJson() {
-      return {
-        "name": name,
-        "id": id
-      };
-    }
+    apiTokenReference = tokenReference;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {"name": name, "id": id};
+  }
 }
 
-class OpenShockShocker
-{
-    String name = "";
-    String id = "";
-    bool isPaused = false;
-    int? paused;
-    bool? isDisabled = false;
-    OpenShockShockerLimits? limits;
-    OpenShockShockerPermissions? permissions;
+class OpenShockShocker {
+  String name = "";
+  String id = "";
+  bool isPaused = false;
+  int? paused;
+  bool? isDisabled = false;
+  OpenShockShockerLimits? limits;
+  OpenShockShockerPermissions? permissions;
 
-    int? rfId;
-    String? device;
-    String? model;
+  int? rfId;
+  String? device;
+  String? model;
 
-    OpenShockShocker();
+  OpenShockShocker();
 
-    OpenShockShocker.fromJson(Map<String, dynamic> json)
-    {
-        name = json['name'];
-        id = json['id'];
-        if(json["rfId"] != null)
-          rfId = json['rfId'];
-        if(json["model"] != null)
-          model = json['model'];
-        if(json["device"] != null)
-          device = json["device"];
-        if(json["isPaused"] != null)
-          isPaused = json['isPaused'];
-        if(json["isDisabled"] != null)
-          isDisabled = json['isDisabled'];
-        if (json['limits'] != null)
-        {
-            limits = OpenShockShockerLimits();
-            limits!.intensity = json['limits']['intensity'];
-            limits!.duration = json['limits']['duration'];
-        }
-        if(json['paused'] != null)
-          paused = json['paused'];
-        if (json['permissions'] != null)
-        {
-            permissions = OpenShockShockerPermissions();
-            permissions!.shock = json['permissions']['shock'];
-            permissions!.vibrate = json['permissions']['vibrate'];
-            permissions!.sound = json['permissions']['sound'];
-            permissions!.live = json['permissions']['live'];
-        }
+  OpenShockShocker.fromJson(Map<String, dynamic> json) {
+    name = json['name'];
+    id = json['id'];
+    if (json["rfId"] != null) rfId = json['rfId'];
+    if (json["model"] != null) model = json['model'];
+    if (json["device"] != null) device = json["device"];
+    if (json["isPaused"] != null) isPaused = json['isPaused'];
+    if (json["isDisabled"] != null) isDisabled = json['isDisabled'];
+    if (json['limits'] != null) {
+      limits = OpenShockShockerLimits();
+      limits!.intensity = json['limits']['intensity'];
+      limits!.duration = json['limits']['duration'];
     }
+    if (json['paused'] != null) paused = json['paused'];
+    if (json['permissions'] != null) {
+      permissions = OpenShockShockerPermissions();
+      permissions!.shock = json['permissions']['shock'];
+      permissions!.vibrate = json['permissions']['vibrate'];
+      permissions!.sound = json['permissions']['sound'];
+      permissions!.live = json['permissions']['live'];
+    }
+  }
 }
 
 class OpenShockShare {
@@ -1574,16 +1648,14 @@ class OpenShockShare {
   }
 }
 
-class OpenShockShockerLimits
-{
-    int? intensity = 100;
-    int? duration = 30000;
+class OpenShockShockerLimits {
+  int? intensity = 100;
+  int? duration = 30000;
 }
 
-class OpenShockShockerPermissions
-{
-    bool shock = true;
-    bool vibrate = true;
-    bool sound = true;
-    bool live = false;
+class OpenShockShockerPermissions {
+  bool shock = true;
+  bool vibrate = true;
+  bool sound = true;
+  bool live = false;
 }

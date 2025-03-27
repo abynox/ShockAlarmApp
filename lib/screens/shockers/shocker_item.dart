@@ -445,6 +445,7 @@ class IntensityDurationSelector extends StatefulWidget {
   int maxDuration;
   int maxIntensity;
   bool showIntensity = true;
+  bool showSeperateIntensities = false;
   bool allowRandom = false;
   ControlType type = ControlType.shock;
   final Function(ControlsContainer) onSet;
@@ -456,38 +457,16 @@ class IntensityDurationSelector extends StatefulWidget {
       required this.controlsContainer,
       required this.onSet,
       required this.maxDuration,
+      required this.showSeperateIntensities,
       required this.maxIntensity,
       this.allowRandom = false})
       : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => IntensityDurationSelectorState(
-      controlsContainer,
-      onSet,
-      this.maxDuration,
-      this.maxIntensity,
-      this.showIntensity,
-      this.type,
-      this.allowRandom);
+  State<StatefulWidget> createState() => IntensityDurationSelectorState();
 }
 
 class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
-  ControlsContainer controlsContainer;
-  int maxDuration;
-  int maxIntensity;
-  bool showIntensity;
-  ControlType type = ControlType.shock;
-  bool allowRandom = false;
-  Function(ControlsContainer) onSet;
-
-  IntensityDurationSelectorState(
-      this.controlsContainer,
-      this.onSet,
-      this.maxDuration,
-      this.maxIntensity,
-      this.showIntensity,
-      this.type,
-      this.allowRandom);
 
   double cubicToLinear(double value) {
     return pow(value, 6 / 3).toDouble();
@@ -498,94 +477,126 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
   }
 
   double reverseMapDuration(double value) {
-    if (maxDuration <= 300) return 0;
-    return linearToCubic((value - 300) / (maxDuration - 300));
+    if (widget.maxDuration <= 300) return 0;
+    return linearToCubic((value - 300) / (widget.maxDuration - 300));
   }
 
   int mapDuration(double value) {
     return 300 +
-        (cubicToLinear(value) * (maxDuration - 300) / 100).toInt() * 100;
+        (cubicToLinear(value) * (widget.maxDuration - 300) / 100).toInt() * 100;
   }
 
   @override
   Widget build(BuildContext context) {
-    controlsContainer.limitTo(maxDuration, maxIntensity);
+    widget.controlsContainer.limitTo(widget.maxDuration, widget.maxIntensity);
     ThemeData t = Theme.of(context);
     return Column(
       children: [
-        if (showIntensity)
-          Row(
+        if (widget.showIntensity)
+          ...[Row(
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 10,
             children: [
-              OpenShockClient.getIconForControlType(type),
+              widget.showSeperateIntensities ? OpenShockClient.getIconForControlType(ControlType.shock) : OpenShockClient.getIconForControlType(widget.type),
               Text(
-                "Intensity: " +
-                    controlsContainer.getStringRepresentation(
-                        controlsContainer.intensityRange, true),
+                "Intensity: ${widget.controlsContainer.getStringRepresentation(
+                        widget.controlsContainer.intensityRange, true)}",
                 style: t.textTheme.headlineSmall,
               ),
             ],
           ),
-        if (showIntensity)
           AlarmListManager.getInstance().settings.useRangeSliderForIntensity &&
-                  allowRandom
+                  widget.allowRandom
               ? RangeSlider(
-                  values: controlsContainer.intensityRange,
-                  divisions: maxIntensity,
-                  max: maxIntensity.toDouble(),
+                  values: widget.controlsContainer.intensityRange,
+                  divisions: widget.maxIntensity,
+                  max: widget.maxIntensity.toDouble(),
                   min: 0,
                   onChanged: (RangeValues values) {
                     setState(() {
-                      controlsContainer.intensityRange = values;
+                      widget.controlsContainer.intensityRange = values;
                     });
                   })
               : Slider(
-                  value: controlsContainer.intensityRange.start.toDouble(),
-                  max: maxIntensity.toDouble(),
+                  value: widget.controlsContainer.intensityRange.start.toDouble(),
+                  max: widget.maxIntensity.toDouble(),
                   onChanged: (double value) {
                     setState(() {
-                      controlsContainer.setIntensity(value);
-                      onSet(controlsContainer);
+                      widget.controlsContainer.setIntensity(value);
+                      widget.onSet(widget.controlsContainer);
                     });
                   }),
+          if(widget.showSeperateIntensities) ...[Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 10,
+            children: [
+              OpenShockClient.getIconForControlType(ControlType.vibrate),
+              Text(
+                "Intensity: ${widget.controlsContainer.getStringRepresentation(
+                        widget.controlsContainer.vibrateIntensityRange, true)}",
+                style: t.textTheme.headlineSmall,
+              ),
+            ],
+          ),
+          AlarmListManager.getInstance().settings.useRangeSliderForIntensity &&
+                  widget.allowRandom
+              ? RangeSlider(
+                  values: widget.controlsContainer.vibrateIntensityRange,
+                  divisions: widget.maxIntensity,
+                  max: widget.maxIntensity.toDouble(),
+                  min: 0,
+                  onChanged: (RangeValues values) {
+                    setState(() {
+                      widget.controlsContainer.vibrateIntensityRange = values;
+                    });
+                  })
+              : Slider(
+                  value: widget.controlsContainer.vibrateIntensityRange.start.toDouble(),
+                  max: widget.maxIntensity.toDouble(),
+                  onChanged: (double value) {
+                    setState(() {
+                      widget.controlsContainer.setVibrateIntensity(value);
+                      widget.onSet(widget.controlsContainer);
+                    });
+                  }),]
+                  ],
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 10,
           children: [
             Icon(Icons.timer),
             Text(
-              "Duration: ${controlsContainer.getDurationString()}",
+              "Duration: ${widget.controlsContainer.getDurationString()}",
               style: t.textTheme.headlineSmall,
             ),
           ],
         ),
         AlarmListManager.getInstance().settings.useRangeSliderForDuration &&
-                allowRandom
+                widget.allowRandom
             ? RangeSlider(
                 values: RangeValues(
-                    reverseMapDuration(controlsContainer.durationRange.start),
-                    reverseMapDuration(controlsContainer.durationRange.end)),
+                    reverseMapDuration(widget.controlsContainer.durationRange.start),
+                    reverseMapDuration(widget.controlsContainer.durationRange.end)),
                 max: 1,
                 min: 0,
-                divisions: maxDuration,
+                divisions: widget.maxDuration,
                 onChanged: (RangeValues values) {
                   setState(() {
-                    controlsContainer.durationRange = RangeValues(
+                    widget.controlsContainer.durationRange = RangeValues(
                         mapDuration(values.start).toDouble(),
                         mapDuration(values.end).toDouble());
                   });
                 })
             : Slider(
                 value:
-                    reverseMapDuration(controlsContainer.durationRange.start),
-                max: 1,
+                    reverseMapDuration(widget.controlsContainer.durationRange.start),
+                max: 1, 
                 onChanged: (double value) {
                   setState(() {
-                    controlsContainer.setDuration(mapDuration(value));
+                    widget.controlsContainer.setDuration(mapDuration(value));
                     // ToDO: send intensity 1 if not show intensity
 
-                    onSet(controlsContainer);
+                    widget.onSet(widget.controlsContainer);
                   });
                 }),
       ],
@@ -724,7 +735,7 @@ class ShockingControlsState extends State<ShockingControls>
       return;
     }
     selectedDuration = widget.controlsContainer.getRandomDuration();
-    selectedIntensity = widget.controlsContainer.getRandomIntensity();
+    selectedIntensity = AlarmListManager.getInstance().settings.useSeperateSliders && type == ControlType.vibrate ? widget.controlsContainer.getRandomVibrateIntensity() : widget.controlsContainer.getRandomIntensity();
     // Get random delay based on range
     if (widget.manager.delayVibrationEnabled) {
       // ToDo: make this duration adjustable
@@ -790,6 +801,7 @@ class ShockingControlsState extends State<ShockingControls>
             maxDuration: widget.durationLimit,
             maxIntensity: widget.intensityLimit,
             onSet: widget.onSet,
+            showSeperateIntensities: AlarmListManager.getInstance().settings.useSeperateSliders,
             allowRandom: true,
             key: ValueKey(widget.manager.settings.useRangeSliderForDuration
                     .toString() +

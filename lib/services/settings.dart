@@ -27,6 +27,7 @@ class Settings {
   bool liveControlsLogWorkaround = false;
   bool allowMultiServerLogin = false;
   bool lerpIntensity = false;
+  bool useSeperateSliders = false;
 
 
   Settings();
@@ -62,6 +63,9 @@ class Settings {
       allowMultiServerLogin = json["allowMultiServerLogin"];
     if(json["lerpIntensity"] != null)
       lerpIntensity = json["lerpIntensity"];
+    if(json["useSeperateSliders"] != null)
+      useSeperateSliders = json["useSeperateSliders"];
+      
   }
 
   Map<String, dynamic> toJson() {
@@ -80,7 +84,8 @@ class Settings {
       "allowTonesForControls": allowTonesForControls,
       "liveControlsLogWorkaround": liveControlsLogWorkaround,
       "allowMultiServerLogin": allowMultiServerLogin,
-      "lerpIntensity": lerpIntensity
+      "lerpIntensity": lerpIntensity,
+      "useSeperateSliders": useSeperateSliders
     };
   }
 }

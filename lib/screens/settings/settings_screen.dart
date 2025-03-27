@@ -777,6 +777,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Text("Seperate slider for vibrate and shock intensity"),
+            Switch(
+                value: widget.manager.settings.useSeperateSliders,
+                key: ValueKey("useSeperateSliders"),
+                onChanged: (value) {
+                  setState(() {
+                    widget.manager.settings.useSeperateSliders = value;
+                    widget.manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Row(
               children: [
                 Text("Lerp intensity"),

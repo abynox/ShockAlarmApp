@@ -339,6 +339,7 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                       ),
                     if (alarmShocker.type != null)
                       IntensityDurationSelector(
+                        showSeperateIntensities: false,
                         key: ValueKey(alarmShocker.type),
                         controlsContainer: ControlsContainer.fromInts(
                             intensity: alarmShocker.intensity,

@@ -52,7 +52,7 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
       }
       ControlType type =
           validControlTypes[Random().nextInt(validControlTypes.length)];
-      executeAll(type, controlsContainer.getRandomIntensity(),
+      executeAll(type, AlarmListManager.getInstance().settings.useSeperateSliders && type == ControlType.vibrate ? controlsContainer.getRandomVibrateIntensity() : controlsContainer.getRandomIntensity(),
           controlsContainer.getRandomDuration());
     }
   }
@@ -96,6 +96,7 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Shocker limitedShocker = AlarmListManager.getInstance().getSelectedShockerLimits();
     return Scaffold(
       appBar: AppBar(
         title: Text('Random shocks'),
@@ -123,8 +124,9 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
                   onSet: (ControlsContainer c) {
                     setState(() {});
                   },
-                  maxDuration: 30000,
-                  maxIntensity: 100,
+                  showSeperateIntensities: AlarmListManager.getInstance().settings.useSeperateSliders,
+                  maxDuration: limitedShocker.durationLimit,
+                  maxIntensity: limitedShocker.intensityLimit,
                   allowRandom: true,
                   key: ValueKey(AlarmListManager.getInstance()
                           .settings
