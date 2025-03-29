@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:battery_optimization_helper/battery_optimization_helper.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,8 @@ import 'screens/screen_selector.dart';
 import 'services/alarm_list_manager.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
-const String issues_url = "https://github.com/ComputerElite/ShockAlarmApp/issues";
+const String issues_url =
+    "https://github.com/ComputerElite/ShockAlarmApp/issues";
 
 String GetUserAgent() {
   return "ShockAlarm/0.2.7";
@@ -21,58 +23,61 @@ bool isAndroid() {
   return !kIsWeb && Platform.isAndroid;
 }
 
-Future requestPermissions() async{
-  if(!isAndroid()) return;
+Future requestPermissions() async {
+  if (!isAndroid()) return;
   final status = await Permission.scheduleExactAlarm.status;
   print('Schedule exact alarm permission: $status.');
   if (status.isDenied) {
     print('Requesting schedule exact alarm permission...');
     final res = await Permission.scheduleExactAlarm.request();
-    print('Schedule exact alarm permission ${res.isGranted ? '' : 'not'} granted.');
+    print(
+        'Schedule exact alarm permission ${res.isGranted ? '' : 'not'} granted.');
   }
 }
 
 void initNotification(AlarmListManager manager) async {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
   // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings("monochrome_icon");
   final DarwinInitializationSettings initializationSettingsDarwin =
       DarwinInitializationSettings();
   final LinuxInitializationSettings initializationSettingsLinux =
-      LinuxInitializationSettings(
-          defaultActionName: 'Open notification');
+      LinuxInitializationSettings(defaultActionName: 'Open notification');
   final InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
       macOS: initializationSettingsDarwin,
       linux: initializationSettingsLinux);
-await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        onDidReceiveNotificationResponse(response, manager);
-      });
-    
-  flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
+    onDidReceiveNotificationResponse(response, manager);
+  });
+
+  flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.requestNotificationsPermission();
 }
 
-void onDidReceiveNotificationResponse(NotificationResponse notificationResponse, AlarmListManager manager) async {
+void onDidReceiveNotificationResponse(
+    NotificationResponse notificationResponse, AlarmListManager manager) async {
   print("Notification received");
-  if(notificationResponse.id != null) {
+  if (notificationResponse.id != null) {
     print("Notification id owo: ${notificationResponse.id}");
   }
   Alarm? alarm;
   manager.getAlarms().forEach((element) {
-    if(element.id == notificationResponse.id) {
+    if (element.id == notificationResponse.id) {
       alarm = element;
     }
   });
-  if(alarm == null) {
+  if (alarm == null) {
     print("Alarm not found");
     return;
   }
-  switch(notificationResponse.actionId) {
+  switch (notificationResponse.actionId) {
     case "stop":
       alarm?.onAlarmStopped(manager);
       break;
@@ -85,17 +90,48 @@ Future initBgService() async {
     notificationText: "Allows ShowAlarm to control your shockers",
     notificationImportance: AndroidNotificationImportance.normal,
     showBadge: true,
-    notificationIcon: AndroidResource(name: 'monochrome_icon', defType: 'drawable'), // Default is ic_launcher from folder mipmap
+    notificationIcon: AndroidResource(
+        name: 'monochrome_icon',
+        defType: 'drawable'), // Default is ic_launcher from folder mipmap
   );
-  bool success = await FlutterBackground.initialize(androidConfig: androidConfig);
+  bool success =
+      await FlutterBackground.initialize(androidConfig: androidConfig);
   print("Background service initialized: $success");
 }
 
 Future requestAlarmPermissions() async {
   initNotification(AlarmListManager.getInstance());
-  if(isAndroid()) {
+  if (isAndroid()) {
     await AndroidAlarmManager.initialize();
     await requestPermissions();
+
+    bool isBatteryOptimizationEnabled =
+        await BatteryOptimizationHelper.isBatteryOptimizationEnabled();
+    if (isBatteryOptimizationEnabled) {
+      showDialog(
+          context: navigatorKey.currentContext!,
+          builder: (context) => AlertDialog.adaptive(
+                title: const Text("Battery optimization"),
+                content: const Text(
+                    "Battery optimization is enabled. To use alarms without issues you need to disable it. Do you want to disable it?"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text("No"),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await BatteryOptimizationHelper
+                          .requestDisableBatteryOptimization();
+                    },
+                    child: const Text("Yes"),
+                  ),
+                ],
+              ));
+    }
   }
 }
 
@@ -118,7 +154,7 @@ void alarmCallback(int id) async {
   //initNotification(manager);
   manager.getAlarms().forEach((element) {
     print("Checking alarm");
-    if(element.active && adjustedId ==element.id) {
+    if (element.active && adjustedId == element.id) {
       element.trigger(manager, true);
     }
   });
@@ -132,7 +168,6 @@ class MyApp extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => MyAppState();
-
 }
 
 class MyAppState extends State<MyApp> {
@@ -163,19 +198,22 @@ class MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return DynamicColorBuilder(builder: (lightColorScheme, darkColorScheme) {
       return MaterialApp(
-        navigatorKey: navigatorKey,
-        title: 'ShockAlarm',
-        theme: lightColorScheme != null ? ThemeData(
-          useMaterial3: true,
-          colorScheme: lightColorScheme,
-        ): ThemeData.light(),
-        darkTheme: darkColorScheme != null ? ThemeData(
-          useMaterial3: true,
-          colorScheme: darkColorScheme,
-        ): ThemeData.dark(),
-        themeMode: themeMode,
-        home: ScreenSelectorScreen(manager: AlarmListManager.getInstance())
-      );
+          navigatorKey: navigatorKey,
+          title: 'ShockAlarm',
+          theme: lightColorScheme != null
+              ? ThemeData(
+                  useMaterial3: true,
+                  colorScheme: lightColorScheme,
+                )
+              : ThemeData.light(),
+          darkTheme: darkColorScheme != null
+              ? ThemeData(
+                  useMaterial3: true,
+                  colorScheme: darkColorScheme,
+                )
+              : ThemeData.dark(),
+          themeMode: themeMode,
+          home: ScreenSelectorScreen(manager: AlarmListManager.getInstance()));
     });
   }
 }
