@@ -52,11 +52,13 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
           style: t.textTheme.headlineMedium,
           textAlign: TextAlign.center,
         ),
+        /*
         Text(
           "Alarms are currently semi working",
           style: t.textTheme.headlineSmall,
           textAlign: TextAlign.center,
         ),
+        */
         Center(
           child: FilledButton(
               onPressed: () {
