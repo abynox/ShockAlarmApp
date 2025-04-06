@@ -17,6 +17,7 @@ android {
     ndkVersion = flutter.ndkVersion
 
     lintOptions {
+        checkReleaseBuilds false
         abortOnError false
     }
 
