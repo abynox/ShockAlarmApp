@@ -56,10 +56,6 @@ android {
     }
 }
 
-lintOptions {
-    abortOnError false
-}
-
 flutter {
     source = "../.."
 }
