@@ -14,7 +14,18 @@ jobs:
       - run: |
           ls -la ./
           ls -la ./battery_optimization_helper/
-      - run: ./flutter/bin/flutter doctor
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.29.2
+          cache: true
+          # optional parameters follow
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+          pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
+          pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+      - run: flutter doctor
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
@@ -27,7 +38,8 @@ jobs:
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.ALIAS }}" >> android/key.properties
           echo "storeFile=../android.keystore" >> android/key.properties
-      - run: ./flutter/bin/flutter build apk
+      - run: flutter run --verbose
+      - run: flutter build apk
       - name: Rename apk
         id: rename_apk
         run: |

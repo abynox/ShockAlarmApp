@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shock_alarm_app/stores/alarm_store.dart';
 import 'screens/screen_selector.dart';
 import 'services/alarm_list_manager.dart';
@@ -24,6 +23,7 @@ bool isAndroid() {
 }
 
 Future requestPermissions() async {
+  /*
   if (!isAndroid()) return;
   final status = await Permission.scheduleExactAlarm.status;
   print('Schedule exact alarm permission: $status.');
@@ -33,6 +33,7 @@ Future requestPermissions() async {
     print(
         'Schedule exact alarm permission ${res.isGranted ? '' : 'not'} granted.');
   }
+  */
 }
 
 void initNotification(AlarmListManager manager) async {
