@@ -40,7 +40,7 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
     setState(() {});
   }
 
-  void executeAll(ControlType type, int intensity, int duration) {
+  int? executeAll(ControlType type, int intensity, int duration) {
     List<Control> controls = [];
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       controls.add(s.getLimitedControls(type, intensity, duration));
@@ -50,9 +50,10 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
       for (Control c in controls) {
         AlarmListManager.getInstance().sendControls([c]);
       }
-      return;
+      return 0;
     }
     AlarmListManager.getInstance().sendControls(controls);
+    return duration;
   }
 
   void executeAllLive(ControlType type, int intensity) {

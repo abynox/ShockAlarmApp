@@ -6,6 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 import 'package:shock_alarm_app/components/dynamic_child_layout.dart';
+import 'package:shock_alarm_app/components/padded_card.dart';
+import 'package:shock_alarm_app/components/page_padding.dart';
+import 'package:shock_alarm_app/components/predefined_spacing.dart';
 import 'package:shock_alarm_app/screens/shockers/shocker_details.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
@@ -54,7 +57,8 @@ class ShockerScreen extends StatefulWidget {
                   onPressed: () async {
                     String code = codeController.text;
                     if (code.isEmpty) {
-                      ErrorDialog.show("Invalid code", "The code cannot be empty");
+                      ErrorDialog.show(
+                          "Invalid code", "The code cannot be empty");
                       return;
                     }
                     if (await redeemShareCode(code, context, manager)) {
@@ -107,7 +111,8 @@ class ShockerScreen extends StatefulWidget {
                   onPressed: () async {
                     String name = nameController.text;
                     if (name.isEmpty) {
-                      ErrorDialog.show("Invalid name", "The name cannot be empty");
+                      ErrorDialog.show(
+                          "Invalid name", "The name cannot be empty");
                       return;
                     }
                     LoadingDialog.show("Creating hub");
@@ -132,7 +137,8 @@ class ShockerScreen extends StatefulWidget {
         });
   }
 
-  static startPairShocker(AlarmListManager manager, BuildContext context, Function reloadState) async {
+  static startPairShocker(AlarmListManager manager, BuildContext context,
+      Function reloadState) async {
     LoadingDialog.show("Loading devices");
     List<OpenShockDevice> devices = await manager.getDevices();
     Navigator.of(context).pop();
@@ -144,7 +150,10 @@ class ShockerScreen extends StatefulWidget {
         builder: (context) {
           return AlertDialog.adaptive(
             title: Text("Add new shocker"),
-            content: ShockerDetails(shocker: newShocker, devices: devices,),
+            content: ShockerDetails(
+              shocker: newShocker,
+              devices: devices,
+            ),
             actions: <Widget>[
               TextButton(
                   onPressed: () {
@@ -155,7 +164,8 @@ class ShockerScreen extends StatefulWidget {
                   onPressed: () async {
                     String name = newShocker.name;
                     if (name.isEmpty) {
-                      ErrorDialog.show("Invalid name", "The name cannot be empty");
+                      ErrorDialog.show(
+                          "Invalid name", "The name cannot be empty");
                       return;
                     }
                     int rfId = newShocker.rfId ?? 0;
@@ -251,7 +261,34 @@ class ShockerScreenState extends State<ShockerScreen> {
   @override
   void initState() {
     super.initState();
-    if(!AlarmListManager.supportsWs()) AlarmListManager.getInstance().updateHubStatusViaHttp();
+    AlarmListManager.getInstance().onRefresh = () {
+      setState(() {});
+    };
+    if (!AlarmListManager.supportsWs())
+      AlarmListManager.getInstance().updateHubStatusViaHttp();
+  }
+
+  int? executeAll(ControlType type, int intensity, int duration) {
+    List<Control> controls = [];
+    int highestDuration = 0;
+    for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
+      print(s.controls.durationRange.start);
+      Control c = s.getLimitedControls(type, AlarmListManager.getInstance().settings.useSeperateSliders && type == ControlType.vibrate ? s.controls.getRandomVibrateIntensity() : s.controls.getRandomIntensity(), s.controls.getRandomDuration());
+      if (c.duration > highestDuration) {
+        highestDuration = c.duration;
+      }
+      controls.add(c);
+    }
+    if (type == ControlType.stop) {
+      // Temporary workaround until OpenShock fixed the issue with stop. So for now we send them individually
+      for (Control c in controls) {
+        AlarmListManager.getInstance().sendControls([c]);
+      }
+      return 0;
+    }
+    AlarmListManager.getInstance().sendControls(controls);
+    print(highestDuration);
+    return highestDuration;
   }
 
   ShockerScreenState(this.manager);
@@ -288,7 +325,7 @@ class ShockerScreenState extends State<ShockerScreen> {
       List<Widget> shockerWidgets = [];
       for (var s in shocker.value) {
         shockerWidgets.add(ShockerItem(
-          //liveActive: AlarmListManager.getInstance().liveControlGatewayConnections.containsKey(shocker.key?.id ?? ""),
+            //liveActive: AlarmListManager.getInstance().liveControlGatewayConnections.containsKey(shocker.key?.id ?? ""),
             shocker: s,
             manager: manager,
             onRebuild: rebuild,
@@ -296,53 +333,77 @@ class ShockerScreenState extends State<ShockerScreen> {
       }
       shockers.add(StickyHeader(
           header: ConstrainedContainer(
-            width: 1500,
+              width: 1500,
               child: HubItem(
                   hub: shocker.key!,
                   manager: manager,
                   key: ValueKey(shocker.key!.getIdentifier(manager)),
                   onRebuild: rebuild)),
           content: ConstrainedContainer(
-            width: 1500,
+              width: 1500,
               child: DynamicChildLayout(
                 minWidth: 450,
-            children: shockerWidgets,
-          ))));
+                children: shockerWidgets,
+              ))));
     }
+    Shocker limitedShocker = AlarmListManager.getInstance().getSelectedShockerLimits();
     return DesktopMobileRefreshIndicator(
       onRefresh: () async {
         await manager.updateShockerStore();
         setState(() {});
       },
-      child: ListView(children: [
-        Text(
-          'All devices',
-          style: t.textTheme.headlineMedium,
-          textAlign: TextAlign.center,
-        ),
-        if (groupedShockers.isEmpty)
-          Text(
-            "No shockers found",
-            style: t.textTheme.headlineSmall,
-            textAlign: TextAlign.center,
-          ),
-        if (!manager.settings.disableHubFiltering)
-          Center(
-              child: Wrap(
-            spacing: 5,
-            runAlignment: WrapAlignment.start,
-            children: manager.enabledHubs.keys.map<FilterChip>((hub) {
-              return FilterChip(
-                  label: Text(manager.getHub(hub)?.name ?? "Unknown hub"),
-                  onSelected: (bool value) {
-                    manager.enabledHubs[hub] = value;
-                    setState(() {});
-                  },
-                  selected: manager.enabledHubs[hub]!);
-            }).toList(),
-          )),
-        ...(groupedShockers.isNotEmpty ? shockers : [])
-      ]),
+      child: Column(
+        children: [
+          Expanded(child: SingleChildScrollView(child: Column(children: [
+            Text(
+              'All devices',
+              style: t.textTheme.headlineMedium,
+              textAlign: TextAlign.center,
+            ),
+            if (groupedShockers.isEmpty)
+              Text(
+                "No shockers found",
+                style: t.textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+            if (!manager.settings.disableHubFiltering)
+              Center(
+                  child: Wrap(
+                spacing: 5,
+                runAlignment: WrapAlignment.start,
+                children: manager.enabledHubs.keys.map<FilterChip>((hub) {
+                  return FilterChip(
+                      label: Text(manager.getHub(hub)?.name ?? "Unknown hub"),
+                      onSelected: (bool value) {
+                        manager.enabledHubs[hub] = value;
+                        setState(() {});
+                      },
+                      selected: manager.enabledHubs[hub]!);
+                }).toList(),
+              )),
+            ...(groupedShockers.isNotEmpty ? shockers : [])
+          ]),),),
+          if(AlarmListManager.getInstance().selectedShockers.isNotEmpty) Column(
+            children: [
+              Padding(padding: PredefinedSpacing.paddingExtraSmall()),
+              ShockingControls(
+                            manager: AlarmListManager.getInstance(),
+                            controlsContainer: AlarmListManager.getInstance().controls,
+                            durationLimit: limitedShocker.durationLimit,
+                            showSliders: false,
+                            intensityLimit: limitedShocker.intensityLimit,
+                            soundAllowed: limitedShocker.soundAllowed,
+                            vibrateAllowed: limitedShocker.vibrateAllowed,
+                            shockAllowed: limitedShocker.shockAllowed,
+                            onDelayAction: executeAll,
+                            onProcessAction: executeAll,
+                            onSet: (container) {},
+                            key: ValueKey(
+                                DateTime.now().millisecondsSinceEpoch)),
+            ],
+          )
+        ],
+      ),
     );
   }
 }

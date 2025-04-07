@@ -1470,7 +1470,7 @@ class Shocker {
   }
 
   String getIdentifier() {
-    return "$id-$apiTokenId-${paused}-${shockAllowed}-${vibrateAllowed}-${liveAllowed}-${soundAllowed}-${durationLimit}-${intensityLimit}-${AlarmListManager.getInstance().settings.useRangeSliderForRandomDelay}-${AlarmListManager.getInstance().settings.useRangeSliderForDuration}-${AlarmListManager.getInstance().settings.useRangeSliderForIntensity}";
+    return "$id-${identityHashCode(controls)}-$apiTokenId-${paused}-${shockAllowed}-${vibrateAllowed}-${liveAllowed}-${soundAllowed}-${durationLimit}-${intensityLimit}-${AlarmListManager.getInstance().settings.useRangeSliderForRandomDelay}-${AlarmListManager.getInstance().settings.useRangeSliderForDuration}-${AlarmListManager.getInstance().settings.useRangeSliderForIntensity}";
   }
 
   Control getLimitedControls(ControlType type, int intensity, int duration) {

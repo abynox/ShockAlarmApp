@@ -209,6 +209,12 @@ class ShockerItemState extends State<ShockerItem>
   double delayDuration = 0;
   bool loadingPause = false;
 
+  bool selected() =>
+      AlarmListManager.getInstance().selectedShockers.contains(shocker.id);
+
+  bool liveEnabled() =>
+      AlarmListManager.getInstance().liveActiveForShockers.contains(shocker.id);
+
   @override
   void initState() {
     super.initState();
@@ -252,11 +258,35 @@ class ShockerItemState extends State<ShockerItem>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               Expanded(
-                child: Text(
-                  shocker.name,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+                  child: Row(
+                children: [
+                  Checkbox(
+                    value: selected(),
+                    shape: CircleBorder(),
+                    onChanged: (bool? value) {
+                      print("Selected shocker ${shocker.name}: $value");
+                      if (value == null) return;
+                      if (value) {
+                        expanded = true;
+                        AlarmListManager.getInstance()
+                            .selectedShockers
+                            .add(shocker.id);
+                      } else {
+                        expanded = false;
+                        AlarmListManager.getInstance()
+                            .selectedShockers
+                            .remove(shocker.id);
+                      }
+                      setState(() {});
+                      onRebuild();
+                    },
+                  ),
+                  Text(
+                    shocker.name,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              )),
               Row(
                 spacing: 5,
                 children: [
@@ -363,9 +393,7 @@ class ShockerItemState extends State<ShockerItem>
           ),
         ),
         if (expanded)
-          AlarmListManager.getInstance()
-                  .liveActiveForShockers
-                  .contains(shocker.id)
+          liveEnabled()
               ? LiveControls(
                   showLatency: false,
                   onSendLive: onSendLive,
@@ -381,10 +409,11 @@ class ShockerItemState extends State<ShockerItem>
               : ShockingControls(
                   manager: manager,
                   controlsContainer: shocker.controls,
-                  key: ValueKey(shocker.getIdentifier() + "-shocking-controls"),
+                  key: ValueKey("${shocker.getIdentifier()}-shocking-controls"),
                   durationLimit: shocker.durationLimit,
                   intensityLimit: shocker.intensityLimit,
                   shockAllowed: shocker.shockAllowed,
+                  showActions: !selected(),
                   vibrateAllowed: shocker.vibrateAllowed,
                   soundAllowed: shocker.soundAllowed,
                   onDelayAction: (type, intensity, duration) {
@@ -467,7 +496,6 @@ class IntensityDurationSelector extends StatefulWidget {
 }
 
 class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
-
   double cubicToLinear(double value) {
     return pow(value, 6 / 3).toDouble();
   }
@@ -492,15 +520,16 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
     ThemeData t = Theme.of(context);
     return Column(
       children: [
-        if (widget.showIntensity)
-          ...[Row(
+        if (widget.showIntensity) ...[
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 10,
             children: [
-              widget.showSeperateIntensities ? OpenShockClient.getIconForControlType(ControlType.shock) : OpenShockClient.getIconForControlType(widget.type),
+              widget.showSeperateIntensities
+                  ? OpenShockClient.getIconForControlType(ControlType.shock)
+                  : OpenShockClient.getIconForControlType(widget.type),
               Text(
-                "Intensity: ${widget.controlsContainer.getStringRepresentation(
-                        widget.controlsContainer.intensityRange, true)}",
+                "Intensity: ${widget.controlsContainer.getStringRepresentation(widget.controlsContainer.intensityRange, true)}",
                 style: t.textTheme.headlineSmall,
               ),
             ],
@@ -518,7 +547,8 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                     });
                   })
               : Slider(
-                  value: widget.controlsContainer.intensityRange.start.toDouble(),
+                  value:
+                      widget.controlsContainer.intensityRange.start.toDouble(),
                   max: widget.maxIntensity.toDouble(),
                   onChanged: (double value) {
                     setState(() {
@@ -526,40 +556,44 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                       widget.onSet(widget.controlsContainer);
                     });
                   }),
-          if(widget.showSeperateIntensities) ...[Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 10,
-            children: [
-              OpenShockClient.getIconForControlType(ControlType.vibrate),
-              Text(
-                "Intensity: ${widget.controlsContainer.getStringRepresentation(
-                        widget.controlsContainer.vibrateIntensityRange, true)}",
-                style: t.textTheme.headlineSmall,
-              ),
-            ],
-          ),
-          AlarmListManager.getInstance().settings.useRangeSliderForIntensity &&
-                  widget.allowRandom
-              ? RangeSlider(
-                  values: widget.controlsContainer.vibrateIntensityRange,
-                  divisions: widget.maxIntensity,
-                  max: widget.maxIntensity.toDouble(),
-                  min: 0,
-                  onChanged: (RangeValues values) {
-                    setState(() {
-                      widget.controlsContainer.vibrateIntensityRange = values;
-                    });
-                  })
-              : Slider(
-                  value: widget.controlsContainer.vibrateIntensityRange.start.toDouble(),
-                  max: widget.maxIntensity.toDouble(),
-                  onChanged: (double value) {
-                    setState(() {
-                      widget.controlsContainer.setVibrateIntensity(value);
-                      widget.onSet(widget.controlsContainer);
-                    });
-                  }),]
-                  ],
+          if (widget.showSeperateIntensities) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 10,
+              children: [
+                OpenShockClient.getIconForControlType(ControlType.vibrate),
+                Text(
+                  "Intensity: ${widget.controlsContainer.getStringRepresentation(widget.controlsContainer.vibrateIntensityRange, true)}",
+                  style: t.textTheme.headlineSmall,
+                ),
+              ],
+            ),
+            AlarmListManager.getInstance()
+                        .settings
+                        .useRangeSliderForIntensity &&
+                    widget.allowRandom
+                ? RangeSlider(
+                    values: widget.controlsContainer.vibrateIntensityRange,
+                    divisions: widget.maxIntensity,
+                    max: widget.maxIntensity.toDouble(),
+                    min: 0,
+                    onChanged: (RangeValues values) {
+                      setState(() {
+                        widget.controlsContainer.vibrateIntensityRange = values;
+                      });
+                    })
+                : Slider(
+                    value: widget.controlsContainer.vibrateIntensityRange.start
+                        .toDouble(),
+                    max: widget.maxIntensity.toDouble(),
+                    onChanged: (double value) {
+                      setState(() {
+                        widget.controlsContainer.setVibrateIntensity(value);
+                        widget.onSet(widget.controlsContainer);
+                      });
+                    }),
+          ]
+        ],
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 10,
@@ -575,8 +609,10 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                 widget.allowRandom
             ? RangeSlider(
                 values: RangeValues(
-                    reverseMapDuration(widget.controlsContainer.durationRange.start),
-                    reverseMapDuration(widget.controlsContainer.durationRange.end)),
+                    reverseMapDuration(
+                        widget.controlsContainer.durationRange.start),
+                    reverseMapDuration(
+                        widget.controlsContainer.durationRange.end)),
                 max: 1,
                 min: 0,
                 divisions: widget.maxDuration,
@@ -588,9 +624,9 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                   });
                 })
             : Slider(
-                value:
-                    reverseMapDuration(widget.controlsContainer.durationRange.start),
-                max: 1, 
+                value: reverseMapDuration(
+                    widget.controlsContainer.durationRange.start),
+                max: 1,
                 onChanged: (double value) {
                   setState(() {
                     widget.controlsContainer.setDuration(mapDuration(value));
@@ -612,9 +648,11 @@ class ShockingControls extends StatefulWidget {
   bool soundAllowed;
   bool vibrateAllowed;
   bool shockAllowed;
-  Function(ControlType type, int intensity, int duration) onDelayAction;
-  Function(ControlType type, int intensity, int duration) onProcessAction;
-  Function(ControlsContainer container) onSet;
+  bool showSliders = true;
+  bool showActions = true;
+  int? Function(ControlType type, int intensity, int duration) onDelayAction;
+  int? Function(ControlType type, int intensity, int duration) onProcessAction;
+  int? Function(ControlsContainer container) onSet;
 
   ShockingControls(
       {Key? key,
@@ -627,7 +665,9 @@ class ShockingControls extends StatefulWidget {
       required this.shockAllowed,
       required this.onDelayAction,
       required this.onProcessAction,
-      required this.onSet})
+      required this.onSet,
+      this.showSliders = true,
+      this.showActions = true})
       : super(key: key);
 
   @override
@@ -697,13 +737,14 @@ class ShockingControlsState extends State<ShockingControls>
         }
         return;
       } else {
+        int? durationByHandler = widget.onProcessAction(type, selectedIntensity, selectedDuration);
         setState(() {
-          actionDuration = selectedDuration;
+          actionDuration = durationByHandler ?? selectedDuration;
           actionDoneTime =
-              DateTime.now().add(Duration(milliseconds: selectedDuration));
+              DateTime.now().add(Duration(milliseconds: durationByHandler ?? selectedDuration));
           progressCircularController = AnimationController(
             vsync: this,
-            duration: Duration(milliseconds: selectedDuration),
+            duration: Duration(milliseconds: durationByHandler ?? selectedDuration),
           )..addListener(() {
               setState(() {
                 if (progressCircularController!.status ==
@@ -717,7 +758,7 @@ class ShockingControlsState extends State<ShockingControls>
         });
       }
     }
-    widget.onProcessAction(type, selectedIntensity, selectedDuration);
+    
   }
 
   int selectedIntensity = 0;
@@ -735,7 +776,11 @@ class ShockingControlsState extends State<ShockingControls>
       return;
     }
     selectedDuration = widget.controlsContainer.getRandomDuration();
-    selectedIntensity = AlarmListManager.getInstance().settings.useSeperateSliders && type == ControlType.vibrate ? widget.controlsContainer.getRandomVibrateIntensity() : widget.controlsContainer.getRandomIntensity();
+    selectedIntensity =
+        AlarmListManager.getInstance().settings.useSeperateSliders &&
+                type == ControlType.vibrate
+            ? widget.controlsContainer.getRandomVibrateIntensity()
+            : widget.controlsContainer.getRandomIntensity();
     // Get random delay based on range
     if (widget.manager.delayVibrationEnabled) {
       // ToDo: make this duration adjustable
@@ -784,8 +829,8 @@ class ShockingControlsState extends State<ShockingControls>
       AlarmListManager.getInstance().selectedTone = null;
     return Column(
       children: [
-        if (widget.manager.settings.allowTonesForControls)
-          ...[DropdownMenu<int?>(
+        if (widget.manager.settings.allowTonesForControls) ...[
+          DropdownMenu<int?>(
             dropdownMenuEntries: dme,
             initialSelection: AlarmListManager.getInstance().selectedTone?.id,
             onSelected: (value) {
@@ -794,21 +839,24 @@ class ShockingControlsState extends State<ShockingControls>
               });
             },
           ),
-          PredefinedSpacing(padding: PredefinedSpacing.paddingExtraSmall())],
-        if (AlarmListManager.getInstance().selectedTone == null)
+          PredefinedSpacing(padding: PredefinedSpacing.paddingExtraSmall())
+        ],
+        if (widget.showSliders &&
+            AlarmListManager.getInstance().selectedTone == null)
           IntensityDurationSelector(
             controlsContainer: widget.controlsContainer,
             maxDuration: widget.durationLimit,
             maxIntensity: widget.intensityLimit,
             onSet: widget.onSet,
-            showSeperateIntensities: AlarmListManager.getInstance().settings.useSeperateSliders,
+            showSeperateIntensities:
+                AlarmListManager.getInstance().settings.useSeperateSliders,
             allowRandom: true,
             key: ValueKey(widget.manager.settings.useRangeSliderForDuration
                     .toString() +
                 widget.manager.settings.useRangeSliderForIntensity.toString()),
           ),
         // Delay options
-        if (widget.manager.settings.showRandomDelay)
+        if (widget.manager.settings.showRandomDelay && widget.showActions)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             spacing: 5,
@@ -872,7 +920,8 @@ class ShockingControlsState extends State<ShockingControls>
           ),
 
         if (progressCircularController == null &&
-            delayVibrationController == null)
+            delayVibrationController == null &&
+            widget.showActions)
           AlarmListManager.getInstance().selectedTone == null
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -947,7 +996,7 @@ class ShockingControlsState extends State<ShockingControls>
                               actionDuration),
                 )
               ]),
-        SizedBox.fromSize(
+        if(widget.showActions) SizedBox.fromSize(
           size: Size.fromHeight(50),
           child: IconButton(
             onPressed: () {
