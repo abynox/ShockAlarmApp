@@ -28,7 +28,7 @@ packages:
   battery_optimization_helper:
     dependency: "direct main"
     description:
-      path: "../battery_optimization_helper"
+      path: battery_optimization_helper
       relative: true
     source: path
     version: "0.0.5"

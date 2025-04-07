@@ -52,7 +52,7 @@ dependencies:
   wakelock_plus: ^1.2.10
   web_socket_channel: ^2.4.5
   battery_optimization_helper:
-    path: ../battery_optimization_helper
+    path: ./battery_optimization_helper
 
 dev_dependencies:
   flutter_test:
