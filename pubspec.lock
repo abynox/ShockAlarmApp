@@ -28,10 +28,9 @@ packages:
   battery_optimization_helper:
     dependency: "direct main"
     description:
-      name: battery_optimization_helper
-      sha256: e6113c2ab19d8fd68c8e218352bce96a748e24954ba42494c36b28ed1f344ec1
-      url: "https://pub.dev"
-    source: hosted
+      path: "../battery_optimization_helper"
+      relative: true
+    source: path
     version: "0.0.5"
   boolean_selector:
     dependency: transitive
@@ -417,7 +416,7 @@ packages:
     source: hosted
     version: "11.4.0"
   permission_handler_android:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: permission_handler_android
       sha256: d3971dcdd76182a0c198c096b5db2f0884b0d4196723d21a866fc4cdea057ebc
@@ -862,5 +861,5 @@ packages:
     source: hosted
     version: "6.5.0"
 sdks:
-  dart: ">=3.7.2 <4.0.0"
+  dart: ">=3.7.0 <4.0.0"
   flutter: ">=3.29.2"
