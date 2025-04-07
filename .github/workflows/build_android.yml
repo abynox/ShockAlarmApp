@@ -38,7 +38,6 @@ jobs:
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.ALIAS }}" >> android/key.properties
           echo "storeFile=../android.keystore" >> android/key.properties
-      - run: flutter run --verbose
       - run: flutter build apk
       - name: Rename apk
         id: rename_apk

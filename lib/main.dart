@@ -4,6 +4,7 @@ import 'package:battery_optimization_helper/battery_optimization_helper.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shock_alarm_app/stores/alarm_store.dart';
@@ -23,17 +24,16 @@ bool isAndroid() {
 }
 
 Future requestPermissions() async {
-  /*
+  
   if (!isAndroid()) return;
-  final status = await Permission.scheduleExactAlarm.status;
-  print('Schedule exact alarm permission: $status.');
-  if (status.isDenied) {
-    print('Requesting schedule exact alarm permission...');
-    final res = await Permission.scheduleExactAlarm.request();
-    print(
-        'Schedule exact alarm permission ${res.isGranted ? '' : 'not'} granted.');
-  }
-  */
+  try {
+      final bool granted = await MethodChannel('shock-alarm/permissions').invokeMethod('requestScheduleExactAlarmPermission');
+      return granted;
+    } on PlatformException catch (e) {
+      print("Failed to request permission: '${e.message}'.");
+      return false;
+    }
+  
 }
 
 void initNotification(AlarmListManager manager) async {
