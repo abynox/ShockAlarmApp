@@ -9,7 +9,9 @@ import 'package:shock_alarm_app/components/qr_card.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
+import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/screen_selector.dart';
+import 'package:shock_alarm_app/screens/settings/settings_screen.dart';
 import 'package:shock_alarm_app/screens/share_links/share_link_edit/share_link_edit.dart';
 import 'package:shock_alarm_app/screens/shares/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
@@ -116,15 +118,48 @@ class ShareLinksScreen extends StatefulWidget {
       AlarmListManager manager, BuildContext context, Function reloadState) {
     return FloatingActionButton(
         onPressed: () {
+          if(!AlarmListManager.supportsWs()) {
+            if (!manager.hasValidAccount()) {
+              ErrorDialog.show("Not logged in",
+                  "Login to OpenShock to create a Share Link. To do this visit the settings page.");
+              return;
+            }
+            showDialog(context: context, builder: (builder) => ShareLinkCreationDialog());
+          }
           showDialog(
             context: context,
-            builder: (context) {
-              if (!manager.hasValidAccount()) {
-                ErrorDialog.show("Not logged in",
-                    "Login to OpenShock to create a Share Link. To do this visit the settings page.");
-              }
-              return ShareLinkCreationDialog();
-            },
+            builder: (context) => AlertDialog.adaptive(
+              title: Text("Add Share Link"),
+              content: Text("What do you want to do?"),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await SettingsScreen.showShareLinkPopup();
+                      InfoDialog.show("Share Link Info",
+                          "Share links you add to ShockAlarm are shown in the settings tab. From there you can see which ones you added and remove them if you don't need them anymore.\n\nThe shockers from the share link are shown in the devices tab.");
+                    },
+                    child: Text("Add share link")),
+                TextButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      if (!manager.hasValidAccount()) {
+                        ErrorDialog.show("Not logged in",
+                            "Login to OpenShock to create a Share Link. To do this visit the settings page.");
+                        return;
+                      }
+                      showDialog(
+                          context: context,
+                          builder: (context) => ShareLinkCreationDialog());
+                    },
+                    child: Text("Create new")),
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Cancel")),
+              ],
+            ),
           );
         },
         child: Icon(Icons.add));
@@ -194,6 +229,24 @@ class ShareLinkItem extends StatelessWidget {
       {Key? key, required this.shareLink, required this.reloadMethod})
       : super(key: key);
 
+  void showQr(bool shockAlarm, BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog.adaptive(
+          title: Text('QR Code for ${shareLink.name}'),
+          content: QrCard(data: shockAlarm ? shareLink.getShockAlarmLink() : shareLink.getLink()),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Close'))
+          ],
+        );
+      });
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
@@ -230,21 +283,29 @@ class ShareLinkItem extends StatelessWidget {
                 }),
             IconButton(
                 onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog.adaptive(
-                          title: Text('QR Code for ${shareLink.name}'),
-                          content: QrCard(data: shareLink.getLink()),
-                          actions: [
-                            TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text('Close'))
+                  showDialog(context: context, builder: (context) => AlertDialog.adaptive(
+                        title: Text('Share Link QR Code'),
+                        content: Column(
+                          spacing: 10,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            FilledButton(onPressed: () {
+                              showQr(true, context);
+                            }, child: Text("For ShockAlarm users")),
+                            FilledButton(onPressed: () {
+                              showQr(false, context);
+                            }, child: Text("Generic OpenShock Link"))
                           ],
-                        );
-                      });
+                        ),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('Close'))
+                        ],
+                      ));
+                  
                 },
                 icon: Icon(Icons.qr_code)),
             IconButton(

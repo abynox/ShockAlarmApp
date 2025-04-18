@@ -159,12 +159,12 @@ class ErrorContainer<T> {
 class AlarmServerClient {
   Future<ErrorContainer<Token>> loginOrRegister(String serverAddress, String username, String password, bool register) async {
     Token t = Token(DateTime.now().microsecondsSinceEpoch, "", server: serverAddress);
-    t.tokenType = TokenType.alarmserver;
+    t.flavor = TokenFlavor.alarmserver;
     var response = await PostRequest(t, "/api/v1/user/${register ? "register" : "login"}", jsonEncode({"Username": username, "Password": password}));
     if (response.statusCode != 200) {
       return ErrorContainer(null, response.body);
     }
-    t.isSession = true;
+    t.type = TokenType.session;
     t.token = jsonDecode(response.body)["SessionId"];
     response = await GetRequest(t, "/api/v1/user/me");
     if (response.statusCode != 200) {

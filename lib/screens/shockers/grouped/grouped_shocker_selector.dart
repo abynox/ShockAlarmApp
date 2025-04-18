@@ -98,7 +98,7 @@ class GroupedShockerSelectorState extends State<GroupedShockerSelector> {
         child: ConstrainedContainer(
       child: groupedShockers.isEmpty
           ? Text(
-              AlarmListManager.getInstance().hasValidAccount()
+              AlarmListManager.getInstance().hasAccountWithShockers()
                   ? "No shockers assosciated with account. Create them!"
                   : "You're not logged in",
               style: t.textTheme.headlineMedium,

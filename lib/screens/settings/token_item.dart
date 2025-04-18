@@ -33,7 +33,7 @@ class TokenItemState extends State<TokenItem> {
 
   void _delete() async {
     deleting = true;
-    if (token.tokenType == TokenType.openshock) {
+    if (token.flavor == TokenFlavor.openshock) {
       String? error = await manager.deleteToken(token);
       await manager.updateShockerStore();
       if (error != null) {
@@ -42,16 +42,16 @@ class TokenItemState extends State<TokenItem> {
         });
         ErrorDialog.show("Failed to sign out", error);
       }
-    } else if (token.tokenType == TokenType.alarmserver) {
+    } else if (token.flavor == TokenFlavor.alarmserver) {
       await manager.deleteAlarmServerToken(token);
     }
     onRebuild();
   }
 
   void _save() {
-    if (token.tokenType == TokenType.openshock)
+    if (token.flavor == TokenFlavor.openshock)
       manager.saveToken(token);
-    else if (token.tokenType == TokenType.alarmserver)
+    else if (token.flavor == TokenFlavor.alarmserver)
       manager.saveAlarmServerToken(token);
     expanded = false;
     onRebuild();
@@ -95,23 +95,27 @@ class TokenItemState extends State<TokenItem> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  if (token.isSession)
+                  if (token.type == TokenType.session)
                     Text(
                       token.invalidSession
                           ? "Invalid session, log in again "
                           : "Logged in as ",
                     ),
-                  if (!token.isSession)
+                  if (token.type == TokenType.token)
                     Text(
                       "Api Token",
                     ),
+                  if (token.type == TokenType.sharelink)
+                    Text(
+                      "Share Link", 
+                    ),
                   Text(
-                    token.name,
+                    token.type == TokenType.sharelink ? "${token.name} (${token.userId})" : token.name,
                     style: t.textTheme.headlineSmall
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    "${token.tokenType == TokenType.openshock ? "OpenShock" : "AlarmServer"} (${token.server.replaceAll("http://", "").replaceAll("https://", "")})",
+                    "${token.flavor == TokenFlavor.openshock ? "OpenShock" : "AlarmServer"} (${token.server.replaceAll("http://", "").replaceAll("https://", "")})",
                     style: t.textTheme.labelSmall,
                   ),
                   if (token.serverUnreachable)
@@ -139,7 +143,7 @@ class TokenItemState extends State<TokenItem> {
                             : Icons.arrow_downward_rounded)),
                   if (!manager.settings.allowTokenEditing && deleting)
                     CircularProgressIndicator(),
-                  if (token.tokenType == TokenType.openshock && token.isSession)
+                  if (token.flavor == TokenFlavor.openshock && token.type == TokenType.session)
                     IconButton(
                       icon: Icon(Icons.person),
                       onPressed: () async {
@@ -174,10 +178,10 @@ class TokenItemState extends State<TokenItem> {
                   children: <Widget>[
                     Text("Is session"),
                     Switch(
-                      value: token.isSession,
+                      value: token.type == TokenType.session,
                       onChanged: (value) {
                         setState(() {
-                          token.isSession = value;
+                          token.type = value ? TokenType.session : TokenType.token;
                         });
                       },
                     ),

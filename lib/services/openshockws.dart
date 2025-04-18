@@ -33,16 +33,21 @@ class OpenShockWS {
   Future startConnection() async {
     try {
       final httpClient = _HttpClient(headers: {
-        'OpenShockSession': t.token,
+        if(t.type != TokenType.sharelink) 'OpenShockSession': t.token,
         'User-Agent': GetUserAgent(),
       });
+      String url = '${t.server}/1/hubs/user';
+      if(t.type == TokenType.sharelink){
+        url = '${t.server}/1/hubs/share/link/${t.token}?name=${t.userId}';
+      }
       connection = HubConnectionBuilder()
           .withUrl(
-              '${t.server}/1/hubs/user',
+              url,
               HttpConnectionOptions(
                   logging: (level, message) => print(message),
                   client: httpClient,
                   skipNegotiation: true,
+                  logMessageContent: true,
                   transport: HttpTransportType.webSockets))
           .withAutomaticReconnect(
               [0, 1000, 2000, 5000, 10000, 10000, 15000, 30000, 60000]).build();
@@ -102,6 +107,12 @@ class OpenShockWS {
     if (!await establishConnection(0)) return false;
     try {
       // Wrap the Map in a List
+      if(t.type == TokenType.sharelink) {
+        // Share links don't support ControlV2
+        await connection!.invoke('Control',
+            args: [controls.map((e) => e.toJsonWS()).toList()]);
+        return true;
+      }
       await connection!.invoke('ControlV2',
           args: [controls.map((e) => e.toJsonWS()).toList(), customName]);
     } catch (e) {

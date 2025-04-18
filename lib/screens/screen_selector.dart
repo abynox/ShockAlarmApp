@@ -170,7 +170,7 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
       if (index != -1) {
         _selectedIndex = min(index, screens.length);
       } else {
-        if (!manager.hasValidAccount()) _selectedIndex = 3;
+        if (!manager.hasAccountWithShockers()) _selectedIndex = 3;
         if (!supportsAlarms) _selectedIndex -= 1;
       }
       setState(() {});
@@ -198,7 +198,55 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
     if (parts.length < 4) return;
     String action = parts[2];
     String code = parts[3];
-    if (action == "sharecode") {
+    if(action == "sharelink") {
+      // openshock://sharelink/code?name=name&server=server
+      print("Sharelink url received");
+      print("Url: $url");
+
+      Uri uri = Uri.parse(url);
+      String? name = uri.queryParameters['name'];
+      name ??= "Unknown";
+      String? host = uri.queryParameters['server'];
+      host ??= "https://api.openshock.app";
+      String shareId = uri.pathSegments[0];
+      TextEditingController nameController = TextEditingController();
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog.adaptive(
+              title: Text("Add share link?"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                  "This will allow you to control someone elses shocker without requiring to be logged into OpenShock.\n\nName: $name\nOpenShock instance: $host\nShare Id: $shareId"),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: "Your name",
+                    ),
+                    controller: nameController,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Close")),
+                TextButton(
+                    onPressed: () async {
+                      if(await SettingsScreen.AddShareLink(nameController.text, host!, shareId)) {
+                        Navigator.of(context).pop();
+                        manager.reloadAllMethod!();
+                      }
+                    },
+                    child: Text("Redeem"))
+              ],
+            );
+          });
+    }
+    else if (action == "sharecode") {
       showDialog(
           context: context,
           builder: (context) {

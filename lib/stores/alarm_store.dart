@@ -9,36 +9,59 @@ import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../main.dart';
 
-enum TokenType {
+enum TokenFlavor {
   openshock,
   alarmserver
 }
 
+enum TokenType {
+  session,
+  token,
+  sharelink
+}
+
 class Token {
-  Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name="", this.isSession = false, this.userId = "", this.invalidSession = false});
+  Token(this.id, this.token, {this.server = "https://api.openshock.app", this.name="", this.type = TokenType.token, this.userId = "", this.invalidSession = false});
 
   int id;
 
-  TokenType tokenType = TokenType.openshock;
+  TokenFlavor flavor = TokenFlavor.openshock;
   String token;
   String server;
-  bool isSession = false;
+  TokenType type = TokenType.token;
   String name = "";
-  String userId = ""; // may also be token id for alarmserver
+  String userId = ""; // may also be token id for alarmserver or displayName for tokens
 
   bool invalidSession = false;
 
   bool serverUnreachable = false;
 
   static Token fromJson(token) {
-    Token t = Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "", isSession: token["isSession"] ?? false, userId: token["userId"] ?? "", invalidSession: token["invalidSession"] ?? false);
-    if(token["tokenType"] != null)
-      t.tokenType = token["tokenType"] == -1 ? TokenType.openshock : TokenType.values[token["tokenType"]];
+    Token t = Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "", userId: token["userId"] ?? "", invalidSession: token["invalidSession"] ?? false);
+    
+    if(token["tokenType"] != null) {
+      // support old tokens
+      token["flavor"] = token["tokenType"];
+    }
+    if(token["flavor"] != null) {
+      t.flavor = token["flavor"] == -1 ? TokenFlavor.openshock : TokenFlavor.values[token["flavor"]];
+    }
+    if(token["isSession"] != null) {
+      // support old tokens
+      t.type = token["isSession"] ?? false ? TokenType.session : TokenType.token;
+    }
+    if(token["type"] != null) {
+      t.type = token["type"] == -1 ? TokenType.token : TokenType.values[token["type"]];
+    }
     return t;
   }
 
   Map<String, dynamic> toJson() {
-    return {"id": id, "token": token, "server": server, "name": name, "isSession": isSession, "userId": userId, "invalidSession": invalidSession, "tokenType": tokenType.index};
+    return {"id": id, "token": token, "server": server, "name": name, "type": type.index, "userId": userId, "invalidSession": invalidSession, "flavor": flavor.index};
+  }
+
+  bool isSession() {
+    return type == TokenType.session;
   }
 }
 

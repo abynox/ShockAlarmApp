@@ -203,7 +203,7 @@ class ShockerScreen extends StatefulWidget {
           showDialog(
             context: context,
             builder: (context) {
-              if (!manager.hasValidAccount()) {
+              if (!manager.hasAccountWithShockers()) {
                 return AlertDialog.adaptive(
                   title: Text("You're not logged in"),
                   content: Text(

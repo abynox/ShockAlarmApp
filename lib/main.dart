@@ -16,7 +16,7 @@ const String issues_url =
     "https://github.com/ComputerElite/ShockAlarmApp/issues";
 
 String GetUserAgent() {
-  return "ShockAlarm/0.2.8";
+  return "ShockAlarm/0.3.0";
 }
 
 bool isAndroid() {

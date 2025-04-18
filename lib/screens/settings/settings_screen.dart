@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/predefined_spacing.dart';
@@ -22,6 +25,96 @@ class SettingsScreen extends StatefulWidget {
   final AlarmListManager manager;
 
   const SettingsScreen({Key? key, required this.manager}) : super(key: key);
+
+  static Future<bool> AddShareLink(String displayName, String server, String code) async {
+    if(displayName.isEmpty) {
+      ErrorDialog.show("Error", "Please enter a display name for the share link");
+      return false;
+    }
+    LoadingDialog.show("Adding share link");
+    Token t = Token(DateTime.now().millisecondsSinceEpoch, code, server: server, type: TokenType.sharelink);
+    t.userId = displayName;
+    TokenGetResponseType validity = await OpenShockClient().setInfoOfToken(t);
+    if(validity != TokenGetResponseType.success) {
+      Navigator.of(navigatorKey.currentContext!).pop();
+      ErrorDialog.show("Error", "Invalid code or server: $validity");
+      return false;
+    }
+    AlarmListManager.getInstance().saveToken(t);
+    Navigator.of(navigatorKey.currentContext!).pop();
+    return true;
+  }
+
+  static void extractLink(String value, TextEditingController serverController, TextEditingController codeController) {
+    if(value.endsWith("/")) {
+        value = value.substring(0, value.length - 1);
+      }
+      // add "api." before link
+      String newLink = "${value.split("://").first}://api.${value.split("://").last}";
+      // remove everything after the third /
+      newLink = newLink.split("/").sublist(0, 3).join("/");
+      String code = value.split("/").last;
+      serverController.text = newLink;
+      codeController.text = code;
+  }
+
+  static Future showShareLinkPopup() async {
+    TextEditingController codeController = TextEditingController();
+    TextEditingController serverController = TextEditingController();
+    TextEditingController linkController = TextEditingController();
+    TextEditingController nameController = TextEditingController();
+    String clipboardText = (await Clipboard.getData(Clipboard.kTextPlain))?.text ?? "";
+    if (clipboardText.startsWith("https://") || clipboardText.startsWith("http://")) {
+      linkController.text = clipboardText;
+      extractLink(clipboardText, serverController, codeController);
+    }
+    return showDialog(
+        context: navigatorKey.currentContext!,
+        builder: (BuildContext context) {
+          return AlertDialog.adaptive(
+            title: Text("Add share link"),
+            content: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  TextField(
+                    decoration: InputDecoration(labelText: "Link"),
+                    controller: linkController,
+                    onChanged: (value) {
+                      extractLink(value, serverController, codeController);
+                    },
+                  ),
+                  TextField(
+                    decoration: InputDecoration(labelText: "Api url"),
+                    controller: serverController,
+                  ),
+                  TextField(
+                    decoration: InputDecoration(labelText: "Code"),
+                    controller: codeController,
+                  ),
+                  TextField(
+                    decoration: InputDecoration(labelText: "Your name"),
+                    controller: nameController,
+                  ),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Cancel")),
+              TextButton(
+                  onPressed: () async {
+                    if(await SettingsScreen.AddShareLink(nameController.text, serverController.text, codeController.text)) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text("Add"))
+            ],
+          );
+        });
+  }
 
   @override
   State<StatefulWidget> createState() => _SettingsScreenState();
@@ -88,7 +181,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           .deleteAlarmServerToken(populatedToken.value!);
       return;
     }
-    if (OpenShockToken.isSession) {
+    if (OpenShockToken.type == TokenType.session) {
       // Ask whether to create a new token
       showDialog(
           context: context,
@@ -297,7 +390,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog.adaptive(
-            title: Text("Login to OpenShock"),
+            title: Text("Log in to OpenShock"),
             content: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
@@ -347,7 +440,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog.adaptive(
-            title: Text("Login to OpenShock"),
+            title: Text("Log in to OpenShock"),
             content: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
@@ -435,7 +528,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog.adaptive(
-            title: Text("Login to OpenShock"),
+            title: Text("Log in to OpenShock"),
             content: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
@@ -499,6 +592,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         });
   }
 
+  
+
   @override
   Widget build(BuildContext context) {
     AlarmListManager.getInstance().reloadAllMethod = () {
@@ -551,14 +646,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
         PredefinedSpacing(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
+        Wrap(
+          alignment: WrapAlignment.center,
           spacing: 10,
           children: [
             if (widget.manager
                     .getTokens()
-                    .where((x) => !x.invalidSession)
+                    .where((x) => !x.invalidSession && x.type != TokenType.sharelink)
                     .isEmpty ||
                 widget.manager.settings.allowMultiServerLogin)
               FilledButton(
@@ -576,6 +670,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }
                 },
                 child: Text("Log in to OpenShock",
+                    style:
+                        TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),
+              ),
+              if(AlarmListManager.supportsWs()) FilledButton(
+                onPressed: () async {
+                  await showDialog(
+                      context: context,
+                      builder: (context) => ShockDisclaimer());
+                  AlarmListManager.getInstance().reloadAllMethod = () {
+                    setState(() {});
+                  };
+                  SettingsScreen.showShareLinkPopup();
+                },
+                child: Text("Add share link",
                     style:
                         TextStyle(fontSize: t.textTheme.titleMedium!.fontSize)),
               ),

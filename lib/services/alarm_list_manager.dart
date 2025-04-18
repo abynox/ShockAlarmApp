@@ -7,7 +7,6 @@ import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
 import 'package:shock_alarm_app/services/settings.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../stores/alarm_store.dart';
 import 'dart:convert';
@@ -242,6 +241,8 @@ class AlarmListManager {
         }
       }
       for (var shocker in devices.shockers) {
+        shocker.hubReference = hubs
+            .firstWhere((element) => element.id == shocker.hubId, orElse: () => Hub()); // if this breaks stuff it ain't my fault uwu
         if (shockers.indexWhere((element) => element.id == shocker.id) == -1) {
           shockers.add(shocker);
         }
@@ -440,7 +441,7 @@ class AlarmListManager {
 
   Future<String?> deleteToken(Token token) async {
     String? error;
-    if (token.isSession) {
+    if (token.type == TokenType.session) {
       // Invalidate session
       error = await OpenShockClient().logout(token);
       if (error != null) return error;
@@ -544,9 +545,10 @@ class AlarmListManager {
     return OpenShockClient().deleteShareCode(shareCode, this);
   }
 
-  Token? getAnyUserToken() {
+  Token? getAnyUserToken(bool shareLinksAllowed) {
     for (var token in getTokens()) {
       if (token.invalidSession) continue;
+      if (token.type == TokenType.sharelink && !shareLinksAllowed) continue;
       if (token.name.isNotEmpty) {
         return token;
       }
@@ -559,6 +561,7 @@ class AlarmListManager {
     List<Token> validTokens = [];
     for (var token in getTokens()) {
       if (token.invalidSession) continue;
+      if(token.type == TokenType.sharelink) continue;
       if (token.name.isNotEmpty) {
         validTokens.add(token);
       }
@@ -611,7 +614,10 @@ class AlarmListManager {
   }
 
   bool hasValidAccount() {
-    return getAnyUserToken() != null;
+    return getAnyUserToken(false) != null;
+  }
+  bool hasAccountWithShockers() {
+    return getAnyUserToken(true) != null;
   }
 
   Future<String?> redeemShareCode(String code) {
@@ -696,6 +702,7 @@ class AlarmListManager {
       if (!stopExisting) return;
       await ws[t.id]!.stopConnection();
     }
+
     ws[t.id] = OpenShockWS(t);
     await ws[t.id]!.startConnection();
     ws[t.id]?.addMessageHandler("DeviceStatus", (List<dynamic>? list) {
@@ -861,7 +868,7 @@ class AlarmListManager {
 
   Future<TokenGetResponseType> loginToken(String serverAddress, String token) async {
     Token tokentoken = Token(DateTime.now().millisecondsSinceEpoch, token,
-        server: serverAddress, isSession: false);
+        server: serverAddress, type: TokenType.token);
     OpenShockClient client = OpenShockClient();
     TokenGetResponseType worked = await client.setInfoOfToken(tokentoken);
     if (worked == TokenGetResponseType.success) {

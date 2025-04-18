@@ -20,9 +20,30 @@ enum TokenGetResponseType { success, tokenExpired, serverUnreachable }
 
 class OpenShockClient {
   Future<DeviceContainer> GetShockersForToken(Token t) async {
-    var response = await GetRequest(t, "/1/shockers/own");
     List<Shocker> shockers = [];
     List<Hub> hubs = [];
+    if(t.type == TokenType.sharelink) {
+      var response = await GetRequest(t, "/1/public/shares/links/${t.token}");
+      if(response.statusCode != 200) {
+        t.invalidSession = true;
+        return DeviceContainer([], []);
+      }
+      Map<String, dynamic> link = jsonDecode(response.body)["data"];
+      for(Map<String, dynamic> device in link["devices"]) {
+        Hub h = Hub.fromOpenShockDevice(OpenShockDevice.fromJson(device));
+        h.apiTokenId = t.id;
+        hubs.add(h);
+        for(Map<String, dynamic> shocker in device["shockers"]) {
+          Shocker s = Shocker.fromOpenShockShocker(OpenShockShocker.fromJson(shocker));
+          s.hubReference = h;
+          s.hubId = device["id"];
+          s.apiTokenId = t.id;
+          shockers.add(s);
+        }
+      }
+      return DeviceContainer(hubs, shockers);
+    }
+    var response = await GetRequest(t, "/1/shockers/own");
 
     if (response.statusCode == 200) {
       OpenShockDevicesData deviceData =
@@ -97,7 +118,7 @@ class OpenShockClient {
     try {
       var url = Uri.parse(t.server + path);
       return await http.get(url, headers: {
-        if (t.isSession)
+        if (t.isSession())
           "Cookie": "openShockSession=${t.token}"
         else
           "OpenShockToken": t.token,
@@ -113,7 +134,7 @@ class OpenShockClient {
       var url = Uri.parse(t.server + path);
       return await http.post(url,
           headers: {
-            if (t.isSession)
+            if (t.isSession())
               "Cookie": "openShockSession=${t.token}"
             else
               "OpenShockToken": t.token,
@@ -131,7 +152,7 @@ class OpenShockClient {
       var url = Uri.parse(t.server + path);
       return await http.patch(url,
           headers: {
-            if (t.isSession)
+            if (t.isSession())
               "Cookie": "openShockSession=${t.token}"
             else
               "OpenShockToken": t.token,
@@ -149,7 +170,7 @@ class OpenShockClient {
       var url = Uri.parse(t.server + path);
       return await http.put(url,
           headers: {
-            if (t.isSession)
+            if (t.isSession())
               "Cookie": "openShockSession=${t.token}"
             else
               "OpenShockToken": t.token,
@@ -167,7 +188,7 @@ class OpenShockClient {
       var url = Uri.parse(t.server + path);
       return await http.delete(url,
           headers: {
-            if (t.isSession)
+            if (t.isSession())
               "Cookie": "openShockSession=${t.token}"
             else
               "OpenShockToken": t.token,
@@ -210,7 +231,7 @@ class OpenShockClient {
   Future<bool> sendControls(
       Token t, List<Control> list, AlarmListManager manager,
       {String? customName, bool useWs = true}) async {
-    if (useWs) {
+    if (useWs || t.type == TokenType.sharelink) { // share links must use ws atm as no http endpoint authentication exists afaik
       if (manager.ws[t.id] == null) {
         await manager.startWS(t);
       }
@@ -226,6 +247,20 @@ class OpenShockClient {
   }
 
   Future<TokenGetResponseType> setInfoOfToken(Token t) async {
+    if(t.type == TokenType.sharelink) {
+
+      var response = await GetRequest(t, "/1/public/shares/links/${t.token}");
+      
+      if (response.statusCode == 401) {
+        return TokenGetResponseType.tokenExpired;
+      }
+      if (response.statusCode == 599) {
+        return TokenGetResponseType.serverUnreachable;
+      }
+      var data = jsonDecode(response.body);
+      t.name = data["data"]["name"];
+      return TokenGetResponseType.success;
+    }
     var response = await GetRequest(t, "/1/users/self");
     String name = "Unknown";
     String id = "";
@@ -246,7 +281,7 @@ class OpenShockClient {
       var data = jsonDecode(response.body);
       tokenName = data["name"];
     }
-    t.name = t.isSession ? "$name" : "$name ($tokenName)";
+    t.name = t.isSession() ? name : "$name ($tokenName)";
     t.userId = id;
     return TokenGetResponseType.success;
   }
@@ -268,7 +303,7 @@ class OpenShockClient {
         if (element.startsWith("openShockSession=")) {
           var sessionId = element.substring("openShockSession=".length);
           token = Token(DateTime.now().millisecondsSinceEpoch, sessionId,
-              server: serverAddress, isSession: true);
+              server: serverAddress, type: TokenType.session);
         }
       });
     }
@@ -924,6 +959,17 @@ class OpenShockShareLink {
       host = host.substring(0, host.length - 1);
     }
     return "$host/s/$id";
+  }
+
+  getShockAlarmLink() {
+    String host = "https://openshock.app";
+    if (tokenReference != null) {
+      host = tokenReference!.server;
+    }
+    if (host.endsWith("/")) {
+      host = host.substring(0, host.length - 1);
+    }
+    return "openshock://sharelink/$id?name=${Uri.encodeComponent(name)}&server=${Uri.encodeComponent(host)}";
   }
 
   OpenShockShareLink.fromJson(Map<String, dynamic> json,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/page_padding.dart';
@@ -28,15 +29,17 @@ class _UpdateHubScreenState extends State<UpdateHubScreen> {
   @override
   void initState() {
     super.initState();
-    FirmwareGetter.getAvailableFirmware().then((value) {
-      if(!mounted) return;
-      setState(() {
-        firmware = value;
-      });
+    updateData();
+  }
+
+  Future updateData() async {
+    firmware = await FirmwareGetter.getAvailableFirmware();
+    setState(() {
     });
-    OpenShockClient().getOTAUpdateHistory(widget.hub).then((value) {
-      updates = value;
+    updates = await OpenShockClient().getOTAUpdateHistory(widget.hub);
+    setState(() {
     });
+    
   }
 
   void startUpdate(String version) async {
@@ -88,7 +91,7 @@ class _UpdateHubScreenState extends State<UpdateHubScreen> {
         body: PagePadding(
             child: ConstrainedContainer(
                 child: SingleChildScrollView(
-          child: Column(
+          child: DesktopMobileRefreshIndicator(onRefresh: updateData, child: Column(
             children: [
               PaddedCard(
                   child: Column(
@@ -115,8 +118,8 @@ class _UpdateHubScreenState extends State<UpdateHubScreen> {
                       Text(widget.hub.name, style: t.textTheme.headlineMedium),
                     ],
                   ),
-                      Text(widget.hub.firmwareVersion,
-                          style: t.textTheme.labelLarge)
+                  Text(widget.hub.firmwareVersion,
+                      style: t.textTheme.labelLarge)
                 ],
               )),
               PredefinedSpacing(),
@@ -194,7 +197,7 @@ class _UpdateHubScreenState extends State<UpdateHubScreen> {
                   ));
                 })
             ],
-          ),
+          ),)
         ))));
   }
 }
