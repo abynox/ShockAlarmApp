@@ -19,4 +19,11 @@ class ErrorDialog {
           );
         });
   }
+
+  static void showDelayed(String title, String message) {
+    // Cursed, but doesn't throw errors when building
+    Future.delayed(const Duration(milliseconds: 1), () {
+      show(title, message);
+    });
+  }
 }

@@ -96,16 +96,6 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    if(!AlarmListManager.getInstance().hasValidAccount()) {
-      ErrorDialog.show("Not logged in", "The Bottom screen requires being logged in to show useful information. Please log in to your account.");
-      return;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     Shocker limitedShocker = AlarmListManager.getInstance().getSelectedShockerLimits();
     return Scaffold(
