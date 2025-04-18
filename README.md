@@ -6,18 +6,18 @@
     alt="Get it on F-Droid"
     height="80">](https://f-droid.org/packages/de.computerelite.shockalarm)
 
-A powerfull app for controling [OpenShock](https://openshock.org/) shockers and setting alarms with custom tones.
+A powerful app for controlling [OpenShock](https://openshock.org/) shockers and setting alarms with custom tones.
 
 A web version (for IOS, ...) can be found [here](https://computerelite.github.io/ShockAlarmApp/) (does not support live controls).
 
 # Features
 ShockAlarm is a powerful tool for controlling your Shockers via OpenShock. It allows you to fully manage your shockers, logs, shares, hubs, share links, tokens and sessions. On top it also allows you to seamlessly use ShareLinks.
 
-There is advanced functionaity like controling multiple shockers at the same time, specifying a random interval for intensity, duration and a delay, live controls with patterns and alarms.
+There is advanced functionality like controlling multiple shockers at the same time, specifying a random interval for intensity, duration and a delay, live controls with patterns and alarms.
 
 It's fully material you themed just like the standard Android apps you're already used to and provides a responsive ui with a nice design.
 
-Furthermore it fixes some layout flaws of the official OpenShock Frontend like having shared and own shockers in seperate tabs (which is annoying). On top it also has lots of info buttons you can press to get more insight on what something does.
+Furthermore it fixes some layout flaws of the official OpenShock Frontend like having shared and own shockers in separate tabs (which is annoying). On top it also has lots of info buttons you can press to get more insight on what something does.
 
 You can also log in on multiple OpenShock instances at once. ShockAlarm will show all shockers from all instances seamlessly at a glance!
 
@@ -105,8 +105,8 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Improved login for web (aka using token requests)
 - [x] Web support (alarms not working)
 - [x] Linux support (alarms not working)
-- [x] Alarm support for linux and web via https://dev1.rui2015.me
-- [x] Add seperate slider for shock and vibrate intensity
+- [x] Alarm support for Linux and web via https://dev1.rui2015.me
+- [x] Add separate slider for shock and vibrate intensity
 - [x] Add Alarm tone support for AlarmServer
 - [x] Add info about alarm server
 - [x] Code cleanup, add multiple predefined dialogs
