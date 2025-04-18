@@ -29,10 +29,6 @@ class _BottomScreenState extends State<BottomScreen>
   @override
   void initState() {
     super.initState();
-    if(!AlarmListManager.getInstance().hasValidAccount()) {
-      ErrorDialog.show("Not logged in", "The Bottom screen requires being logged in to show useful information. Please log in to your account.");
-      return;
-    }
     AlarmListManager.getInstance().reloadShockerLogs = updateLogs;
     updateLogs();
     _controller = AnimationController(
@@ -50,6 +46,10 @@ class _BottomScreenState extends State<BottomScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
     WakelockPlus.enable();
+    if(!AlarmListManager.getInstance().hasValidAccount()) {
+      ErrorDialog.show("Not logged in", "The Bottom screen requires being logged in to show useful information. Please log in to your account.");
+      return;
+    }
   }
 
   void updateLogs() async {
