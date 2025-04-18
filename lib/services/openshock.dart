@@ -998,6 +998,7 @@ class OpenShockShareLink {
         }
       }
     }
+    tokenId = tokenReference?.id;
     name = json["name"];
     if (json["tokenId"] != null) {
       tokenId = json["tokenId"];
