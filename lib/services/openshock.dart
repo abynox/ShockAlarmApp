@@ -34,7 +34,7 @@ class OpenShockClient {
         h.apiTokenId = t.id;
         hubs.add(h);
         for(Map<String, dynamic> shocker in device["shockers"]) {
-          Shocker s = Shocker.fromOpenShockShocker(OpenShockShocker.fromJson(shocker));
+          Shocker s = Shocker.fromOpenShockShocker(OpenShockShocker.fromJson(shocker), overwriteIsPaused: true);
           s.hubReference = h;
           s.hubId = device["id"];
           s.apiTokenId = t.id;
@@ -1450,7 +1450,7 @@ class Shocker {
     return levels.join(", ");
   }
 
-  Shocker.fromOpenShockShocker(OpenShockShocker shocker) {
+  Shocker.fromOpenShockShocker(OpenShockShocker shocker, {bool overwriteIsPaused = false}) {
     id = shocker.id;
     name = shocker.name;
 
@@ -1464,6 +1464,9 @@ class Shocker {
       }
       if (shocker.paused! & 4 != 0) {
         pauseReasons.add(PauseReason.shareLink);
+      }
+      if(overwriteIsPaused) {
+        paused = pauseReasons.isNotEmpty;
       }
     }
 
