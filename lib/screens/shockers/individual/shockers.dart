@@ -370,6 +370,7 @@ class ShockerScreenState extends State<ShockerScreen> {
               Center(
                   child: Wrap(
                 spacing: 5,
+                alignment: WrapAlignment.center,
                 runAlignment: WrapAlignment.start,
                 children: manager.enabledHubs.keys.map<FilterChip>((hub) {
                   return FilterChip(

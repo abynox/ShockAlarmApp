@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/predefined_spacing.dart';
+import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/screens/shockers/grouped/grouped_shocker_selector.dart';
 import 'package:shock_alarm_app/components/page_padding.dart';
 import 'package:shock_alarm_app/screens/shockers/shocker_item.dart';
@@ -92,6 +93,16 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
     runningId += 1;
     running = false;
     setState(() {});
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if(!AlarmListManager.getInstance().hasValidAccount()) {
+      ErrorDialog.show("Not logged in", "The Bottom screen requires being logged in to show useful information. Please log in to your account.");
+      return;
+    }
   }
 
   @override
