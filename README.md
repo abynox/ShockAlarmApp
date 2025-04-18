@@ -11,7 +11,7 @@ A powerfull app for controling [OpenShock](https://openshock.org/) shockers and 
 A web version (for IOS, ...) can be found [here](https://computerelite.github.io/ShockAlarmApp/) (does not support live controls).
 
 # Features
-ShockAlarm is a powerful tool for controlling your Shockers via OpenShock. It allows you to fully manage your shockers, logs, shares, hubs, share links, tokens and sessions.
+ShockAlarm is a powerful tool for controlling your Shockers via OpenShock. It allows you to fully manage your shockers, logs, shares, hubs, share links, tokens and sessions. On top it also allows you to seamlessly use ShareLinks.
 
 There is advanced functionaity like controling multiple shockers at the same time, specifying a random interval for intensity, duration and a delay, live controls with patterns and alarms.
 
@@ -106,12 +106,13 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Web support (alarms not working)
 - [x] Linux support (alarms not working)
 - [x] Alarm support for linux and web via https://dev1.rui2015.me
-- [ ] Add seperate slider for shock and vibrate intensity
+- [x] Add seperate slider for shock and vibrate intensity
 - [x] Add Alarm tone support for AlarmServer
 - [x] Add info about alarm server
 - [x] Code cleanup, add multiple predefined dialogs
 - [x] Add online indicator for hubs on web
 - [x] Add OTA Updates
+- [x] Add Share Link support
 - [ ] Fix WS on web
 - [x] Add Patterns to live controls
 
