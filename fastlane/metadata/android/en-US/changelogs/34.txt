@@ -1,0 +1,3 @@
+**Changelog:**
+- Fixed alignment of hub filter to be centered
+- Added info that you need to be logged in on bottom screen for it to be useful
