@@ -49,7 +49,6 @@ class CaptivePortalService {
           }
         }
         captivePortalAvailable = available;
-        continuousScan();
     }
   }
 
