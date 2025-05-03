@@ -757,6 +757,12 @@ class ShockingControlsState extends State<ShockingControls>
           progressCircularController!.forward();
         });
       }
+    } else {
+      widget.onProcessAction(type, 1, 300);
+      setState(() {
+        actionDoneTime = DateTime.now();
+        progressCircularController = null;
+      });
     }
     
   }
@@ -772,6 +778,7 @@ class ShockingControlsState extends State<ShockingControls>
         delayVibrationController = null;
         progressCircularController = null;
       });
+      print("Executing real action");
       realAction(type);
       return;
     }

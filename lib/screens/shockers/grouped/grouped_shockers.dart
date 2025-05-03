@@ -41,6 +41,7 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
   }
 
   int? executeAll(ControlType type, int intensity, int duration) {
+    print(type.name + " " + intensity.toString() + " " + duration.toString());
     List<Control> controls = [];
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       controls.add(s.getLimitedControls(type, intensity, duration));
