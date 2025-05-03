@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/components/predefined_spacing.dart';
 import 'package:shock_alarm_app/dialogs/delete_dialog.dart';
 import 'package:shock_alarm_app/components/qr_card.dart';
@@ -77,6 +78,9 @@ class HubItem extends StatefulWidget {
                                 ));
                         manager.onDeviceStatusUpdated = null;
                       };
+                      // copy to clipboard
+                      if (pairCode.code != null)
+                        Clipboard.setData(ClipboardData(text: pairCode.code!));
                       Navigator.of(context).pop();
                       showDialog(
                           context: context,
@@ -85,14 +89,26 @@ class HubItem extends StatefulWidget {
                                 content: SingleChildScrollView(
                                     child: Column(spacing: 10, children: [
                                   Text("Your pair code is"),
-                                  Text(
-                                    pairCode.code!,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineLarge,
+                                  Row(
+                                    spacing: 10,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        pairCode.code!,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineLarge,
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.copy),
+                                        onPressed: () => Clipboard.setData(
+                                            ClipboardData(
+                                                text: pairCode.code!)),
+                                      )
+                                    ],
                                   ),
                                   Text(
-                                      "To pair your hub with your account enter the pair code in the ui of your hub. Connect to your hub's wifi. Then connect it with your wifi and enter the code.")
+                                      "Please connect to the OpenShock WiFi network which your hub has made. Make sure you disable mobile data! Once you're connected a pop up should open in this app to open the hub configuration page (alternatively open http://10.10.10.10). Once you're on there connect the hub with your WiFi and enter the pair code in the account linking section.")
                                 ])),
                                 actions: [
                                   TextButton(
@@ -342,7 +358,8 @@ class HubItemState extends State<HubItem> {
         MaterialPageRoute(builder: (context) => UpdateHubScreen(hub: hub)));
   }
 
-  @override void dispose() {
+  @override
+  void dispose() {
     super.dispose();
     AlarmListManager.getInstance()
         .liveControlGatewayConnections[hub.id]
@@ -451,18 +468,19 @@ class HubItemState extends State<HubItem> {
                                     Text("OTA Update")
                                   ],
                                 )),
-                          if (AlarmListManager.supportsWs())PopupMenuItem(
-                              value: "captive",
-                              child: Row(
-                                spacing: 10,
-                                children: [
-                                  Icon(
-                                    Icons.ad_units,
-                                    color: t.colorScheme.onSurfaceVariant,
-                                  ),
-                                  Text("Captive portal")
-                                ],
-                              )),
+                          if (AlarmListManager.supportsWs())
+                            PopupMenuItem(
+                                value: "captive",
+                                child: Row(
+                                  spacing: 10,
+                                  children: [
+                                    Icon(
+                                      Icons.ad_units,
+                                      color: t.colorScheme.onSurfaceVariant,
+                                    ),
+                                    Text("Captive portal")
+                                  ],
+                                )),
                           PopupMenuItem(
                               value: "delete",
                               child: Row(

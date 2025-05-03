@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shock_alarm_app/services/captive_portal_service.dart';
 import 'package:shock_alarm_app/stores/alarm_store.dart';
 import 'screens/screen_selector.dart';
 import 'services/alarm_list_manager.dart';
@@ -16,7 +17,7 @@ const String issues_url =
     "https://github.com/ComputerElite/ShockAlarmApp/issues";
 
 String GetUserAgent() {
-  return "ShockAlarm/0.3.0";
+  return "ShockAlarm/0.3.1";
 }
 
 bool isAndroid() {
@@ -141,6 +142,9 @@ void main() async {
 
   AlarmListManager manager = AlarmListManager();
   await manager.loadAllFromStorage();
+  
+  CaptivePortalService service = CaptivePortalService();
+  service.continuousScan();
 
   runApp(MyApp(null));
 }
