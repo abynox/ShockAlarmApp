@@ -1,0 +1,2 @@
+**Changelog:**
+- Added update check via GitHub api

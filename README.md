@@ -115,6 +115,7 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Add Share Link support
 - [ ] Fix WS on web
 - [x] Add Patterns to live controls
+- [ ] Flaschendrehen
 
 # Planned settings
 - [x] Hide/unhiding of the delay option
