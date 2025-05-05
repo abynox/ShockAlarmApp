@@ -785,6 +785,7 @@ class AlarmListManager {
     OpenShockClient client = OpenShockClient();
     for (var token in getTokens()) {
       if (controlsByToken.containsKey(token.id)) {
+        print("seinding");
         if (!await client.sendControls(token, controlsByToken[token.id]!, this,
             customName: customName,
             useWs: !settings.useHttpShocking && useWs)) {
