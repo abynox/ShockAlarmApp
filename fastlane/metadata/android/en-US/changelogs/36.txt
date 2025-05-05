@@ -2,3 +2,4 @@
 - Added update check via GitHub api
 - Fixed drop down in Random screen not remembering what was selected
 - Added Spin the bottle to Random shocks screen (Settings -> More tools -> Random shocks)
+- Fixed live control logs always saying 30s

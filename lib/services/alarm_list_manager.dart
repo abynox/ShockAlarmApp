@@ -245,6 +245,16 @@ class AlarmListManager {
             .firstWhere((element) => element.id == shocker.hubId, orElse: () => Hub()); // if this breaks stuff it ain't my fault uwu
         if (shockers.indexWhere((element) => element.id == shocker.id) == -1) {
           shockers.add(shocker);
+        } else {
+          Shocker existingShocker = shockers.firstWhere((element) => element.id == shocker.id);
+          if(existingShocker.paused && !shocker.paused
+          || existingShocker.intensityLimit < shocker.intensityLimit
+          || !existingShocker.isOwn && shocker.isOwn
+          || existingShocker.durationLimit < shocker.durationLimit && existingShocker.intensityLimit < shocker.intensityLimit) {
+            // Prefer new shocker if it's not paused, has a higher intensity limit, has a higher duration (but not lower intensity).
+            shockers.removeWhere((element) => element.id == shocker.id);
+            shockers.add(shocker);
+          }
         }
       }
     }

@@ -76,7 +76,7 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
     List<Control> controls = [];
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       controls.add(
-          s.getLimitedControls(ControlType.stop, maxIntensity, durationInMs)..duration = max(durationInMs, 30000));
+          s.getLimitedControls(ControlType.stop, maxIntensity, durationInMs)..duration = min(durationInMs, 30000));
     }
     // we create a log entry for transparency with the other user
     if (AlarmListManager.getInstance().settings.liveControlsLogWorkaround) {

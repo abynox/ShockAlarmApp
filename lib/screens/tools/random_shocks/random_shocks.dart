@@ -41,9 +41,9 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
 
   int getRandomIntensity(ControlType type) {
     return AlarmListManager.getInstance().settings.useSeperateSliders &&
-                  type == ControlType.vibrate
-              ? controlsContainer.getRandomVibrateIntensity()
-              : controlsContainer.getRandomIntensity();
+            type == ControlType.vibrate
+        ? controlsContainer.getRandomVibrateIntensity()
+        : controlsContainer.getRandomIntensity();
   }
 
   void startRandom() async {
@@ -67,9 +67,7 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
         return;
       }
       ControlType type = getRandomControlType();
-      executeAll(
-          type,
-          getRandomIntensity(type),
+      executeAll(type, getRandomIntensity(type),
           controlsContainer.getRandomDuration());
     }
   }
@@ -152,18 +150,17 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
           (DateTime.now().millisecondsSinceEpoch.toDouble() - startTime) /
               (spinDuration);
       setState(() {
-        angle = startAngle + spinAngle * sin(progress*pi/2);
+        angle = startAngle + spinAngle * sin(progress * pi / 2);
       });
       await Future.delayed(Duration(milliseconds: 10));
     }
-    ControlType type =
-        getRandomControlType(); // get the random control type
+    ControlType type = getRandomControlType(); // get the random control type
     int intensity = getRandomIntensity(type);
-    String prefix = "${type.name} @ $intensity for ${(controlsContainer.getRandomDuration()/1000).toStringAsFixed(1)} sec";
+    String prefix =
+        "${type.name} @ $intensity for ${(controlsContainer.getRandomDuration() / 1000).toStringAsFixed(1)} sec";
     setState(() {
       angle = startAngle + spinAngle;
-      spinText =
-          "$prefix in 3";
+      spinText = "$prefix in 3";
       spinDone = true;
     });
     await Future.delayed(Duration(milliseconds: 1000));
@@ -179,8 +176,12 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
       spinText = "$prefix now!";
     });
     Shocker s = AlarmListManager.getInstance()
-            .getSelectedShockers().elementAt(randomlySelectedShocker);
-    AlarmListManager.getInstance().sendControls([s.getLimitedControls(type, intensity, controlsContainer.getRandomDuration())]);
+        .getSelectedShockers()
+        .elementAt(randomlySelectedShocker);
+    AlarmListManager.getInstance().sendControls([
+      s.getLimitedControls(
+          type, intensity, controlsContainer.getRandomDuration())
+    ]);
     await Future.delayed(Duration(milliseconds: 2000));
     //now stop it
     setState(() {
@@ -205,13 +206,21 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
       ),
       body: PagePadding(
           child: ConstrainedContainer(
-              child: Column(
+              child: Flex(
+        direction: Axis.vertical,
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 10,
         children: <Widget>[
-
-          Container(height: 40, child: Text(spinText, style: t.textTheme.headlineMedium,),),
-          Expanded(child: Column(children: [LayoutBuilder(builder: (context, constraints) {
+          Flexible(
+            flex: 1,
+            child: Text(
+              spinText,
+              style: t.textTheme.headlineMedium,
+            ),
+          ),
+          Flexible(
+            flex: 5,
+            child: LayoutBuilder(builder: (context, constraints) {
             double size = constraints.maxWidth;
             if (constraints.maxHeight < constraints.maxWidth) {
               size = constraints.maxHeight;
@@ -220,6 +229,10 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
             return Container(
               width: size,
               height: size,
+              constraints: BoxConstraints(
+                maxWidth: size,
+                maxHeight: size,
+              ),
               decoration: BoxDecoration(
                 color: t.colorScheme.onSecondary,
                 shape: BoxShape.circle,
@@ -274,14 +287,15 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
                               backgroundColor: shockers.indexOf(shocker) ==
                                           randomlySelectedShocker &&
                                       spinDone
-                                  ? t.colorScheme.onPrimary // ToDo: change this color
+                                  ? t.colorScheme
+                                      .onPrimary // ToDo: change this color
                                   : null,
                             )),
                       )),
                 ],
               ),
             );
-          })]),),
+          })),
         ],
       ))),
     );
@@ -294,11 +308,7 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
     "Shock & Vibrate": [ControlType.shock, ControlType.vibrate],
     "Shock & Sound": [ControlType.shock, ControlType.sound],
     "Vibrate & Sound": [ControlType.vibrate, ControlType.sound],
-    "All": [
-      ControlType.shock,
-      ControlType.vibrate,
-      ControlType.sound
-    ],
+    "All": [ControlType.shock, ControlType.vibrate, ControlType.sound],
   };
 
   @override
@@ -372,11 +382,10 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
               ),
               DropdownMenu<List<ControlType>>(
                 initialSelection: validControlTypes,
-                dropdownMenuEntries: availableControls.entries.map((entry) =>
-                  DropdownMenuEntry<List<ControlType>>(
-                      value: entry.value,
-                      label: entry.key)
-                ).toList(),
+                dropdownMenuEntries: availableControls.entries
+                    .map((entry) => DropdownMenuEntry<List<ControlType>>(
+                        value: entry.value, label: entry.key))
+                    .toList(),
                 onSelected: (value) {
                   validControlTypes = value ?? [];
                 },
