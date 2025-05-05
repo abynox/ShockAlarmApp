@@ -3,3 +3,4 @@
 - Fixed drop down in Random screen not remembering what was selected
 - Added Spin the bottle to Random shocks screen (Settings -> More tools -> Random shocks)
 - Fixed live control logs always saying 30s
+- Updated logic to use shockers with highest permissions even if multiple users/share links have it

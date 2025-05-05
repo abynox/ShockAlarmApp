@@ -156,8 +156,11 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
     }
     ControlType type = getRandomControlType(); // get the random control type
     int intensity = getRandomIntensity(type);
+    Shocker s = AlarmListManager.getInstance()
+        .getSelectedShockers()
+        .elementAt(randomlySelectedShocker);
     String prefix =
-        "${type.name} @ $intensity for ${(controlsContainer.getRandomDuration() / 1000).toStringAsFixed(1)} sec";
+        "${type.name} @ $intensity for ${(controlsContainer.getRandomDuration() / 1000).toStringAsFixed(1)} sec (${s.hubReference?.name}.${s.name})";
     setState(() {
       angle = startAngle + spinAngle;
       spinText = "$prefix in 3";
@@ -175,9 +178,6 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
     setState(() {
       spinText = "$prefix now!";
     });
-    Shocker s = AlarmListManager.getInstance()
-        .getSelectedShockers()
-        .elementAt(randomlySelectedShocker);
     AlarmListManager.getInstance().sendControls([
       s.getLimitedControls(
           type, intensity, controlsContainer.getRandomDuration())

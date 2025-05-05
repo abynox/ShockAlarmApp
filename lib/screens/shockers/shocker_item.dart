@@ -309,7 +309,7 @@ class ShockerItemState extends State<ShockerItem>
                                 OpenShockClient.getIconForControlType(
                                     ControlType.live),
                                 Text(
-                                    "${AlarmListManager.getInstance().liveActiveForShockers.contains(shocker.id) ? "Disable" : "Enable"} live controls (beta)")
+                                    "${AlarmListManager.getInstance().liveActiveForShockers.contains(shocker.id) ? "Disable" : "Enable"} live controls")
                               ],
                             ))
                       ];
@@ -680,15 +680,14 @@ class ShockingControlsState extends State<ShockingControls>
   DateTime delayDoneTime = DateTime.now();
   double delayDuration = 0;
   int actionDuration = 0;
-  AnimationController? progressCircularController;
   AnimationController? delayVibrationController;
   bool loadingPause = false;
+  ShockCountdownIndicatorController? countdownIndicatorController;
 
   ShockingControlsState();
 
   @override
   void dispose() {
-    progressCircularController?.dispose();
     delayVibrationController?.dispose();
     super.dispose();
   }
@@ -705,27 +704,17 @@ class ShockingControlsState extends State<ShockingControls>
           actionDuration = controls.duration;
           actionDoneTime =
               DateTime.now().add(Duration(milliseconds: controls.duration));
-          progressCircularController = AnimationController(
-            vsync: this,
-            duration: Duration(milliseconds: controls.duration),
-          )..addListener(() {
-              setState(() {
-                if (progressCircularController!.status ==
-                    AnimationStatus.completed) {
-                  progressCircularController!.stop();
-                  progressCircularController = null;
-                }
-              });
-            });
-          progressCircularController!.forward();
+          
         });
+        countdownIndicatorController?.start(
+            selectedIntensity, controls.duration, actionDoneTime);
         for (var time in controls.controls.keys) {
           timeDiff = time - timeTillNow;
           if (timeDiff > 0)
             await Future.delayed(Duration(milliseconds: timeDiff));
           timeTillNow = time;
 
-          if (progressCircularController == null) break;
+          if (countdownIndicatorController?.stopped() ?? false) break;
           try {
             for (Control control in controls.controls[time]!) {
               widget.onProcessAction(
@@ -741,27 +730,15 @@ class ShockingControlsState extends State<ShockingControls>
         setState(() {
           actionDuration = durationByHandler ?? selectedDuration;
           actionDoneTime =
-              DateTime.now().add(Duration(milliseconds: durationByHandler ?? selectedDuration));
-          progressCircularController = AnimationController(
-            vsync: this,
-            duration: Duration(milliseconds: durationByHandler ?? selectedDuration),
-          )..addListener(() {
-              setState(() {
-                if (progressCircularController!.status ==
-                    AnimationStatus.completed) {
-                  progressCircularController!.stop();
-                  progressCircularController = null;
-                }
-              });
-            });
-          progressCircularController!.forward();
+            DateTime.now().add(Duration(milliseconds: durationByHandler ?? selectedDuration));
+          countdownIndicatorController?.start(selectedIntensity, durationByHandler ?? selectedDuration, actionDoneTime);
         });
       }
     } else {
       widget.onProcessAction(type, 1, 300);
       setState(() {
         actionDoneTime = DateTime.now();
-        progressCircularController = null;
+        countdownIndicatorController?.reset();
       });
     }
     
@@ -773,12 +750,10 @@ class ShockingControlsState extends State<ShockingControls>
   void action(ControlType type) {
     if (type == ControlType.stop) {
       delayVibrationController?.stop();
-      progressCircularController?.stop();
+      countdownIndicatorController?.reset();
       setState(() {
         delayVibrationController = null;
-        progressCircularController = null;
       });
-      print("Executing real action");
       realAction(type);
       return;
     }
@@ -820,6 +795,12 @@ class ShockingControlsState extends State<ShockingControls>
 
   void onToneSelected(int? id) {
     AlarmListManager.getInstance().selectedTone = widget.manager.getTone(id);
+  }
+
+  @override
+  void initState() {
+    countdownIndicatorController = ShockCountdownIndicatorController();
+    super.initState();
   }
 
   @override
@@ -926,7 +907,7 @@ class ShockingControlsState extends State<ShockingControls>
             ],
           ),
 
-        if (progressCircularController == null &&
+        if (countdownIndicatorController?.stopped() ?? true &&
             delayVibrationController == null &&
             widget.showActions)
           AlarmListManager.getInstance().selectedTone == null
@@ -986,23 +967,7 @@ class ShockingControlsState extends State<ShockingControls>
                           (delayDuration * 1000))),
             ],
           ),
-        if (progressCircularController != null)
-          Row(
-              spacing: 10,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                    "${AlarmListManager.getInstance().selectedTone == null ? "Executing @ $selectedIntensity" : "Playing Tone"}... ${(actionDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
-                CircularProgressIndicator(
-                  value: progressCircularController == null
-                      ? 0
-                      : 1 -
-                          (actionDoneTime
-                                  .difference(DateTime.now())
-                                  .inMilliseconds /
-                              actionDuration),
-                )
-              ]),
+        ShockCountdownIndicator(controller: countdownIndicatorController!, onDone: () => setState(() {}),),
         if(widget.showActions) SizedBox.fromSize(
           size: Size.fromHeight(50),
           child: IconButton(
@@ -1014,5 +979,113 @@ class ShockingControlsState extends State<ShockingControls>
         )
       ],
     );
+  }
+}
+
+class ShockCountdownIndicatorController {
+  Function()? onResetReceived;
+  Function()? onStartReceived;
+  Function()? getIsStopped;
+
+  bool playingTone = false;
+  int intensity = 0;
+  DateTime actionDoneTime = DateTime.now();
+  int duration = 0;
+
+  void reset() {
+    onResetReceived?.call();
+  }
+
+  void start(int intensity, int duration, DateTime actionDoneTime) {
+    this.duration = duration;
+    this.intensity = intensity;
+    this.actionDoneTime = actionDoneTime;
+    onStartReceived?.call();
+  }
+
+  bool stopped() {
+    return getIsStopped?.call() ?? true;
+  }
+}
+
+class ShockCountdownIndicator extends StatefulWidget {
+  ShockCountdownIndicatorController controller;
+  Function() onDone;
+  
+
+  ShockCountdownIndicator(
+      {Key? key,
+      required this.controller,
+      required this.onDone})
+      : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => ShockCountdownIndicatorState();
+}
+
+class ShockCountdownIndicatorState extends State<ShockCountdownIndicator> 
+    with TickerProviderStateMixin {
+  AnimationController? progressCircularController;
+
+  @override void initState() {
+    widget.controller.onResetReceived = () {
+      if(!mounted) return;
+      setState(() {
+        progressCircularController?.stop();
+        progressCircularController = null;
+      });
+    };
+    widget.controller.onStartReceived = () {
+      if(!mounted) return;
+      progressCircularController = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: widget.controller.duration),
+      )..addListener(() {
+          setState(() {
+            if (progressCircularController!.status ==
+                AnimationStatus.completed) {
+              widget.onDone();
+              progressCircularController!.stop();
+              progressCircularController = null;
+            }
+          });
+        });
+      setState(() {
+        progressCircularController!.forward();
+      });
+    };
+    widget.controller.getIsStopped = () {
+      if(!mounted) return true;
+      return progressCircularController == null;
+    };
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    progressCircularController?.dispose();
+    super.dispose();
+  }
+
+  @override Widget build(BuildContext context) {
+    if(progressCircularController == null) {
+      return SizedBox.shrink();
+    }
+    return Row(
+              spacing: 10,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                    "${!widget.controller.playingTone ? "Executing @ ${widget.controller.intensity}" : "Playing Tone"}... ${(widget.controller.actionDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
+                CircularProgressIndicator(
+                  value: progressCircularController == null
+                      ? 0
+                      : 1 -
+                          (widget.controller.actionDoneTime
+                                  .difference(DateTime.now())
+                                  .inMilliseconds /
+                              widget.controller.duration),
+                )
+              ]);
   }
 }
