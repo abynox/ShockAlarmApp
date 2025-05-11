@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:shock_alarm_app/screens/shockers/shocker_item.dart';
 import 'package:shock_alarm_app/screens/tones/tone_item.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/main.dart';
+import 'package:shock_alarm_app/screens/tools/random_shocks/bottle_spin.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 
 import '../../../services/openshock.dart';
@@ -30,7 +32,6 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
   DateTime lastRandom = DateTime.now();
   DateTime nextRandom = DateTime.now();
   List<ControlType> validControlTypes = [];
-  bool showBottleFlipUi = false;
 
   ControlType getRandomControlType() {
     if (validControlTypes.isEmpty) {
@@ -115,192 +116,6 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
     setState(() {});
   }
 
-  void doSpin() async {
-    if (AlarmListManager.getInstance().getSelectedShockers().isEmpty) {
-      ErrorDialog.show("No shockers selected",
-          "Please select at least one shocker to spin the bottle.");
-      return;
-    }
-    spinText = "";
-    spinDone = false;
-    showBottleFlipUi = true;
-    randomlySelectedShocker = Random()
-        .nextInt(AlarmListManager.getInstance().getSelectedShockers().length);
-    angle %= 2 * pi;
-    int spins = Random().nextInt(5) + 6;
-    double spinAngle = 2 * pi * spins +
-        2 *
-            pi *
-            (randomlySelectedShocker /
-                AlarmListManager.getInstance().getSelectedShockers().length);
-    spinAngle += 2 * pi - angle;
-    print(spinAngle);
-
-    //now spin it over time
-    double spinDuration = 2000 + Random().nextDouble() * 200;
-    double startTime = DateTime.now().millisecondsSinceEpoch.toDouble();
-    double endTime = startTime + spinDuration;
-
-    double startAngle = angle;
-    double progress = 0;
-
-    // now animate it
-    while (progress < 1) {
-      progress =
-          (DateTime.now().millisecondsSinceEpoch.toDouble() - startTime) /
-              (spinDuration);
-      setState(() {
-        angle = startAngle + spinAngle * sin(progress * pi / 2);
-      });
-      await Future.delayed(Duration(milliseconds: 10));
-    }
-    ControlType type = getRandomControlType(); // get the random control type
-    int intensity = getRandomIntensity(type);
-    Shocker s = AlarmListManager.getInstance()
-        .getSelectedShockers()
-        .elementAt(randomlySelectedShocker);
-    String prefix =
-        "${type.name} @ $intensity for ${(controlsContainer.getRandomDuration() / 1000).toStringAsFixed(1)} sec (${s.hubReference?.name}.${s.name})";
-    setState(() {
-      angle = startAngle + spinAngle;
-      spinText = "$prefix in 3";
-      spinDone = true;
-    });
-    await Future.delayed(Duration(milliseconds: 1000));
-    setState(() {
-      spinText = "$prefix in 2";
-    });
-    await Future.delayed(Duration(milliseconds: 1000));
-    setState(() {
-      spinText = "$prefix in 1";
-    });
-    await Future.delayed(Duration(milliseconds: 1000));
-    setState(() {
-      spinText = "$prefix now!";
-    });
-    AlarmListManager.getInstance().sendControls([
-      s.getLimitedControls(
-          type, intensity, controlsContainer.getRandomDuration())
-    ]);
-    await Future.delayed(Duration(milliseconds: 2000));
-    //now stop it
-    setState(() {
-      showBottleFlipUi = false;
-    });
-  }
-
-  int randomlySelectedShocker = 0;
-  bool spinDone = false;
-  String spinText = "";
-
-  double angle = 0;
-
-  Widget buildSpinningBottle() {
-    List<Shocker> shockers =
-        AlarmListManager.getInstance().getSelectedShockers().toList();
-
-    ThemeData t = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Random shocks'),
-      ),
-      body: PagePadding(
-          child: ConstrainedContainer(
-              child: Flex(
-        direction: Axis.vertical,
-        mainAxisAlignment: MainAxisAlignment.center,
-        spacing: 10,
-        children: <Widget>[
-          Flexible(
-            flex: 1,
-            child: Text(
-              spinText,
-              style: t.textTheme.headlineMedium,
-            ),
-          ),
-          Flexible(
-            flex: 5,
-            child: LayoutBuilder(builder: (context, constraints) {
-            double size = constraints.maxWidth;
-            if (constraints.maxHeight < constraints.maxWidth) {
-              size = constraints.maxHeight;
-            }
-
-            return Container(
-              width: size,
-              height: size,
-              constraints: BoxConstraints(
-                maxWidth: size,
-                maxHeight: size,
-              ),
-              decoration: BoxDecoration(
-                color: t.colorScheme.onSecondary,
-                shape: BoxShape.circle,
-              ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: size / 2,
-                    left: size / 2,
-                    child: Center(
-                        child: Transform(
-                            transform: Matrix4.identity()..rotateZ(angle),
-                            child: FractionalTranslation(
-                                translation: Offset(-0.5, -0.5),
-                                child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "BOTTLE", // spin it
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: size / 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.arrow_right,
-                                        size: size / 7,
-                                      )
-                                    ])))),
-                  ),
-                  ...shockers.map((shocker) => Positioned(
-                        left: size / 2 +
-                            cos(2 *
-                                    pi /
-                                    shockers.length *
-                                    shockers.indexOf(shocker)) *
-                                (size / 2 - 50),
-                        top: size / 2 +
-                            sin(2 *
-                                    pi /
-                                    shockers.length *
-                                    shockers.indexOf(shocker)) *
-                                (size / 2 - 50),
-                        child: FractionalTranslation(
-                            translation: Offset(-0.5, -0.5),
-                            child: Chip(
-                              label: Text(shocker.name),
-                              backgroundColor: shockers.indexOf(shocker) ==
-                                          randomlySelectedShocker &&
-                                      spinDone
-                                  ? t.colorScheme
-                                      .onPrimary // ToDo: change this color
-                                  : null,
-                            )),
-                      )),
-                ],
-              ),
-            );
-          })),
-        ],
-      ))),
-    );
-  }
-
   Map<String, List<ControlType>> availableControls = {
     "Shock": [ControlType.shock],
     "Vibrate": [ControlType.vibrate],
@@ -315,9 +130,6 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
   Widget build(BuildContext context) {
     Shocker limitedShocker =
         AlarmListManager.getInstance().getSelectedShockerLimits();
-    if (showBottleFlipUi) {
-      return buildSpinningBottle();
-    }
     return Scaffold(
       appBar: AppBar(
         title: Text('Random shocks'),
@@ -400,9 +212,14 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
                     IconButton(onPressed: stopRandom, icon: Icon(Icons.stop)),
                   IconButton(
                       onPressed: () {
-                        setState(() {
-                          doSpin();
-                        });
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => BottleSpinScreen(
+                                      controlsContainer: controlsContainer,
+                                      getRandomControlType:
+                                          getRandomControlType,
+                                    )));
                       },
                       icon: Icon(Icons.casino))
                 ],
