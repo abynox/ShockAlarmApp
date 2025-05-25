@@ -989,6 +989,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 })
           ],
         ),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Text("Increase maximum duration"),
+                IconButton(
+                    onPressed: () {
+                      InfoDialog.show("What?",
+                          "OpenShock has a maximum duration of 65536ms (65.536 seconds) per action. This is the maximum duration you can set as limit or do actions for a shocker. If you enable this option, you will be able to set the maximum duration to 65536ms instead of the recommended 30000ms (30 seconds). It is disabled by default as it makes fiddling with the sliders harder");
+                    },
+                    icon: Icon(Icons.info))
+              ],
+            ),
+            Switch(
+                value: widget.manager.settings.increaseMaxDuration,
+                key: ValueKey("increaseMaxDuration"),
+                onChanged: (value) {
+                  setState(() {
+                    widget.manager.settings.increaseMaxDuration = value;
+                    widget.manager.saveSettings();
+                  });
+                })
+          ],
+        ),
         Row(
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 10,

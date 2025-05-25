@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/dialogs/delete_dialog.dart';
 import 'package:shock_alarm_app/screens/shockers/shocker_item.dart';
+import 'package:shock_alarm_app/services/limits.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../../stores/alarm_store.dart';
 import '../../services/alarm_list_manager.dart';
@@ -252,7 +253,7 @@ class ToneComponentItemState extends State<ToneComponentItem> {
                         container.intensityRange.start.toInt();
                   });
                 },
-                maxDuration: 3000,
+                maxDuration: OpenShockLimits.getMaxDuration(),
                 maxIntensity: 100,
                 showIntensity: widget.component.type != ControlType.sound,
                 type: widget.component.type ?? ControlType.shock,

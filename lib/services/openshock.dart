@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
+import 'package:shock_alarm_app/services/limits.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
 import '../stores/alarm_store.dart';
 import 'dart:convert';
@@ -1431,7 +1432,7 @@ class Shocker {
   bool vibrateAllowed = true;
   bool soundAllowed = true;
   bool liveAllowed = true;
-  int durationLimit = 30000;
+  int durationLimit = OpenShockLimits.maxDuration;
   int intensityLimit = 100;
   bool isOwn = false;
   List<PauseReason> pauseReasons = [];
@@ -1479,7 +1480,7 @@ class Shocker {
       liveAllowed = shocker.permissions!.live;
     }
     if (shocker.limits != null) {
-      durationLimit = shocker.limits!.duration ?? 30000;
+      durationLimit = shocker.limits!.duration ?? OpenShockLimits.maxDuration;
       intensityLimit = shocker.limits!.intensity ?? 100;
     }
   }
@@ -1554,7 +1555,7 @@ class Shocker {
   }
 
   void setLimits(OpenShockShareLimits limits) {
-    durationLimit = limits.limits.duration ?? 30000;
+    durationLimit = limits.limits.duration ?? OpenShockLimits.maxDuration;
     intensityLimit = limits.limits.intensity ?? 100;
     shockAllowed = limits.permissions.shock;
     vibrateAllowed = limits.permissions.vibrate;
@@ -1700,7 +1701,7 @@ class OpenShockShare {
 
 class OpenShockShockerLimits {
   int? intensity = 100;
-  int? duration = 30000;
+  int? duration = OpenShockLimits.maxDuration;
 }
 
 class OpenShockShockerPermissions {

@@ -8,6 +8,7 @@ import 'package:shock_alarm_app/screens/shares/shocker_share_entry.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
+import 'package:shock_alarm_app/services/limits.dart';
 
 import '../../components/qr_card.dart';
 import '../../services/alarm_list_manager.dart';
@@ -301,7 +302,7 @@ class ShockerShareEntryEditorState extends State<ShockerShareEntryEditor> {
             IntensityDurationSelector(
               showSeperateIntensities: false,
                 controlsContainer: ControlsContainer.fromInts(
-                    duration: limits.limits.duration ?? 30000,
+                    duration: limits.limits.duration ?? OpenShockLimits.maxDuration,
                     intensity: limits.limits.intensity ?? 100),
                 onSet: (container) {
                   setState(() {
@@ -311,7 +312,7 @@ class ShockerShareEntryEditorState extends State<ShockerShareEntryEditor> {
                         container.intensityRange.start.toInt();
                   });
                 },
-                maxDuration: 30000,
+                maxDuration: OpenShockLimits.getMaxDuration(),
                 maxIntensity: 100),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

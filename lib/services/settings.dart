@@ -28,6 +28,7 @@ class Settings {
   bool allowMultiServerLogin = false;
   bool lerpIntensity = false;
   bool useSeperateSliders = false;
+  bool increaseMaxDuration = false;
 
 
   Settings();
@@ -65,6 +66,8 @@ class Settings {
       lerpIntensity = json["lerpIntensity"];
     if(json["useSeperateSliders"] != null)
       useSeperateSliders = json["useSeperateSliders"];
+    if(json["increaseMaxDuration"] != null)
+      increaseMaxDuration = json["increaseMaxDuration"];
       
   }
 
@@ -85,7 +88,8 @@ class Settings {
       "liveControlsLogWorkaround": liveControlsLogWorkaround,
       "allowMultiServerLogin": allowMultiServerLogin,
       "lerpIntensity": lerpIntensity,
-      "useSeperateSliders": useSeperateSliders
+      "useSeperateSliders": useSeperateSliders,
+      "increaseMaxDuration": increaseMaxDuration,
     };
   }
 }

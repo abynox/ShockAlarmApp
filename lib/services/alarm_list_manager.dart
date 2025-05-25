@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/screens/shockers/live/live_controls.dart';
 import 'package:shock_alarm_app/main.dart';
+import 'package:shock_alarm_app/services/limits.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
@@ -956,6 +957,7 @@ class AlarmListManager {
         limitedShocker.vibrateAllowed = true;
       }
     }
+    if(!settings.increaseMaxDuration) limitedShocker.durationLimit = OpenShockLimits.maxRecommendedDuration;
     if(settings.lerpIntensity) limitedShocker.intensityLimit = 100;
     return limitedShocker;
   }

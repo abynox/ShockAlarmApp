@@ -10,6 +10,7 @@ import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/screens/screen_selector.dart';
 import 'package:shock_alarm_app/screens/logs/logs.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
+import 'package:shock_alarm_app/services/limits.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
 
 import '../../../services/alarm_list_manager.dart';
@@ -75,7 +76,7 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
     List<Control> controls = [];
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       controls.add(
-          s.getLimitedControls(ControlType.stop, maxIntensity, durationInMs)..duration = min(durationInMs, 30000));
+          s.getLimitedControls(ControlType.stop, maxIntensity, durationInMs)..duration = min(durationInMs, OpenShockLimits.maxDuration));
     }
     // we create a log entry for transparency with the other user
     if (AlarmListManager.getInstance().settings.liveControlsLogWorkaround) {

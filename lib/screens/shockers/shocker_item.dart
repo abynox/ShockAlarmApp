@@ -12,6 +12,7 @@ import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
 import 'package:shock_alarm_app/screens/screen_selector.dart';
 import 'package:shock_alarm_app/services/PatternGenerator.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
+import 'package:shock_alarm_app/services/limits.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
 import '../logs/logs.dart';
 import '../shares/shares.dart';
@@ -243,7 +244,7 @@ class ShockerItemState extends State<ShockerItem>
     List<ShockerAction> actions = shocker.isOwn
         ? ShockerItem.ownShockerActions
         : ShockerItem.foreignShockerActions;
-    return PaddedCard(
+        return PaddedCard(
         child: Column(
       children: [
         GestureDetector(
@@ -410,7 +411,7 @@ class ShockerItemState extends State<ShockerItem>
                   manager: manager,
                   controlsContainer: shocker.controls,
                   key: ValueKey("${shocker.getIdentifier()}-shocking-controls"),
-                  durationLimit: shocker.durationLimit,
+                  durationLimit: AlarmListManager.getInstance().settings.increaseMaxDuration ? shocker.durationLimit : min(shocker.durationLimit, OpenShockLimits.maxRecommendedDuration),
                   intensityLimit: shocker.intensityLimit,
                   shockAllowed: shocker.shockAllowed,
                   showActions: !selected(),
