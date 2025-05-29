@@ -116,7 +116,7 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [ ] Fix WS on web
 - [x] Add Patterns to live controls
 - [x] Flaschendrehen
-- [ ] Adapt to new Backend duration limit
+- [x] Adapt to new Backend duration limit
 - [ ] Implement Shares V2 (once officially declared done in backend)
 
 # Planned settings
