@@ -117,7 +117,7 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Add Patterns to live controls
 - [x] Flaschendrehen
 - [x] Adapt to new Backend duration limit
-- [ ] Implement Shares V2 (once officially declared done in backend)
+- [ ] Implement Shares V2 (once officially declared done in backend and implementation in official frontend exists. Can't make sense of the api rn without explenation)
 
 # Planned settings
 - [x] Hide/unhiding of the delay option
