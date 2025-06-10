@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/components/predefined_spacing.dart';
 import 'package:shock_alarm_app/dialogs/delete_dialog.dart';
+import 'package:shock_alarm_app/dialogs/yes_cancel_dialog.dart';
 import 'package:shock_alarm_app/screens/shockers/live/live_controls.dart';
 import 'package:shock_alarm_app/screens/shockers/shocker_details.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
@@ -530,7 +531,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                   ? OpenShockClient.getIconForControlType(ControlType.shock)
                   : OpenShockClient.getIconForControlType(widget.type),
               Text(
-                "Intensity: ${widget.controlsContainer.getStringRepresentation(widget.controlsContainer.intensityRange, true)}",
+                "Intensity: ${widget.controlsContainer.getIntensityString()}",
                 style: t.textTheme.headlineSmall,
               ),
             ],
@@ -747,8 +748,22 @@ class ShockingControlsState extends State<ShockingControls>
 
   int selectedIntensity = 0;
   int selectedDuration = 0;
+  bool needConfirm = true;
 
   void action(ControlType type) {
+    if(type == ControlType.shock && AlarmListManager.getInstance().settings.confirmShock) {
+      if(needConfirm) {
+        //
+        YesCancelDialog.show("Shock Confirmation", "Are you sure you want to shock for ${widget.controlsContainer.getIntensityString()}@${widget.controlsContainer.getDurationString()}", () {
+          needConfirm = false;
+          action(type);
+          Navigator.of(context).pop();
+        });
+        return;
+      } else {
+        needConfirm = true;
+      }
+    }
     if (type == ControlType.stop) {
       delayVibrationController?.stop();
       countdownIndicatorController?.reset();
@@ -933,8 +948,7 @@ class ShockingControlsState extends State<ShockingControls>
                       ),
                     if (widget.shockAllowed)
                       IconButton(
-                        icon: OpenShockClient.getIconForControlType(
-                            ControlType.shock),
+                        icon: OpenShockClient.getIconForControlType(ControlType.shock),
                         onPressed: () {
                           action(ControlType.shock);
                         },

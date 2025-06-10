@@ -1016,6 +1016,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Text("Confirm Shock"),
+                IconButton(
+                    onPressed: () {
+                      InfoDialog.show("Confirm Shock",
+                          "When you press the shock button you will have to confirm the action in a dialog before the shock gets sent.");
+                    },
+                    icon: Icon(Icons.info))
+              ],
+            ),
+            Switch(
+                value: widget.manager.settings.confirmShock,
+                key: ValueKey("confirmShock"),
+                onChanged: (value) {
+                  setState(() {
+                    widget.manager.settings.confirmShock = value;
+                    widget.manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 10,
             children: [

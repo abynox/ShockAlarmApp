@@ -29,6 +29,7 @@ class Settings {
   bool lerpIntensity = false;
   bool useSeperateSliders = false;
   bool increaseMaxDuration = false;
+  bool confirmShock = false;
 
 
   Settings();
@@ -68,6 +69,8 @@ class Settings {
       useSeperateSliders = json["useSeperateSliders"];
     if(json["increaseMaxDuration"] != null)
       increaseMaxDuration = json["increaseMaxDuration"];
+    if(json["confirmShock"] != null)
+      confirmShock = json["confirmShock"];
       
   }
 
@@ -90,6 +93,7 @@ class Settings {
       "lerpIntensity": lerpIntensity,
       "useSeperateSliders": useSeperateSliders,
       "increaseMaxDuration": increaseMaxDuration,
+      "confirmShock": confirmShock,
     };
   }
 }

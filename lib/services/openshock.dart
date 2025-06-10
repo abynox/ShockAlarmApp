@@ -1341,6 +1341,10 @@ class ControlsContainer {
     return "${trunance ? values.start.toInt() : values.start}${unit} - ${trunance ? values.end.toInt() : values.end}${unit}";
   }
 
+  String getIntensityString() {
+    return getStringRepresentation(intensityRange, true);
+  }
+
   void limitTo(int duration, int intensity) {
     durationRange = RangeValues(min(durationRange.start, duration.toDouble()),
         min(durationRange.end, duration.toDouble()));
