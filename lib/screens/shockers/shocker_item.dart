@@ -13,6 +13,7 @@ import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
 import 'package:shock_alarm_app/screens/screen_selector.dart';
 import 'package:shock_alarm_app/services/PatternGenerator.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
+import 'package:shock_alarm_app/services/formatter.dart';
 import 'package:shock_alarm_app/services/limits.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
 import '../logs/logs.dart';
@@ -750,11 +751,26 @@ class ShockingControlsState extends State<ShockingControls>
   int selectedDuration = 0;
   bool needConfirm = true;
 
-  void action(ControlType type) {
-    if(type == ControlType.shock && AlarmListManager.getInstance().settings.confirmShock) {
+
+  void action(ControlType type, {bool recalculateIntensityAndDuration = true}) {
+    // Get intensity
+    // do not adjust selected intensity and duration if recalculate is false as then the user confirmed the (sometimes randomly) determined shock values
+    if(recalculateIntensityAndDuration) {
+      selectedDuration = widget.controlsContainer.getRandomDuration();
+      selectedIntensity =
+          AlarmListManager.getInstance().settings.useSeperateSliders &&
+                  type == ControlType.vibrate
+              ? widget.controlsContainer.getRandomVibrateIntensity()
+              : widget.controlsContainer.getRandomIntensity();
+
+    }
+
+    if(type == ControlType.shock
+      && AlarmListManager.getInstance().settings.confirmShock
+      && (selectedIntensity >= AlarmListManager.getInstance().settings.confirmShockMinIntensity || selectedDuration >= AlarmListManager.getInstance().settings.confirmShockMinDuration)) {
       if(needConfirm) {
         //
-        YesCancelDialog.show("Shock Confirmation", "Are you sure you want to shock for ${widget.controlsContainer.getIntensityString()}@${widget.controlsContainer.getDurationString()}", () {
+        YesCancelDialog.show("Shock Confirmation", "Are you sure you want to shock for ${selectedIntensity}@${Formatter.formatMillisToSeconds(selectedDuration)} s", () {
           needConfirm = false;
           action(type);
           Navigator.of(context).pop();
@@ -773,12 +789,6 @@ class ShockingControlsState extends State<ShockingControls>
       realAction(type);
       return;
     }
-    selectedDuration = widget.controlsContainer.getRandomDuration();
-    selectedIntensity =
-        AlarmListManager.getInstance().settings.useSeperateSliders &&
-                type == ControlType.vibrate
-            ? widget.controlsContainer.getRandomVibrateIntensity()
-            : widget.controlsContainer.getRandomIntensity();
     // Get random delay based on range
     if (widget.manager.delayVibrationEnabled) {
       // ToDo: make this duration adjustable
@@ -972,7 +982,7 @@ class ShockingControlsState extends State<ShockingControls>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                  "Delaying action... ${(delayDoneTime.difference(DateTime.now()).inMilliseconds / 100).round() / 10} s"),
+                  "Delaying action... ${Formatter.formatMillisToSeconds(delayDoneTime.difference(DateTime.now()).inMilliseconds)} s"),
               CircularProgressIndicator(
                   value: delayVibrationController == null
                       ? 0

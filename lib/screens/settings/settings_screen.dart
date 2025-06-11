@@ -12,6 +12,7 @@ import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
 import 'package:shock_alarm_app/main.dart';
+import 'package:shock_alarm_app/screens/settings/confirm_shock_dialog.dart';
 import 'package:shock_alarm_app/screens/tones/tones.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
@@ -1021,10 +1022,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Row(
               children: [
                 Text("Confirm Shock"),
+                IconButton(onPressed: () {
+                  showDialog(context: context, builder: (context) => ConfirmShockDialog());
+                }, icon: Icon(Icons.edit)),
                 IconButton(
                     onPressed: () {
                       InfoDialog.show("Confirm Shock",
-                          "When you press the shock button you will have to confirm the action in a dialog before the shock gets sent.");
+                          "When you press the shock button you will have to confirm the action in a dialog before the shock gets sent. You can change under which condition the confirm dialog appears");
                     },
                     icon: Icon(Icons.info))
               ],

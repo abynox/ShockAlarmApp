@@ -30,6 +30,8 @@ class Settings {
   bool useSeperateSliders = false;
   bool increaseMaxDuration = false;
   bool confirmShock = false;
+  int confirmShockMinIntensity = 50;
+  int confirmShockMinDuration = 2000;
 
 
   Settings();
@@ -71,6 +73,10 @@ class Settings {
       increaseMaxDuration = json["increaseMaxDuration"];
     if(json["confirmShock"] != null)
       confirmShock = json["confirmShock"];
+    if(json["confirmShockMinIntensity"] != null)
+      confirmShockMinIntensity = json["confirmShockMinIntensity"];
+    if(json["confirmShockMinDuration"] != null)
+      confirmShockMinDuration = json["confirmShockMinDuration"];
       
   }
 
@@ -94,6 +100,8 @@ class Settings {
       "useSeperateSliders": useSeperateSliders,
       "increaseMaxDuration": increaseMaxDuration,
       "confirmShock": confirmShock,
+      "confirmShockMinIntensity": confirmShockMinIntensity,
+      "confirmShockMinDuration": confirmShockMinDuration,
     };
   }
 }
