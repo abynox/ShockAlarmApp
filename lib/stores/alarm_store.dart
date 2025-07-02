@@ -70,6 +70,7 @@ class AlarmToneComponent {
   int duration = 1000;
   ControlType? type = ControlType.vibrate;
   int time = 0;
+  int internalReference = DateTime.now().microsecondsSinceEpoch;
   
   AlarmToneComponent({this.intensity = 25, this.duration = 1000, this.type = ControlType.vibrate, this.time = 0});
 
@@ -113,7 +114,7 @@ class AlarmToneComponent {
   }
 
   getId() {
-    return "$intensity-$duration-${type?.index}-$time";
+    return "$intensity-$duration-${type?.index}-$time-$internalReference";
   }
 }
 

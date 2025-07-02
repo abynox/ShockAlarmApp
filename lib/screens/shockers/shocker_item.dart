@@ -541,7 +541,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                   widget.allowRandom
               ? RangeSlider(
                   values: widget.controlsContainer.intensityRange,
-                  divisions: widget.maxIntensity,
+                  divisions: widget.maxIntensity <= 0 ? 1 : widget.maxIntensity,
                   max: widget.maxIntensity.toDouble(),
                   min: 0,
                   onChanged: (RangeValues values) {
