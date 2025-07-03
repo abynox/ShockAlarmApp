@@ -70,12 +70,12 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Viewing of logs
 - [x] Change sharing limits
 - [x] Create share codes
-- [x] Redeem share codes (untested)
+- [x] Redeem share codes
 - [x] Adding of shockers
 - [x] Creation, editing and pairing of hubs
 - [x] Add option to repeat default shock/vibration... option for one minute (perhaps adjustable in settings). Needs reworking of the alarm stop feature
 - [x] Websocket controlling
-- [x] Alarm tones (ui implemented)
+- [x] Alarm tones
 - [x] Grouping of shockers
 - [x] Redo settings
 - [x] Random intensity and duration
@@ -103,8 +103,8 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] fix reloading problems in settings after login?
 - [ ] ~~(Big controls mode)~~ fuck this shit, there's no space
 - [x] Improved login for web (aka using token requests)
-- [x] Web support (alarms not working)
-- [x] Linux support (alarms not working)
+- [x] Web support (alarms working via AlarmServer)
+- [x] Linux support (alarms working via AlarmServer)
 - [x] Alarm support for Linux and web via https://dev1.rui2015.me
 - [x] Add separate slider for shock and vibrate intensity
 - [x] Add Alarm tone support for AlarmServer
