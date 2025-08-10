@@ -32,7 +32,7 @@ class Settings {
   bool confirmShock = false;
   int confirmShockMinIntensity = 50;
   int confirmShockMinDuration = 2000;
-
+  bool enforceHardLimitInsteadOfShock = false;
 
   Settings();
 
@@ -77,6 +77,8 @@ class Settings {
       confirmShockMinIntensity = json["confirmShockMinIntensity"];
     if(json["confirmShockMinDuration"] != null)
       confirmShockMinDuration = json["confirmShockMinDuration"];
+    if(json["enforceHardLimitInsteadOfShock"] != null)
+      enforceHardLimitInsteadOfShock = json["enforceHardLimitInsteadOfShock"];
       
   }
 
@@ -102,6 +104,7 @@ class Settings {
       "confirmShock": confirmShock,
       "confirmShockMinIntensity": confirmShockMinIntensity,
       "confirmShockMinDuration": confirmShockMinDuration,
+      "enforceHardLimitInsteadOfShock": enforceHardLimitInsteadOfShock
     };
   }
 }

@@ -826,43 +826,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Disable hub filtering"),
+            Row(
+              children: [
+                Text("Confirm/Limit Shock"),
+                IconButton(onPressed: () {
+                  showDialog(context: context, builder: (context) => ConfirmShockDialog());
+                }, icon: Icon(Icons.edit)),
+                IconButton(
+                    onPressed: () {
+                      InfoDialog.show("Confirm Shock",
+                          "When you press the shock button you will have to confirm the action in a dialog before the shock gets sent. You can change under which condition the confirm dialog appears");
+                    },
+                    icon: Icon(Icons.info))
+              ],
+            ),
             Switch(
-                value: widget.manager.settings.disableHubFiltering,
-                key: ValueKey("disableHubFiltering"),
+                value: widget.manager.settings.confirmShock,
+                key: ValueKey("confirmShock"),
                 onChanged: (value) {
                   setState(() {
-                    widget.manager.settings.disableHubFiltering = value;
-                    widget.manager.saveSettings();
-                  });
-                })
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("Show hub firmware version"),
-            Switch(
-                value: widget.manager.settings.showFirmwareVersion,
-                key: ValueKey("showFirmwareVersion"),
-                onChanged: (value) {
-                  setState(() {
-                    widget.manager.settings.showFirmwareVersion = value;
-                    widget.manager.saveSettings();
-                  });
-                })
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("Use http instead of ws for shocking"),
-            Switch(
-                value: widget.manager.settings.useHttpShocking,
-                key: ValueKey("useHttpShocking"),
-                onChanged: (value) {
-                  setState(() {
-                    widget.manager.settings.useHttpShocking = value;
+                    widget.manager.settings.confirmShock = value;
                     widget.manager.saveSettings();
                   });
                 })
@@ -1019,26 +1002,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Text("Confirm Shock"),
-                IconButton(onPressed: () {
-                  showDialog(context: context, builder: (context) => ConfirmShockDialog());
-                }, icon: Icon(Icons.edit)),
-                IconButton(
-                    onPressed: () {
-                      InfoDialog.show("Confirm Shock",
-                          "When you press the shock button you will have to confirm the action in a dialog before the shock gets sent. You can change under which condition the confirm dialog appears");
-                    },
-                    icon: Icon(Icons.info))
-              ],
-            ),
+            Text("Show hub firmware version"),
             Switch(
-                value: widget.manager.settings.confirmShock,
-                key: ValueKey("confirmShock"),
+                value: widget.manager.settings.showFirmwareVersion,
+                key: ValueKey("showFirmwareVersion"),
                 onChanged: (value) {
                   setState(() {
-                    widget.manager.settings.confirmShock = value;
+                    widget.manager.settings.showFirmwareVersion = value;
+                    widget.manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Disable hub filtering"),
+            Switch(
+                value: widget.manager.settings.disableHubFiltering,
+                key: ValueKey("disableHubFiltering"),
+                onChanged: (value) {
+                  setState(() {
+                    widget.manager.settings.disableHubFiltering = value;
+                    widget.manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Use http instead of ws for shocking"),
+            Switch(
+                value: widget.manager.settings.useHttpShocking,
+                key: ValueKey("useHttpShocking"),
+                onChanged: (value) {
+                  setState(() {
+                    widget.manager.settings.useHttpShocking = value;
                     widget.manager.saveSettings();
                   });
                 })

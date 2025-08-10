@@ -1541,6 +1541,12 @@ class Shocker {
       c.intensity = min(this.intensityLimit, intensity);
     }
     c.duration = min(this.durationLimit, duration);
+
+    if(AlarmListManager.getInstance().settings.enforceHardLimitInsteadOfShock) {
+      this.intensityLimit = min(this.intensityLimit, AlarmListManager.getInstance().settings.confirmShockMinIntensity);
+      this.durationLimit = min(this.durationLimit, AlarmListManager.getInstance().settings.confirmShockMinDuration);
+    }
+
     c.apiTokenId = this.apiTokenId;
     c.shockerReference = this;
     if (!this.shockAllowed && type == ControlType.shock) {

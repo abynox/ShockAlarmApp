@@ -186,6 +186,8 @@ class ShockerItem extends StatefulWidget {
         icon: Icon(Icons.delete),
         name: "Unlink"),
   ];
+  
+  static int runningConfirmNumber = 0;
 
   ShockerItem({
     Key? key,
@@ -197,6 +199,10 @@ class ShockerItem extends StatefulWidget {
   @override
   State<StatefulWidget> createState() =>
       ShockerItemState(shocker, manager, onRebuild);
+
+  static void ensureSafety() {
+    runningConfirmNumber++;
+  }
 }
 
 class ShockerItemState extends State<ShockerItem>
@@ -325,6 +331,7 @@ class ShockerItemState extends State<ShockerItem>
                         }
                       }
                       if (value == "live") {
+                        ShockerItem.ensureSafety();
                         setState(() {
                           if (AlarmListManager.getInstance()
                               .liveActiveForShockers

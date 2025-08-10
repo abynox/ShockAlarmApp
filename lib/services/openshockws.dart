@@ -37,6 +37,9 @@ class OpenShockWS {
         'User-Agent': GetUserAgent(),
       });
       String url = '${t.server}/1/hubs/user';
+      // https://github.com/OpenShock/API/issues/216
+      //String url = '${t.server}/1/hubs/user?OpenShockSession=${t.token}';
+
       if(t.type == TokenType.sharelink){
         url = '${t.server}/1/hubs/share/link/${t.token}?name=${t.userId}';
       }

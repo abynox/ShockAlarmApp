@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
@@ -690,7 +692,7 @@ class AlarmListManager {
   Function()? otaInstallSucceeded;
 
   static bool supportsWs() {
-    return !kIsWeb;
+    return !kIsWeb||true;
   }
 
   Future updateHubStatusViaHttp() async {
@@ -957,8 +959,14 @@ class AlarmListManager {
         limitedShocker.vibrateAllowed = true;
       }
     }
-    if(!settings.increaseMaxDuration) limitedShocker.durationLimit = OpenShockLimits.maxRecommendedDuration;
+    // make sure to limit to recommended duration if choosen so
+    if(!settings.increaseMaxDuration) limitedShocker.durationLimit = min(limitedShocker.durationLimit, OpenShockLimits.maxRecommendedDuration);
+    if(settings.enforceHardLimitInsteadOfShock) {
+      limitedShocker.intensityLimit = min(limitedShocker.intensityLimit, settings.confirmShockMinIntensity);
+      limitedShocker.durationLimit = min(limitedShocker.durationLimit, settings.confirmShockMinDuration);
+    }
     if(settings.lerpIntensity) limitedShocker.intensityLimit = 100;
+    
     return limitedShocker;
   }
 
