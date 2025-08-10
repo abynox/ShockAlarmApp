@@ -771,8 +771,8 @@ class ShockingControlsState extends State<ShockingControls>
               : widget.controlsContainer.getRandomIntensity();
 
     }
-
-    if(type == ControlType.shock
+    // If the hard limit is on we do not need to show the dialog. redundancy is the limit function of the Controls themselves
+    if(!AlarmListManager.getInstance().settings.enforceHardLimitInsteadOfShock && type == ControlType.shock
       && AlarmListManager.getInstance().settings.confirmShock
       && (selectedIntensity >= AlarmListManager.getInstance().settings.confirmShockMinIntensity || selectedDuration >= AlarmListManager.getInstance().settings.confirmShockMinDuration)) {
       if(needConfirm) {

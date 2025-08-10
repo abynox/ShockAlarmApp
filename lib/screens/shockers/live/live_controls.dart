@@ -128,6 +128,14 @@ class _LiveControlsState extends State<LiveControls> {
 
   bool isPlaying = false;
 
+  void forceStop() {
+    setState(() {
+      LiveControlWS.liveControlSettings[widget.saveId]!.loop = false;
+      LiveControlWS.liveControlSettings[widget.saveId]!.float = false;
+      isPlaying = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(spacing: 10, children: [
@@ -152,6 +160,7 @@ class _LiveControlsState extends State<LiveControls> {
         selected: {type},
         onSelectionChanged: (Set<ControlType> newSelection) {
           if (newSelection.isNotEmpty) {
+            forceStop();
             setState(() {
               type = newSelection.first;
             });
