@@ -47,15 +47,20 @@ class UpdateChecker {
     String version = packageInfo.version;
 
     // Fetch the latest release information from the GitHub API
-    var response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      String latestVersion = data['tag_name'];
+    try {
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        String latestVersion = data['tag_name'];
 
-      // Compare the versions
-      return _compareVersions(version, latestVersion);
-    } else {
-      throw Exception('Failed to load release information');
+        // Compare the versions
+        return _compareVersions(version, latestVersion);
+      } else {
+        throw Exception('Failed to load release information');
+      }
+    } catch(e) {
+      // Perhaps this error should be handled instead of just giving back false
+      return false;
     }
   }
 

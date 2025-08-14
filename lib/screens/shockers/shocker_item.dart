@@ -752,18 +752,35 @@ class ShockingControlsState extends State<ShockingControls>
               : widget.controlsContainer.getRandomIntensity();
 
     }
+
+    bool isRange = false;
+    
+    // If the sliders aren't shown we are (as of time of writing) in the og shockers view. It doesn't report anything back to this widget.
+    // Therefore we have to extract the highest intensity and duration ourselves.
+    // It's pain but works
+    // Ideally all components would be rewritten so they can communicate with the confirm widget and don't do random stuff in them but let this widget handle it.
+    // This component was never designed for multiple seperate output parameters tho, hence choosing the highest instead of just showing what's gonna happen 
     if(!widget.showSliders) {
+      isRange = AlarmListManager.getInstance().settings.useRangeSliderForDuration || AlarmListManager.getInstance().settings.useRangeSliderForIntensity;
+      selectedIntensity = 0;
       // In this case the intensity is coming from somewhere else and must thus be read from somewhere else
+      for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
+        int shockerIntensity = s.controls.intensityRange.end.toInt();
+        if(shockerIntensity > selectedIntensity) selectedIntensity = shockerIntensity;
+        int shockerDuration = s.controls.durationRange.end.toInt();
+        if(shockerDuration > selectedDuration) selectedDuration = shockerDuration;
+      }
     }
+
     // If the hard limit is on we do not need to show the dialog. redundancy is the limit function of the Controls themselves
     if(!AlarmListManager.getInstance().settings.enforceHardLimitInsteadOfShock && type == ControlType.shock
       && AlarmListManager.getInstance().settings.confirmShock
       && (selectedIntensity >= AlarmListManager.getInstance().settings.confirmShockMinIntensity || selectedDuration >= AlarmListManager.getInstance().settings.confirmShockMinDuration)) {
       if(needConfirm) {
         //
-        YesCancelDialog.show("Shock Confirmation", "Are you sure you want to shock for ${selectedIntensity}@${Formatter.formatMillisToSeconds(selectedDuration)} s", () {
+        YesCancelDialog.show("Shock Confirmation", "Are you sure you want to shock for${isRange ? " up to" : ""} ${selectedIntensity}@${Formatter.formatMillisToSeconds(selectedDuration)} s", () {
           needConfirm = false;
-          action(type);
+          action(type, recalculateIntensityAndDuration: false);
           Navigator.of(context).pop();
         });
         return;
@@ -840,7 +857,7 @@ class ShockingControlsState extends State<ShockingControls>
       AlarmListManager.getInstance().selectedTone = null;
     return Column(
       children: [
-        if (widget.manager.settings.allowTonesForControls) ...[
+        if (widget.manager.settings.allowTonesForControls && widget.showSliders) ...[
           DropdownMenu<int?>(
             dropdownMenuEntries: dme,
             initialSelection: AlarmListManager.getInstance().selectedTone?.id,
