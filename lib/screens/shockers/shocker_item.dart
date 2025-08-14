@@ -783,7 +783,13 @@ class ShockingControlsState extends State<ShockingControls>
     // Get random delay based on range
     if (widget.manager.delayVibrationEnabled) {
       // ToDo: make this duration adjustable
-      widget.onDelayAction(ControlType.vibrate, selectedIntensity, 500);
+      int vibrationIntensity = selectedIntensity;
+      // Make sure to use the intensity from the vibrate slider if it's enabled
+      if(type != ControlType.vibrate && AlarmListManager.getInstance().settings.useSeperateSliders) {
+        vibrationIntensity = widget.controlsContainer.getRandomVibrateIntensity();
+      }
+
+      widget.onDelayAction(ControlType.vibrate, vibrationIntensity, 500);
     }
     delayDuration = widget.controlsContainer.delayRange.start +
         Random().nextDouble() *
