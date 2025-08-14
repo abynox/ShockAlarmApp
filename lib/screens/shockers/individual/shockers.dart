@@ -17,6 +17,7 @@ import 'package:shock_alarm_app/screens/screen_selector.dart';
 import 'package:shock_alarm_app/screens/shares/shares.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
+import 'package:shock_alarm_app/services/vibrations.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 import '../hub_item.dart';
 import '../shocker_item.dart';
@@ -268,11 +269,16 @@ class ShockerScreenState extends State<ShockerScreen> {
       AlarmListManager.getInstance().updateHubStatusViaHttp();
   }
 
-  int? executeAll(ControlType type, int intensity, int duration) {
+  int? executeAllSpecificShocker(ControlType type, int intensity, int duration, Shocker shocker) {
+    return executeAll(type, intensity, duration, shockers: [shocker]);
+  }
+
+  int? executeAll(ControlType type, int intensity, int duration, {List<Shocker>? shockers}) {
+    ShockAlarmVibrations.onAction(type);
+
     List<Control> controls = [];
     int highestDuration = 0;
-    for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
-      print(s.controls.durationRange.start);
+    for (Shocker s in shockers ?? AlarmListManager.getInstance().getSelectedShockers()) {
       Control c = s.getLimitedControls(type, AlarmListManager.getInstance().settings.useSeperateSliders && type == ControlType.vibrate ? s.controls.getRandomVibrateIntensity() : s.controls.getRandomIntensity(), s.controls.getRandomDuration());
       if (c.duration > highestDuration) {
         highestDuration = c.duration;
@@ -287,7 +293,6 @@ class ShockerScreenState extends State<ShockerScreen> {
       return 0;
     }
     AlarmListManager.getInstance().sendControls(controls);
-    print(highestDuration);
     return highestDuration;
   }
 
@@ -329,6 +334,7 @@ class ShockerScreenState extends State<ShockerScreen> {
             shocker: s,
             manager: manager,
             onRebuild: rebuild,
+            onShock: executeAllSpecificShocker,
             key: ValueKey(s.getIdentifier())));
       }
       shockers.add(StickyHeader(

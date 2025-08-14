@@ -1,0 +1,6 @@
+**Changelog:**
+- Dialogs are now scrollable so if text overflows you can still read it
+- Updated safety dialog
+- Started experimenting with vibrations in the ui for haptic feedback
+- Fixed shock confirmation not correctly working in non grouped shocker view
+- Updated shock confirmation handling on random intensities

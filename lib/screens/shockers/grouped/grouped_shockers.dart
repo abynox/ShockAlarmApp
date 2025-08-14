@@ -13,6 +13,7 @@ import 'package:shock_alarm_app/screens/logs/logs.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/limits.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
+import 'package:shock_alarm_app/services/vibrations.dart';
 
 import '../../../services/alarm_list_manager.dart';
 import '../../../services/openshock.dart';
@@ -47,6 +48,7 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
   }
 
   int? executeAll(ControlType type, int intensity, int duration) {
+    ShockAlarmVibrations.onAction(type);
     List<Control> controls = [];
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       controls.add(s.getLimitedControls(type, intensity, duration));

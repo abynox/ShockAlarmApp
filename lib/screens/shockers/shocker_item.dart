@@ -36,6 +36,7 @@ class ShockerItem extends StatefulWidget {
   final Shocker shocker;
   final AlarmListManager manager;
   final Function onRebuild;
+  int? Function(ControlType type, int intensity, int duration, Shocker shocker) onShock;
   static List<ShockerAction> ownShockerActions = [
     ShockerAction(
         name: "Edit",
@@ -194,22 +195,19 @@ class ShockerItem extends StatefulWidget {
     required this.shocker,
     required this.manager,
     required this.onRebuild,
+    required this.onShock
   }) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() =>
-      ShockerItemState(shocker, manager, onRebuild);
 
   static void ensureSafety() {
     runningConfirmNumber++;
   }
+  
+  @override
+  State<StatefulWidget> createState() => ShockerItemState();
 }
 
 class ShockerItemState extends State<ShockerItem>
     with TickerProviderStateMixin {
-  final Shocker shocker;
-  final AlarmListManager manager;
-  final Function onRebuild;
   bool expanded = false;
   bool delayVibrationEnabled = false;
 
@@ -219,15 +217,15 @@ class ShockerItemState extends State<ShockerItem>
   bool loadingPause = false;
 
   bool selected() =>
-      AlarmListManager.getInstance().selectedShockers.contains(shocker.id);
+      AlarmListManager.getInstance().selectedShockers.contains(widget.shocker.id);
 
   bool liveEnabled() =>
-      AlarmListManager.getInstance().liveActiveForShockers.contains(shocker.id);
+      AlarmListManager.getInstance().liveActiveForShockers.contains(widget.shocker.id);
 
   @override
   void initState() {
     super.initState();
-    shocker.controls.limitTo(shocker.durationLimit, shocker.intensityLimit);
+    widget.shocker.controls.limitTo(widget.shocker.durationLimit, widget.shocker.intensityLimit);
   }
 
   void setPauseState(bool pause) async {
@@ -235,7 +233,7 @@ class ShockerItemState extends State<ShockerItem>
       loadingPause = true;
     });
     String? error =
-        await OpenShockClient().setPauseStateOfShocker(shocker, manager, pause);
+        await OpenShockClient().setPauseStateOfShocker(widget.shocker, widget.manager, pause);
     setState(() {
       loadingPause = false;
     });
@@ -245,11 +243,10 @@ class ShockerItemState extends State<ShockerItem>
     }
   }
 
-  ShockerItemState(this.shocker, this.manager, this.onRebuild);
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
-    List<ShockerAction> actions = shocker.isOwn
+    List<ShockerAction> actions = widget.shocker.isOwn
         ? ShockerItem.ownShockerActions
         : ShockerItem.foreignShockerActions;
         return PaddedCard(
@@ -258,10 +255,10 @@ class ShockerItemState extends State<ShockerItem>
         GestureDetector(
           onTap: () {
             setState(() {
-              if (shocker.paused) return;
+              if (widget.shocker.paused) return;
               expanded = !expanded;
             });
-            onRebuild();
+            widget.onRebuild();
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -273,25 +270,25 @@ class ShockerItemState extends State<ShockerItem>
                     value: selected(),
                     shape: CircleBorder(),
                     onChanged: (bool? value) {
-                      print("Selected shocker ${shocker.name}: $value");
+                      print("Selected shocker ${widget.shocker.name}: $value");
                       if (value == null) return;
                       if (value) {
                         expanded = true;
                         AlarmListManager.getInstance()
                             .selectedShockers
-                            .add(shocker.id);
+                            .add(widget.shocker.id);
                       } else {
                         expanded = false;
                         AlarmListManager.getInstance()
                             .selectedShockers
-                            .remove(shocker.id);
+                            .remove(widget.shocker.id);
                       }
                       setState(() {});
-                      onRebuild();
+                      widget.onRebuild();
                     },
                   ),
                   Text(
-                    shocker.name,
+                    widget.shocker.name,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -318,7 +315,7 @@ class ShockerItemState extends State<ShockerItem>
                                 OpenShockClient.getIconForControlType(
                                     ControlType.live),
                                 Text(
-                                    "${AlarmListManager.getInstance().liveActiveForShockers.contains(shocker.id) ? "Disable" : "Enable"} live controls")
+                                    "${AlarmListManager.getInstance().liveActiveForShockers.contains(widget.shocker.id) ? "Disable" : "Enable"} live controls")
                               ],
                             ))
                       ];
@@ -326,7 +323,7 @@ class ShockerItemState extends State<ShockerItem>
                     onSelected: (String value) {
                       for (ShockerAction a in actions) {
                         if (a.name == value) {
-                          a.onClick(manager, shocker, context, onRebuild);
+                          a.onClick(widget.manager, widget.shocker, context, widget.onRebuild);
                           return;
                         }
                       }
@@ -335,14 +332,14 @@ class ShockerItemState extends State<ShockerItem>
                         setState(() {
                           if (AlarmListManager.getInstance()
                               .liveActiveForShockers
-                              .contains(shocker.id)) {
+                              .contains(widget.shocker.id)) {
                             AlarmListManager.getInstance()
                                 .liveActiveForShockers
-                                .remove(shocker.id);
+                                .remove(widget.shocker.id);
                           } else {
                             AlarmListManager.getInstance()
                                 .liveActiveForShockers
-                                .add(shocker.id);
+                                .add(widget.shocker.id);
                           }
                         });
                         context
@@ -355,20 +352,20 @@ class ShockerItemState extends State<ShockerItem>
                     },
                   ),
                   if (loadingPause) CircularProgressIndicator(),
-                  if (shocker.isOwn && shocker.paused && !loadingPause)
+                  if (widget.shocker.isOwn && widget.shocker.paused && !loadingPause)
                     IconButton(
                         onPressed: () {
                           setPauseState(false);
                         },
                         icon: Icon(Icons.play_arrow)),
-                  if (shocker.isOwn && !shocker.paused && !loadingPause)
+                  if (widget.shocker.isOwn && !widget.shocker.paused && !loadingPause)
                     IconButton(
                         onPressed: () {
                           expanded = false;
                           setPauseState(true);
                         },
                         icon: Icon(Icons.pause)),
-                  if (shocker.paused)
+                  if (widget.shocker.paused)
                     GestureDetector(
                       child: Chip(
                           label: Text("paused"),
@@ -381,18 +378,18 @@ class ShockerItemState extends State<ShockerItem>
                       onTap: () {
                         InfoDialog.show(
                             "Shocker is paused",
-                            shocker.isOwn
+                            widget.shocker.isOwn
                                 ? "This shocker was pause by you. While it's paused you cannot control it. You can unpause it by pressing the play button."
                                 : "This shocker was paused by the owner. While it's paused you cannot control it. You can ask the owner to unpause it.");
                       },
                     ),
-                  if (!shocker.paused)
+                  if (!widget.shocker.paused)
                     IconButton(
                         onPressed: () {
                           setState(() {
                             expanded = !expanded;
                           });
-                          onRebuild();
+                          widget.onRebuild();
                         },
                         icon: Icon(expanded
                             ? Icons.arrow_upward_rounded
@@ -407,46 +404,30 @@ class ShockerItemState extends State<ShockerItem>
               ? LiveControls(
                   showLatency: false,
                   onSendLive: onSendLive,
-                  soundAllowed: shocker.soundAllowed,
-                  vibrateAllowed: shocker.vibrateAllowed,
-                  shockAllowed: shocker.shockAllowed,
-                  intensityLimit: shocker.intensityLimit,
-                  saveId: shocker.id,
+                  soundAllowed: widget.shocker.soundAllowed,
+                  vibrateAllowed: widget.shocker.vibrateAllowed,
+                  shockAllowed: widget.shocker.shockAllowed,
+                  intensityLimit: widget.shocker.intensityLimit,
+                  saveId: widget.shocker.id,
                   ensureConnection: ensureConnection,
                   hubConnected: AlarmListManager.getInstance()
                       .liveControlGatewayConnections
-                      .containsKey(shocker.hubId))
+                      .containsKey(widget.shocker.hubId))
               : ShockingControls(
-                  manager: manager,
-                  controlsContainer: shocker.controls,
-                  key: ValueKey("${shocker.getIdentifier()}-shocking-controls"),
-                  durationLimit: AlarmListManager.getInstance().settings.increaseMaxDuration ? shocker.durationLimit : min(shocker.durationLimit, OpenShockLimits.maxRecommendedDuration),
-                  intensityLimit: shocker.intensityLimit,
-                  shockAllowed: shocker.shockAllowed,
+                  manager: widget.manager,
+                  controlsContainer: widget.shocker.controls,
+                  key: ValueKey("${widget.shocker.getIdentifier()}-shocking-controls"),
+                  durationLimit: AlarmListManager.getInstance().settings.increaseMaxDuration ? widget.shocker.durationLimit : min(widget.shocker.durationLimit, OpenShockLimits.maxRecommendedDuration),
+                  intensityLimit: widget.shocker.intensityLimit,
+                  shockAllowed: widget.shocker.shockAllowed,
                   showActions: !selected(),
-                  vibrateAllowed: shocker.vibrateAllowed,
-                  soundAllowed: shocker.soundAllowed,
+                  vibrateAllowed: widget.shocker.vibrateAllowed,
+                  soundAllowed: widget.shocker.soundAllowed,
                   onDelayAction: (type, intensity, duration) {
-                    manager
-                        .sendShock(type, shocker, intensity, duration)
-                        .then((errorMessage) {
-                      if (errorMessage == null) return;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(errorMessage),
-                        duration: Duration(seconds: 3),
-                      ));
-                    });
+                    widget.onShock(type, intensity, duration, widget.shocker);
                   },
                   onProcessAction: (type, intensity, duration) {
-                    manager
-                        .sendShock(type, shocker, intensity, duration)
-                        .then((errorMessage) {
-                      if (errorMessage == null) return;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(errorMessage),
-                        duration: Duration(seconds: 3),
-                      ));
-                    });
+                    widget.onShock(type, intensity, duration, widget.shocker);
                   },
                   onSet: (container) {
                     setState(() {});
@@ -458,7 +439,7 @@ class ShockerItemState extends State<ShockerItem>
 
   Future ensureConnection() async {
     ErrorContainer<bool> error = await AlarmListManager.getInstance()
-        .connectToLiveControlGateway(shocker.hubReference!);
+        .connectToLiveControlGateway(widget.shocker.hubReference!);
     if (error.error != null) {
       ErrorDialog.show("Failed to connect to hub", error.error!);
       return;
@@ -467,15 +448,15 @@ class ShockerItemState extends State<ShockerItem>
   }
 
   void onSendLive(ControlType type, int intensity) {
-    List<Control> controls = [shocker.getLimitedControls(type, intensity, 300)];
+    List<Control> controls = [widget.shocker.getLimitedControls(type, intensity, 300)];
     if (type == ControlType.stop) {
       // Temporary workaround until OpenShock fixed the issue with stop. So for now we send them individually
       for (Control c in controls) {
-        manager.sendControls([c]);
+        widget.manager.sendControls([c]);
       }
       return;
     }
-    manager.sendLiveControls(controls);
+    widget.manager.sendLiveControls(controls);
   }
 }
 
@@ -770,6 +751,9 @@ class ShockingControlsState extends State<ShockingControls>
               ? widget.controlsContainer.getRandomVibrateIntensity()
               : widget.controlsContainer.getRandomIntensity();
 
+    }
+    if(!widget.showSliders) {
+      // In this case the intensity is coming from somewhere else and must thus be read from somewhere else
     }
     // If the hard limit is on we do not need to show the dialog. redundancy is the limit function of the Controls themselves
     if(!AlarmListManager.getInstance().settings.enforceHardLimitInsteadOfShock && type == ControlType.shock

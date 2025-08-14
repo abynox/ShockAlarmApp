@@ -8,7 +8,7 @@ class InfoDialog {
       builder: (BuildContext context) {
         return AlertDialog.adaptive(
           title: Text(title),
-          content: Text(message),
+          content: SingleChildScrollView(child: Text(message),),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),

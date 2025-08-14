@@ -8,7 +8,7 @@ class YesCancelDialog {
       builder: (BuildContext context) {
         return AlertDialog.adaptive(
               title: Text(title),
-              content: Text(body),
+              content: SingleChildScrollView(child: Text(body)),
               actions: [
                 TextButton(
                     onPressed: onCancel ?? () {

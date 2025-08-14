@@ -21,6 +21,9 @@ Furthermore it fixes some layout flaws of the official OpenShock Frontend like h
 
 You can also log in on multiple OpenShock instances at once. ShockAlarm will show all shockers from all instances seamlessly at a glance!
 
+## Other information
+- I cannot guarentee that all features work with all possible configurations. I try to make them work with each other but sometimes I miss them. For example a random intensity won't work with the shock confirmation dialog. However a hard limit will.
+
 ### Not supported in Web Version
 Everything with websockets is currently not supported due to authentication problems with websockets. This includes:
 - OTA Updates
@@ -116,11 +119,13 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [ ] Fix WS on web
 - [x] Add Patterns to live controls
 - [x] Flaschendrehen
-- [ ] Add shock confirmation above adustable intensity and duration.
+- [x] Add shock confirmation above adustable intensity and duration.
 - [x] Adapt to new Backend duration limit
 - [x] Add confirmation on live system as well. 
 - [x] Add global limit for self.
-- [ ] Stop live playback when changing type
+- [x] Stop live playback when changing type
+- [x] Make sure text in popups is scrollable so it can be read completely
+- [ ] Implement login V2
 - [ ] Implement Shares V2 (once officially declared done in backend and implementation in official frontend exists. Can't make sense of the api rn without explenation)
 
 # Planned settings

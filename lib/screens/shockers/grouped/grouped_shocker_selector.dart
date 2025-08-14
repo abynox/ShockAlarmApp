@@ -3,6 +3,7 @@ import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/screens/shockers/shocker_item.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
+import 'package:shock_alarm_app/services/vibrations.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
 import '../../../services/openshock.dart';
@@ -181,6 +182,8 @@ class ShockerChipState extends State<ShockerChip> {
   }
 
   void onLongPress() {
+    ShockAlarmVibrations.vibrateLongTap();
+    
     List<ShockerAction> shockerActions = shocker.isOwn
         ? ShockerItem.ownShockerActions
         : ShockerItem.foreignShockerActions;

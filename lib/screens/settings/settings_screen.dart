@@ -835,7 +835,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 IconButton(
                     onPressed: () {
                       InfoDialog.show("Confirm Shock",
-                          "When you press the shock button you will have to confirm the action in a dialog before the shock gets sent. You can change under which condition the confirm dialog appears");
+                          "When you press the shock button you will have to confirm the action in a dialog before the shock gets sent. You can change under which condition the confirm dialog appears.");
                     },
                     icon: Icon(Icons.info))
               ],
