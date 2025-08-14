@@ -16,6 +16,7 @@ import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/formatter.dart';
 import 'package:shock_alarm_app/services/limits.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
+import 'package:shock_alarm_app/services/vibrations.dart';
 import '../logs/logs.dart';
 import '../shares/shares.dart';
 import '../../stores/alarm_store.dart';
@@ -229,6 +230,7 @@ class ShockerItemState extends State<ShockerItem>
   }
 
   void setPauseState(bool pause) async {
+    ShockAlarmVibrations.pause(pause);
     setState(() {
       loadingPause = true;
     });
@@ -831,6 +833,8 @@ class ShockingControlsState extends State<ShockingControls>
         });
       });
     delayVibrationController!.forward();
+    setState(() {
+    });
   }
 
   void onToneSelected(int? id) {

@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/services/vibrations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../main.dart';
 
 class ShockDisclaimer extends StatelessWidget {
+
+  @override
+  StatelessElement createElement() {
+    ShockAlarmVibrations.important();
+    return super.createElement();
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build

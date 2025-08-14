@@ -107,6 +107,7 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
         loadingResume = true;
       }
     });
+    ShockAlarmVibrations.pause(pause);
 
     int shockerCount = 0;
     int completedShockers = 0;
