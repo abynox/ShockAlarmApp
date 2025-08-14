@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
+import 'package:shock_alarm_app/dialogs/yes_cancel_dialog.dart';
 import 'package:shock_alarm_app/screens/shockers/live/pattern_chooser.dart';
+import 'package:shock_alarm_app/screens/shockers/shocker_item.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
@@ -63,6 +65,10 @@ class LiveControls extends StatefulWidget {
   Function(ControlType, int, int)? liveEventDone;
 
   String saveId = "global";
+  
+  int confirmedNumber = -1;
+  
+  bool dialogShowing = false;
 
   LiveControls(
       {super.key,
@@ -243,6 +249,26 @@ class _LiveControlsState extends State<LiveControls> {
                   float:
                       LiveControlWS.liveControlSettings[widget.saveId]!.float,
                   onSendLive: (intensity) {
+                    if(!AlarmListManager.getInstance().settings.enforceHardLimitInsteadOfShock && type == ControlType.shock
+                      && AlarmListManager.getInstance().settings.confirmShock
+                      && (intensity >= AlarmListManager.getInstance().settings.confirmShockMinIntensity)) {
+                      if(widget.confirmedNumber != ShockerItem.runningConfirmNumber) {
+                        if(widget.dialogShowing) return;
+
+                        // Stop everything as in case loop is on the shock would just continue
+                        forceStop();
+                        widget.dialogShowing = true;
+                        YesCancelDialog.show("Shock Confirmation", "Are you sure you want to shock at $intensity Intensity. If you press yes the limit of ${AlarmListManager.getInstance().settings.confirmShockMinIntensity} will be removed for the remaining session. DECIDE WITH CARE!!!", () {
+                          widget.confirmedNumber = ShockerItem.runningConfirmNumber;
+                          widget.dialogShowing = false;
+                          Navigator.of(context).pop();
+                        }, onCancel: () {
+                          widget.dialogShowing = false;
+                          Navigator.of(context).pop();
+                        });
+                        return;
+                      }
+                    }
                     widget.onSendLive(type, intensity);
                   },
                   onPlayDone: () {

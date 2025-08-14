@@ -67,23 +67,8 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
   void executeAllLive(ControlType type, int intensity) {
     // Enforce the limit of the confirm ui 
     // If the hard limit is on we do not need to show the dialog. redundancy is the limit function of the Controls themselves
-    if(!AlarmListManager.getInstance().settings.enforceHardLimitInsteadOfShock && type == ControlType.shock
-      && AlarmListManager.getInstance().settings.confirmShock
-      && (intensity >= AlarmListManager.getInstance().settings.confirmShockMinIntensity)) {
-      if(widget.confirmedNumber != ShockerItem.runningConfirmNumber) {
-        if(widget.dialogShowing) return;
-        widget.dialogShowing = true;
-        YesCancelDialog.show("Shock Confirmation", "Are you sure you want to shock at $intensity Intensity. If you press yes the limit of ${AlarmListManager.getInstance().settings.confirmShockMinIntensity} will be removed for the remaining session. DECIDE WITH CARE!!!", () {
-          widget.confirmedNumber = ShockerItem.runningConfirmNumber;
-          widget.dialogShowing = false;
-          Navigator.of(context).pop();
-        }, onCancel: () {
-          widget.dialogShowing = false;
-          Navigator.of(context).pop();
-        });
-        return;
-      }
-    }
+    
+    // The cofirm limits check is now performed in the call to this method so it applies to everything that uses the live controls ui instead of just this view
     List<Control> controls = [];
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       controls.add(s.getLimitedControls(type, intensity, 300));
