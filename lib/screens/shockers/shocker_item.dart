@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/components/predefined_spacing.dart';
 import 'package:shock_alarm_app/dialogs/delete_dialog.dart';
@@ -230,12 +231,18 @@ class ShockerItemState extends State<ShockerItem>
   }
 
   void setPauseState(bool pause) async {
-    ShockAlarmVibrations.pause(pause);
     setState(() {
       loadingPause = true;
+      if(pause) {
+        AlarmListManager.getInstance()
+            .selectedShockers
+            .remove(widget.shocker.id);
+      }
     });
+    ShockAlarmVibrations.pause(pause);
     String? error =
         await OpenShockClient().setPauseStateOfShocker(widget.shocker, widget.manager, pause);
+    if(!mounted) return;
     setState(() {
       loadingPause = false;
     });
@@ -270,11 +277,12 @@ class ShockerItemState extends State<ShockerItem>
                 children: [
                   Checkbox(
                     value: selected(),
-                    shape: CircleBorder(),
+                    shape: CircleBorder(),                    
                     onChanged: (bool? value) {
                       print("Selected shocker ${widget.shocker.name}: $value");
                       if (value == null) return;
                       if (value) {
+                        if(widget.shocker.paused) return;
                         expanded = true;
                         AlarmListManager.getInstance()
                             .selectedShockers
@@ -330,6 +338,7 @@ class ShockerItemState extends State<ShockerItem>
                         }
                       }
                       if (value == "live") {
+
                         ShockerItem.ensureSafety();
                         setState(() {
                           if (AlarmListManager.getInstance()
@@ -339,6 +348,10 @@ class ShockerItemState extends State<ShockerItem>
                                 .liveActiveForShockers
                                 .remove(widget.shocker.id);
                           } else {
+
+                          AlarmListManager.getInstance()
+                              .selectedShockers
+                              .remove(widget.shocker.id);
                             AlarmListManager.getInstance()
                                 .liveActiveForShockers
                                 .add(widget.shocker.id);
@@ -538,6 +551,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                     setState(() {
                       widget.controlsContainer.intensityRange = values;
                     });
+                    ShockAlarmVibrations.rangeSlider("intensity", widget.controlsContainer.getIntensityString());
                   })
               : Slider(
                   value:
@@ -548,6 +562,8 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                       widget.controlsContainer.setIntensity(value);
                       widget.onSet(widget.controlsContainer);
                     });
+                    ShockAlarmVibrations.rangeSlider("intensity", widget.controlsContainer.getIntensityString());
+
                   }),
           if (widget.showSeperateIntensities) ...[
             Row(
@@ -574,6 +590,7 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                       setState(() {
                         widget.controlsContainer.vibrateIntensityRange = values;
                       });
+                      ShockAlarmVibrations.rangeSlider("vibrateIntensity", widget.controlsContainer.getVibrateIntensityString());
                     })
                 : Slider(
                     value: widget.controlsContainer.vibrateIntensityRange.start
@@ -584,6 +601,8 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                         widget.controlsContainer.setVibrateIntensity(value);
                         widget.onSet(widget.controlsContainer);
                       });
+                      ShockAlarmVibrations.rangeSlider("vibrateIntensity", widget.controlsContainer.getVibrateIntensityString());
+
                     }),
           ]
         ],
@@ -611,9 +630,11 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
                 divisions: widget.maxDuration,
                 onChanged: (RangeValues values) {
                   setState(() {
+                    
                     widget.controlsContainer.durationRange = RangeValues(
                         mapDuration(values.start).toDouble(),
                         mapDuration(values.end).toDouble());
+                    ShockAlarmVibrations.rangeSlider("duration", widget.controlsContainer.getDurationString());
                   });
                 })
             : Slider(
@@ -627,6 +648,8 @@ class IntensityDurationSelectorState extends State<IntensityDurationSelector> {
 
                     widget.onSet(widget.controlsContainer);
                   });
+                  ShockAlarmVibrations.rangeSlider("duration", widget.controlsContainer.getStringRepresentation(widget.controlsContainer.durationRange, false));
+
                 }),
       ],
     );
@@ -775,7 +798,7 @@ class ShockingControlsState extends State<ShockingControls>
     }
 
     // If the hard limit is on we do not need to show the dialog. redundancy is the limit function of the Controls themselves
-    if(!AlarmListManager.getInstance().settings.enforceHardLimitInsteadOfShock && type == ControlType.shock
+    if(!AlarmListManager.getInstance().settings.getEnforceHardLimitInsteadOfShock() && type == ControlType.shock
       && AlarmListManager.getInstance().settings.confirmShock
       && (selectedIntensity >= AlarmListManager.getInstance().settings.confirmShockMinIntensity || selectedDuration >= AlarmListManager.getInstance().settings.confirmShockMinDuration)) {
       if(needConfirm) {
@@ -893,7 +916,7 @@ class ShockingControlsState extends State<ShockingControls>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             spacing: 5,
             children: [
-              Switch(
+              HapticSwitch(
                 value: widget.manager.delayVibrationEnabled,
                 onChanged: (bool value) {
                   setState(() {
@@ -916,6 +939,7 @@ class ShockingControlsState extends State<ShockingControls>
                             setState(() {
                               widget.controlsContainer.delayRange = values;
                             });
+                            ShockAlarmVibrations.rangeSlider("delay", widget.controlsContainer.getStringRepresentation(values, false));
                           })
                       : Row(
                           children: [
@@ -935,6 +959,7 @@ class ShockingControlsState extends State<ShockingControls>
                                               widget.controlsContainer
                                                   .delayRange.end);
                                     });
+                                    ShockAlarmVibrations.rangeSlider("delay", widget.controlsContainer.getDelayString());
                                   }),
                             )
                           ],

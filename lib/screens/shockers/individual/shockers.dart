@@ -356,6 +356,7 @@ class ShockerScreenState extends State<ShockerScreen> {
     return DesktopMobileRefreshIndicator(
       onRefresh: () async {
         await manager.updateShockerStore();
+        if(!mounted) return;
         setState(() {});
       },
       child: Column(

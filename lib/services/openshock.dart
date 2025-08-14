@@ -1341,8 +1341,16 @@ class ControlsContainer {
     return "${trunance ? values.start.toInt() : values.start}${unit} - ${trunance ? values.end.toInt() : values.end}${unit}";
   }
 
+  String getDelayString() {
+    return delayRange.start == delayRange.end ? "${(delayRange.start * 10).round() / 10} s" : "${(delayRange.start * 10).round() / 10} s - ${(delayRange.end * 10).round() / 10} s" ;
+  }
+
   String getIntensityString() {
     return getStringRepresentation(intensityRange, true);
+  }
+
+  String getVibrateIntensityString() {
+    return getStringRepresentation(vibrateIntensityRange, true);
   }
 
   void limitTo(int duration, int intensity) {
@@ -1542,7 +1550,7 @@ class Shocker {
     }
     c.duration = min(this.durationLimit, duration);
 
-    if(AlarmListManager.getInstance().settings.enforceHardLimitInsteadOfShock) {
+    if(AlarmListManager.getInstance().settings.getEnforceHardLimitInsteadOfShock()) {
       this.intensityLimit = min(this.intensityLimit, AlarmListManager.getInstance().settings.confirmShockMinIntensity);
       this.durationLimit = min(this.durationLimit, AlarmListManager.getInstance().settings.confirmShockMinDuration);
     }

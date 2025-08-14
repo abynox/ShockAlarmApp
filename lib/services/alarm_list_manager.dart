@@ -961,7 +961,7 @@ class AlarmListManager {
     }
     // make sure to limit to recommended duration if choosen so
     if(!settings.increaseMaxDuration) limitedShocker.durationLimit = min(limitedShocker.durationLimit, OpenShockLimits.maxRecommendedDuration);
-    if(settings.enforceHardLimitInsteadOfShock) {
+    if(settings.getEnforceHardLimitInsteadOfShock()) {
       limitedShocker.intensityLimit = min(limitedShocker.intensityLimit, settings.confirmShockMinIntensity);
       limitedShocker.durationLimit = min(limitedShocker.durationLimit, settings.confirmShockMinDuration);
     }

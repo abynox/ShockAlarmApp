@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/dialogs/yes_cancel_dialog.dart';
@@ -207,7 +208,7 @@ class _LiveControlsState extends State<LiveControls> {
                   spacing: 10,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Switch(
+                    HapticSwitch(
                         value: LiveControlWS
                             .liveControlSettings[widget.saveId]!.loop,
                         onChanged: (value) {
@@ -218,7 +219,7 @@ class _LiveControlsState extends State<LiveControls> {
                         }),
                     Text("Loop"),
                     if (!isSavedPattern())
-                      Switch(
+                      HapticSwitch(
                           value: LiveControlWS
                               .liveControlSettings[widget.saveId]!.float,
                           onChanged: (value) {
@@ -249,7 +250,7 @@ class _LiveControlsState extends State<LiveControls> {
                   float:
                       LiveControlWS.liveControlSettings[widget.saveId]!.float,
                   onSendLive: (intensity) {
-                    if(!AlarmListManager.getInstance().settings.enforceHardLimitInsteadOfShock && type == ControlType.shock
+                    if(!AlarmListManager.getInstance().settings.getEnforceHardLimitInsteadOfShock() && type == ControlType.shock
                       && AlarmListManager.getInstance().settings.confirmShock
                       && (intensity >= AlarmListManager.getInstance().settings.confirmShockMinIntensity)) {
                       if(widget.confirmedNumber != ShockerItem.runningConfirmNumber) {

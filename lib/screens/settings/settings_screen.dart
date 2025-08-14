@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/predefined_spacing.dart';
@@ -751,7 +752,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Show option for random delay"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.showRandomDelay,
                 key: ValueKey("showRandomDelay"),
                 onChanged: (value) {
@@ -766,7 +767,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Use grouped shocker controlling"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.useGroupedShockerSelection,
                 key: ValueKey("useGroupedShockerSelection"),
                 onChanged: (value) {
@@ -781,7 +782,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Use range slider for random delay"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.useRangeSliderForRandomDelay,
                 key: ValueKey("useRangeSliderForRandomDelay"),
                 onChanged: (value) {
@@ -797,7 +798,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Use range slider for intensity"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.useRangeSliderForIntensity,
                 key: ValueKey("useRangeSliderForIntensity"),
                 onChanged: (value) {
@@ -812,7 +813,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Use range slider for duration"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.useRangeSliderForDuration,
                 key: ValueKey("useRangeSliderForDuration"),
                 onChanged: (value) {
@@ -840,7 +841,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icon(Icons.info))
               ],
             ),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.confirmShock,
                 key: ValueKey("confirmShock"),
                 onChanged: (value) {
@@ -855,7 +856,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Allow choosing tones for controls"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.allowTonesForControls,
                 key: ValueKey("allowTonesForControls"),
                 onChanged: (value) {
@@ -870,7 +871,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Seperate slider for vibrate and shock intensity"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.useSeperateSliders,
                 key: ValueKey("useSeperateSliders"),
                 onChanged: (value) {
@@ -895,7 +896,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icon(Icons.info))
               ],
             ),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.lerpIntensity,
                 key: ValueKey("lerpIntensity"),
                 onChanged: (value) {
@@ -910,7 +911,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Send logs for live control (workaround)"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.liveControlsLogWorkaround,
                 key: ValueKey("liveControlsLogWorkaround"),
                 onChanged: (value) {
@@ -935,7 +936,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icon(Icons.info))
               ],
             ),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.allowMultiServerLogin,
                 key: ValueKey("allowMultiServerLogin"),
                 onChanged: (value) {
@@ -960,7 +961,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icon(Icons.info))
               ],
             ),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.useAlarmServer,
                 key: ValueKey("useAlarmServer"),
                 onChanged: (value) {
@@ -988,7 +989,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icon(Icons.info))
               ],
             ),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.increaseMaxDuration,
                 key: ValueKey("increaseMaxDuration"),
                 onChanged: (value) {
@@ -1002,8 +1003,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Text("Enable ui haptic feedback"),
+            HapticSwitch(
+                value: widget.manager.settings.enableUiVibrations,
+                key: ValueKey("enableUiVibrations"),
+                onChanged: (value) {
+                  setState(() {
+                    widget.manager.settings.enableUiVibrations = value;
+                    widget.manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Text("Show hub firmware version"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.showFirmwareVersion,
                 key: ValueKey("showFirmwareVersion"),
                 onChanged: (value) {
@@ -1018,7 +1034,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Disable hub filtering"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.disableHubFiltering,
                 key: ValueKey("disableHubFiltering"),
                 onChanged: (value) {
@@ -1033,7 +1049,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Use http instead of ws for shocking"),
-            Switch(
+            HapticSwitch(
                 value: widget.manager.settings.useHttpShocking,
                 key: ValueKey("useHttpShocking"),
                 onChanged: (value) {

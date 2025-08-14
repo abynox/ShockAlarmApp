@@ -14,7 +14,6 @@ class ShockDisclaimer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     ThemeData t = Theme.of(context);
     return AlertDialog.adaptive(
         title: Row(

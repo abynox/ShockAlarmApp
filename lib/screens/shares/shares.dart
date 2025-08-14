@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
@@ -439,7 +440,7 @@ class ShockerShareEntryPermissionEditorState
                 icon: Icon(Icons.info))
           ],
         ),
-        Switch(
+        HapticSwitch(
             value: value,
             onChanged: (v) {
               setState(() {

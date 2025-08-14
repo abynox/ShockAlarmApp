@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
 import 'package:shock_alarm_app/screens/tools/bottom/bottom.dart';
@@ -28,7 +29,7 @@ class ShockerUnpauseDialogState extends State<ShockerUnpauseDialog> {
               .map((shocker) => Row(
                     spacing: 10,
                     children: [
-                      Switch(
+                      HapticSwitch(
                           value: toUnpause.contains(shocker),
                           onChanged: (value) {
                             setState(() {

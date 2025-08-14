@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/screens/shockers/shocker_item.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
@@ -124,7 +125,7 @@ class AlarmItemState extends State<AlarmItem> {
                       icon: Icon(expanded
                           ? Icons.arrow_upward_rounded
                           : Icons.arrow_downward_rounded)),
-                  Switch(
+                  HapticSwitch(
                       value: alarm.active,
                       onChanged: (value) {
                         setState(() {
@@ -149,7 +150,7 @@ class AlarmItemState extends State<AlarmItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("Repeat alarm tone"),
-                    Switch(
+                    HapticSwitch(
                       value: alarm.repeatAlarmsTone,
                       onChanged: (value) {
                         setState(() {
@@ -279,7 +280,7 @@ class AlarmShockerWidgetState extends State<AlarmShockerWidget> {
                                     : "This shocker was paused by the owner. The alarm will not trigger this shocker when it's paused even when you enable it in this menu. It needs to be unpaused so it can be triggered.");
                           },
                         ),
-                      Switch(
+                      HapticSwitch(
                         value: alarmShocker.enabled,
                         onChanged: enable,
                       ),

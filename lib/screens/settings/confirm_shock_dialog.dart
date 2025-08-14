@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/screens/shockers/shocker_item.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
@@ -69,7 +70,7 @@ class _ConfirmShockDialogState extends State<ConfirmShockDialog> {
                       icon: Icon(Icons.info)),
                 ],
               ),
-              Switch(
+              HapticSwitch(
                   value: AlarmListManager.getInstance()
                       .settings
                       .enforceHardLimitInsteadOfShock,

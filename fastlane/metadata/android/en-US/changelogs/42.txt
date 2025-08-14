@@ -6,3 +6,4 @@
 - Make sure vibration warning uses vibration level of vibrate slider
 - Updated shock confirmation handling on random intensity and duration to actually be accurate
 - Fix a few things with the action/cofirm logic on the non grouped shocker view as I totally forgot that view existed
+- Various other small bugfixes

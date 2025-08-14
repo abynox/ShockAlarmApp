@@ -33,6 +33,11 @@ class Settings {
   int confirmShockMinIntensity = 50;
   int confirmShockMinDuration = 2000;
   bool enforceHardLimitInsteadOfShock = false;
+  
+  bool getEnforceHardLimitInsteadOfShock() {
+    return enforceHardLimitInsteadOfShock && confirmShock;
+  }
+  bool enableUiVibrations = true;
 
   Settings();
 
@@ -79,6 +84,8 @@ class Settings {
       confirmShockMinDuration = json["confirmShockMinDuration"];
     if(json["enforceHardLimitInsteadOfShock"] != null)
       enforceHardLimitInsteadOfShock = json["enforceHardLimitInsteadOfShock"];
+    if(json["enableUiVibrations"] != null)
+      enableUiVibrations = json["enableUiVibrations"];
       
   }
 
@@ -104,7 +111,8 @@ class Settings {
       "confirmShock": confirmShock,
       "confirmShockMinIntensity": confirmShockMinIntensity,
       "confirmShockMinDuration": confirmShockMinDuration,
-      "enforceHardLimitInsteadOfShock": enforceHardLimitInsteadOfShock
+      "enforceHardLimitInsteadOfShock": enforceHardLimitInsteadOfShock,
+      "enableUiVibrations": enableUiVibrations
     };
   }
 }

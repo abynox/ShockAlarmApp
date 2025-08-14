@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/components/predefined_spacing.dart';
 import 'package:shock_alarm_app/components/qr_card.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
@@ -40,7 +41,7 @@ class _ApiTokenEditDialogState extends State<ApiTokenEditDialog> {
           for (var permission in availableApiTokenPermissions)
             Row(
               children: [
-                Switch(
+                HapticSwitch(
                     value: widget.apiToken.permissions.contains(permission),
                     onChanged: (value) {
                       if (value) {

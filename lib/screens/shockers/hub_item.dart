@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/components/predefined_spacing.dart';
 import 'package:shock_alarm_app/dialogs/delete_dialog.dart';
 import 'package:shock_alarm_app/components/qr_card.dart';
@@ -219,7 +220,7 @@ class HubItemState extends State<HubItem> {
                       Row(
                         spacing: 10,
                         children: [
-                          Switch(
+                          HapticSwitch(
                               value: showToken,
                               onChanged: (value) => setState(() {
                                     showToken = value;

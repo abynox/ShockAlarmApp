@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'account/account_edit.dart';
@@ -177,7 +178,7 @@ class TokenItemState extends State<TokenItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text("Is session"),
-                    Switch(
+                    HapticSwitch(
                       value: token.type == TokenType.session,
                       onChanged: (value) {
                         setState(() {
