@@ -78,13 +78,6 @@ class _RandomShocksScreenState extends State<RandomShocksScreen> {
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       controls.add(s.getLimitedControls(type, intensity, duration));
     }
-    if (type == ControlType.stop) {
-      // Temporary workaround until OpenShock fixed the issue with stop. So for now we send them individually
-      for (Control c in controls) {
-        AlarmListManager.getInstance().sendControls([c]);
-      }
-      return;
-    }
     AlarmListManager.getInstance().sendControls(controls);
   }
 

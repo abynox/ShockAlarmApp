@@ -792,17 +792,32 @@ class AlarmListManager {
   Future<String?> sendControls(List<Control> controls,
       {String? customName, bool useWs = true}) async {
     Map<int, List<Control>> controlsByToken = {};
+    Map<int, List<Control>> stopControlsByToken = {};
     for (var control in controls) {
-      controlsByToken.putIfAbsent(control.apiTokenId, () => []).add(control);
+      // put stop controls into seperate list
+      (control.type == ControlType.stop ? stopControlsByToken : controlsByToken).putIfAbsent(control.apiTokenId, () => []).add(control);
     }
     OpenShockClient client = OpenShockClient();
+    bool stopControlFailed = false;
+    // first do stop controls
     for (var token in getTokens()) {
-      if (controlsByToken.containsKey(token.id)) {
-        if (!await client.sendControls(token, controlsByToken[token.id]!, this,
+      if (!stopControlsByToken.containsKey(token.id)) continue;
+      for(Control stopControl in stopControlsByToken[token.id]!) {
+        if (!await client.sendControls(token, [stopControl], this,
             customName: customName,
             useWs: !settings.useHttpShocking && useWs)) {
-          return "Failed to send shock to at least 1 shocker, is your token still valid?";
+          stopControlFailed = true; // make sure we also try to send the other stops
         }
+      }
+    }
+    if(stopControlFailed) return "Failed to send stop to at least 1 shocker";
+    // then the other ones
+    for (var token in getTokens()) {
+      if (!controlsByToken.containsKey(token.id)) continue;
+      if (!await client.sendControls(token, controlsByToken[token.id]!, this,
+          customName: customName,
+          useWs: !settings.useHttpShocking && useWs)) {
+        return "Failed to send shock to at least 1 shocker, is your token still valid?";
       }
     }
     return null;

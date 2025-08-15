@@ -53,13 +53,6 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       controls.add(s.getLimitedControls(type, intensity, duration));
     }
-    if (type == ControlType.stop) {
-      // Temporary workaround until OpenShock fixed the issue with stop. So for now we send them individually
-      for (Control c in controls) {
-        AlarmListManager.getInstance().sendControls([c]);
-      }
-      return 0;
-    }
     AlarmListManager.getInstance().sendControls(controls);
     return duration;
   }
@@ -72,13 +65,6 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
     List<Control> controls = [];
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       controls.add(s.getLimitedControls(type, intensity, 300));
-    }
-    if (type == ControlType.stop) {
-      // Temporary workaround until OpenShock fixed the issue with stop. So for now we send them individually
-      for (Control c in controls) {
-        AlarmListManager.getInstance().sendControls([c]);
-      }
-      return;
     }
     AlarmListManager.getInstance().sendLiveControls(controls);
   }

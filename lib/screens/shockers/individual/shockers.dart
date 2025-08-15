@@ -279,6 +279,7 @@ class ShockerScreenState extends State<ShockerScreen> {
     List<Control> controls = [];
     int highestDuration = 0;
     for (Shocker s in shockers ?? AlarmListManager.getInstance().getSelectedShockers()) {
+      if(s.paused) continue;
       Control c = s.getLimitedControls(type, AlarmListManager.getInstance().settings.useSeperateSliders && type == ControlType.vibrate ? s.controls.getRandomVibrateIntensity() : s.controls.getRandomIntensity(), s.controls.getRandomDuration());
       if (c.duration > highestDuration) {
         highestDuration = c.duration;

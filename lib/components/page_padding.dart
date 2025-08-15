@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shock_alarm_app/screens/screen_selector.dart';
 
 class PagePadding extends StatefulWidget {
   final Widget child;

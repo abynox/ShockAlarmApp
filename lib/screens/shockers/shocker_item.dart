@@ -464,13 +464,6 @@ class ShockerItemState extends State<ShockerItem>
 
   void onSendLive(ControlType type, int intensity) {
     List<Control> controls = [widget.shocker.getLimitedControls(type, intensity, 300)];
-    if (type == ControlType.stop) {
-      // Temporary workaround until OpenShock fixed the issue with stop. So for now we send them individually
-      for (Control c in controls) {
-        widget.manager.sendControls([c]);
-      }
-      return;
-    }
     widget.manager.sendLiveControls(controls);
   }
 }

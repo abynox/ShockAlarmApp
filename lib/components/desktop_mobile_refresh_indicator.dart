@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 
 class DesktopMobileRefreshIndicator extends StatefulWidget {
