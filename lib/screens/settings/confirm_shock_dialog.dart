@@ -7,6 +7,8 @@ import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/limits.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 
+import '../shockers/shocking_controls.dart';
+
 class ConfirmShockDialog extends StatefulWidget {
   const ConfirmShockDialog({Key? key}) : super(key: key);
 

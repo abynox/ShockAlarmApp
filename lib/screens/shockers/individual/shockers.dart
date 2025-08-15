@@ -21,6 +21,7 @@ import 'package:shock_alarm_app/services/vibrations.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 import '../hub_item.dart';
 import '../shocker_item.dart';
+import '../shocking_controls.dart';
 
 class ShockerScreen extends StatefulWidget {
   final AlarmListManager manager;

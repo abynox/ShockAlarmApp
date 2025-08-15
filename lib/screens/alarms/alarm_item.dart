@@ -7,6 +7,7 @@ import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../../stores/alarm_store.dart';
 import '../../services/alarm_list_manager.dart';
+import '../shockers/shocking_controls.dart';
 import 'edit_alarm_days.dart';
 import 'edit_alarm_time.dart';
 

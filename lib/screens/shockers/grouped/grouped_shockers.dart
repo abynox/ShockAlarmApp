@@ -17,6 +17,7 @@ import 'package:shock_alarm_app/services/vibrations.dart';
 
 import '../../../services/alarm_list_manager.dart';
 import '../../../services/openshock.dart';
+import '../shocking_controls.dart';
 
 class GroupedShockerScreen extends StatefulWidget {
   final AlarmListManager manager;

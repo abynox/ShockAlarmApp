@@ -8,6 +8,7 @@ import '../../services/alarm_list_manager.dart';
 import '../alarms/edit_alarm_days.dart';
 import '../alarms/edit_alarm_time.dart';
 import '../../components/padded_card.dart';
+import '../shockers/shocking_controls.dart';
 
 class ToneItem extends StatefulWidget {
   final AlarmTone tone;

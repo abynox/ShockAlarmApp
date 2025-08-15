@@ -14,6 +14,7 @@ import 'package:shock_alarm_app/services/limits.dart';
 import '../../components/qr_card.dart';
 import '../../services/alarm_list_manager.dart';
 import '../../services/openshock.dart';
+import '../shockers/shocking_controls.dart';
 
 class SharesScreen extends StatefulWidget {
   AlarmListManager manager;

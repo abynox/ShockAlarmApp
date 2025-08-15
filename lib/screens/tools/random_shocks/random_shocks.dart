@@ -16,6 +16,7 @@ import 'package:shock_alarm_app/screens/tools/random_shocks/bottle_spin.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 
 import '../../../services/openshock.dart';
+import '../../shockers/shocking_controls.dart';
 
 class RandomShocksScreen extends StatefulWidget {
   @override
