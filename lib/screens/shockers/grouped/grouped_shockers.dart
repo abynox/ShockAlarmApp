@@ -158,6 +158,7 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
   @override
   Widget build(BuildContext context) {
     AlarmListManager.getInstance().reloadAllMethod = () {
+      if(!mounted) return;
       setState(() {});
     };
     ThemeData t = Theme.of(context);

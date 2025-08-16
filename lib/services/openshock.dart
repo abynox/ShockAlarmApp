@@ -287,13 +287,40 @@ class OpenShockClient {
     return TokenGetResponseType.success;
   }
 
-  Future<Token?> login(String serverAddress, String email, String password,
-      AlarmListManager manager) async {
+  Future<Token?> loginV1(String serverAddress, String email, String password) async {
     if (serverAddress.endsWith("/")) {
       serverAddress = serverAddress.substring(0, serverAddress.length - 1);
     }
     var response = await http.post(Uri.parse("$serverAddress/1/account/login"),
         body: jsonEncode({"password": password, "email": email}),
+        headers: {
+          "Content-Type": "application/json",
+          'User-Agent': GetUserAgent(),
+        });
+    Token? token;
+    if (response.statusCode == 200) {
+      response.headers["set-cookie"]?.split(";").forEach((element) {
+        if (element.startsWith("openShockSession=")) {
+          var sessionId = element.substring("openShockSession=".length);
+          token = Token(DateTime.now().millisecondsSinceEpoch, sessionId,
+              server: serverAddress, type: TokenType.session);
+        }
+      });
+    }
+    return token;
+  }
+
+  Future<Token?> loginV2(String serverAddress, String email, String password,
+      String? turnstileToken) async {
+    if(turnstileToken == null) {
+      // Use v1 login if turnstile isn't used. This should perhaps be updated when 
+      return loginV1(serverAddress, email, password);
+    }
+    if (serverAddress.endsWith("/")) {
+      serverAddress = serverAddress.substring(0, serverAddress.length - 1);
+    }
+    var response = await http.post(Uri.parse("$serverAddress/2/account/login"),
+        body: jsonEncode({"password": password, "usernameOrEmail": email, "turnstileResponse": turnstileToken}),
         headers: {
           "Content-Type": "application/json",
           'User-Agent': GetUserAgent(),
@@ -833,6 +860,63 @@ class OpenShockClient {
     return ErrorContainer(
         false, getErrorCode(response, "Failed to regenerate token"));
   }
+
+  Future<ErrorContainer<OpenShockBackendInformationData>> getOpenShockInstanceInfo(String serverAddress) async {
+    if (serverAddress.endsWith("/")) {
+      serverAddress = serverAddress.substring(0, serverAddress.length - 1);
+    }
+    var response = await http.get(Uri.parse("$serverAddress/1"),
+        headers: {
+          'User-Agent': GetUserAgent(),
+        });
+    if (response.statusCode == 200) {
+      return ErrorContainer(OpenShockBackendInformation.fromJson(jsonDecode(response.body)).data, null);
+    }
+    return ErrorContainer(
+        null, getErrorCode(response, "Failed to get backend information"));
+  }
+}
+
+// ToDo: Add request for this
+class OpenShockBackendInformationData {
+  String version = "";
+  String commit = "";
+  DateTime currentTime = DateTime.now();
+  String frontendUrl = "";
+  String shortLinkUrl = "";
+  String? turnstileSiteKey;
+
+  OpenShockBackendInformationData() {}
+
+  OpenShockBackendInformationData.fromJson(Map<String, dynamic> json) {
+    version = json["version"];
+    commit = json["commit"];
+    if(json["currentTIme"] != null) currentTime = DateTime.parse(json["currentTIme"]);
+    frontendUrl = json["frontendUrl"];
+    shortLinkUrl = json["shortLinkUrl"];
+    turnstileSiteKey = json["turnstileSiteKey"];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "version": version,
+      "commit": commit,
+      "currentTime": currentTime.toIso8601String(),
+      "frontendUrl": frontendUrl,
+      "shortLinkUrl": shortLinkUrl,
+      "turnstileSiteKey": turnstileSiteKey
+    };
+  }
+}
+
+class OpenShockBackendInformation {
+  String message = "";
+  OpenShockBackendInformationData data = new OpenShockBackendInformationData();
+
+  OpenShockBackendInformation.fromJson(Map<String, dynamic> json) {
+    message = json["message"];
+    data = OpenShockBackendInformationData.fromJson(json["data"]);
+  }
 }
 
 class OTAInstallProgress {
@@ -954,7 +1038,7 @@ class OpenShockShareLink {
   String getLink() {
     String host = "https://openshock.app";
     if (tokenReference != null) {
-      host = tokenReference!.server.replaceAll("//api.", "//");
+      host = tokenReference!.backendData.frontendUrl;
     }
     if (host.endsWith("/")) {
       host = host.substring(0, host.length - 1);

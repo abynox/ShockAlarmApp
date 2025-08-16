@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shock_alarm_app/services/PatternGenerator.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
+import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../main.dart';
 
@@ -31,6 +32,7 @@ class Token {
   TokenType type = TokenType.token;
   String name = "";
   String userId = ""; // may also be token id for alarmserver or displayName for tokens
+  OpenShockBackendInformationData backendData = new OpenShockBackendInformationData();
 
   bool invalidSession = false;
 
@@ -38,7 +40,15 @@ class Token {
 
   static Token fromJson(token) {
     Token t = Token(token["id"], token["token"], server: token["server"], name: token["name"] ?? "", userId: token["userId"] ?? "", invalidSession: token["invalidSession"] ?? false);
-    
+    if(token["backendData"] != null) {
+      t.backendData = OpenShockBackendInformationData.fromJson(token["backendData"]);
+    } else {
+      // this should be requested then
+      OpenShockClient().getOpenShockInstanceInfo(t.server).then((backend) {
+        // In this case it doesn't matter that the instance info is only available shortly after as this will only be done once on migration to the new token format
+        if(backend.value != null) t.backendData = backend.value!;
+      });
+    }
     if(token["tokenType"] != null) {
       // support old tokens
       token["flavor"] = token["tokenType"];
@@ -57,11 +67,17 @@ class Token {
   }
 
   Map<String, dynamic> toJson() {
-    return {"id": id, "token": token, "server": server, "name": name, "type": type.index, "userId": userId, "invalidSession": invalidSession, "flavor": flavor.index};
+    return {"id": id, "token": token, "server": server, "name": name, "type": type.index, "userId": userId, "invalidSession": invalidSession, "flavor": flavor.index, "backendData": backendData.toJson()};
   }
 
   bool isSession() {
     return type == TokenType.session;
+  }
+
+  Future<void> addBackendData() async {
+    ErrorContainer<OpenShockBackendInformationData> data = await OpenShockClient().getOpenShockInstanceInfo(server);
+    if(data.value == null) return;
+    backendData = data.value!;
   }
 }
 

@@ -33,7 +33,9 @@ class TokenItemState extends State<TokenItem> {
   TokenItemState(this.token, this.manager, this.onRebuild);
 
   void _delete() async {
-    deleting = true;
+    setState(() {
+      deleting = true;
+    });
     if (token.flavor == TokenFlavor.openshock) {
       String? error = await manager.deleteToken(token);
       await manager.updateShockerStore();
@@ -142,8 +144,6 @@ class TokenItemState extends State<TokenItem> {
                         icon: Icon(expanded
                             ? Icons.arrow_upward_rounded
                             : Icons.arrow_downward_rounded)),
-                  if (!manager.settings.allowTokenEditing && deleting)
-                    CircularProgressIndicator(),
                   if (token.flavor == TokenFlavor.openshock && token.type == TokenType.session)
                     IconButton(
                       icon: Icon(Icons.person),
@@ -154,6 +154,8 @@ class TokenItemState extends State<TokenItem> {
                         onRebuild();
                       },
                     ),
+                  if (!manager.settings.allowTokenEditing && deleting)
+                    CircularProgressIndicator(),
                   if (!manager.settings.allowTokenEditing && !deleting)
                     IconButton(
                       icon: Icon(Icons.logout),

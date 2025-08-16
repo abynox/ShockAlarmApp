@@ -43,9 +43,9 @@ class AlarmListManager {
   void setAlarmImplementation() {
 
     if (isAndroid() && !settings.useAlarmServer) {
-      alarmManager = AndroidAlarmManager();
+      alarmManager = AndroidShockAlarmManager();
     } else {
-      alarmManager = AlarmServerAlarmManager();
+      alarmManager = AlarmServerShockAlarmManager();
     }
   }
 
@@ -501,9 +501,10 @@ class AlarmListManager {
   }
 
   Future<bool> login(
-      String serverAddress, String email, String password) async {
+      String serverAddress, String email, String password, String? turnstileToken) async {
     Token? session =
-        await OpenShockClient().login(serverAddress, email, password, this);
+        await OpenShockClient().loginV2(serverAddress, email, password, turnstileToken);
+    await session?.addBackendData();
     if (session != null) {
       await saveToken(session);
     }

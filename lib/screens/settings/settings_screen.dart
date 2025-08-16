@@ -14,11 +14,13 @@ import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/settings/confirm_shock_dialog.dart';
+import 'package:shock_alarm_app/screens/settings/login_popup.dart';
 import 'package:shock_alarm_app/screens/tones/tones.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 import 'token_item.dart';
 import '../../stores/alarm_store.dart';
 import '../tools/tools.dart';
@@ -522,76 +524,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future showLoginPopup() async {
-    TextEditingController serverController = TextEditingController();
-    TextEditingController usernameController = TextEditingController();
-    TextEditingController passwordController = TextEditingController();
-    serverController.text = "https://api.openshock.app";
+    String? turnstileToken;
     return showDialog(
         context: context,
-        builder: (BuildContext context) {
-          return AlertDialog.adaptive(
-            title: Text("Log in to OpenShock"),
-            content: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  TextField(
-                    decoration: InputDecoration(labelText: "Server"),
-                    controller: serverController,
-                  ),
-                  AutofillGroup(
-                      child: Column(
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(labelText: "Email"),
-                        controller: usernameController,
-                        autofillHints: [AutofillHints.email],
-                      ),
-                      TextField(
-                        decoration: InputDecoration(labelText: "Password"),
-                        obscureText: true,
-                        obscuringCharacter: "*",
-                        controller: passwordController,
-                        autofillHints: [AutofillHints.password],
-                      )
-                    ],
-                  ))
-                ],
-              ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text("Cancel")),
-              TextButton(
-                child: Text("Register"),
-                onPressed: () {
-                  launchUrl(
-                      Uri.parse("https://openshock.app/#/account/signup"));
-                },
-              ),
-              TextButton(
-                  onPressed: () async {
-                    LoadingDialog.show("Logging in");
-                    bool worked = await widget.manager.login(
-                        serverController.text,
-                        usernameController.text,
-                        passwordController.text);
-                    if (worked) {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                      AlarmListManager.getInstance().reloadAllMethod!();
-                    } else {
-                      Navigator.of(context).pop();
-                      ErrorDialog.show(
-                          "Login failed", "Check server, email and password");
-                    }
-                  },
-                  child: Text("Login"))
-            ],
-          );
-        });
+        builder: (context) =>LoginPopup());
   }
 
   
@@ -1040,6 +976,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (value) {
                   setState(() {
                     widget.manager.settings.disableHubFiltering = value;
+                    widget.manager.saveSettings();
+                  });
+                })
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Text("Login without cloudflare"),
+                IconButton(
+                    onPressed: () {
+                      InfoDialog.show("What does this mean?",
+                          "ShockAlarm uses the V2 login api of OpenShock by default which requires cloudflare turnstile to be embedded for bot detection. By activating this you can switch back to the V1 login api which does not require this but may not be available on all OpenShock instances.");
+                    },
+                    icon: Icon(Icons.info))
+              ],
+            ),
+            HapticSwitch(
+                value: widget.manager.settings.forceLoginV1,
+                key: ValueKey("forceLoginV1"),
+                onChanged: (value) {
+                  setState(() {
+                    widget.manager.settings.forceLoginV1 = value;
                     widget.manager.saveSettings();
                   });
                 })

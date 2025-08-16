@@ -1,0 +1,3 @@
+**Changelog:**
+- Switched login to LoginV2 on Android. Linux and Windows will follow. This means cloudflare turnstile has been added to the app. It can be disabled in the settings.
+- When logging out a loading indicator is now shown

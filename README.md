@@ -125,7 +125,7 @@ You can download a Portable version (zip file) from the [releases](https://githu
 - [x] Add global limit for self.
 - [x] Stop live playback when changing type
 - [x] Make sure text in popups is scrollable so it can be read completely
-- [ ] Implement login V2 (how am I supposed to reliably extract sideKeys for turnstile on any OpenShock instance)
+- [x] Implement login V2 (Android only currently)
 - [ ] Implement Shares V2 (once officially declared done in backend and implementation in official frontend exists. Can't make sense of the api rn without explenation)
 
 # Planned settings

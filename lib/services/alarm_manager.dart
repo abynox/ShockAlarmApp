@@ -16,7 +16,7 @@ abstract class AlarmManager {
   Future<bool> saveTone(AlarmTone tone);
 }
 
-class AndroidAlarmManager implements AlarmManager {
+class AndroidShockAlarmManager implements AlarmManager {
   @override
   AlarmManagerType? type = AlarmManagerType.android;
   
@@ -61,7 +61,7 @@ class AndroidAlarmManager implements AlarmManager {
   }
 }
 
-class AlarmServerAlarmManager implements AlarmManager {
+class AlarmServerShockAlarmManager implements AlarmManager {
   @override
   AlarmManagerType? type = AlarmManagerType.server;
 
