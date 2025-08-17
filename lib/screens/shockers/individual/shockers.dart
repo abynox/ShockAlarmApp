@@ -128,7 +128,6 @@ class ShockerScreen extends StatefulWidget {
                     Navigator.of(context).pop();
                     await manager.updateShockerStore();
                     reloadState();
-                    // ToDo add pair code thingy
                     await HubItem.pairHub(context, manager, hub.hubId!);
                     await manager.updateShockerStore();
                     reloadState();

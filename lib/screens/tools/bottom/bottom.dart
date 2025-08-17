@@ -65,7 +65,6 @@ class _BottomScreenState extends State<BottomScreen>
 
   @override
   void deactivate() {
-    // TODO: implement deactivate
     WakelockPlus.disable();
 
     _controller.dispose();

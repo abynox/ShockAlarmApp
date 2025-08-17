@@ -36,7 +36,6 @@ class _BottleSpinScreenState extends State<BottleSpinScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     doSpin();
   }
@@ -222,7 +221,6 @@ class _BottleSpinScreenState extends State<BottleSpinScreen> {
                                 if (directions.length > 20) {
                                   directions.removeAt(0);
                                 }
-                                // ToDo: check whether it was grabbed in on front or back so angle can be adjusted accordingly
                                 setState(() {
                                   angle = a;
                                 });

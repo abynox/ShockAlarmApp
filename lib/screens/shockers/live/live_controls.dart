@@ -128,7 +128,6 @@ class _LiveControlsState extends State<LiveControls> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     LiveControlWS.onLatencyGlobal = null;
   }

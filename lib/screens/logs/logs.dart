@@ -86,7 +86,6 @@ class LogScreenState extends State<LogScreen> {
     ShockerLogStats s = ShockerLogStats(themeData: Theme.of(context));
     s.addLogs(logs);
     s.doStats();
-    // ToDo: Open stats page with the stats
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => LogStatScreen(shockers: shockers, stats: s, state: this,)));
     return s;

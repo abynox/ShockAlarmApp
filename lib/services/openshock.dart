@@ -877,7 +877,6 @@ class OpenShockClient {
   }
 }
 
-// ToDo: Add request for this
 class OpenShockBackendInformationData {
   String version = "";
   String commit = "";

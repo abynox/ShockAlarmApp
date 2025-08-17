@@ -29,7 +29,6 @@ class LogStatScreen extends StatefulWidget {
 class _LogStatScreenState extends State<LogStatScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     widget.state.reloadShockerLogs = () {
       rebuildStats();
     };

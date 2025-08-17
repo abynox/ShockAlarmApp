@@ -13,7 +13,6 @@ class PagePadding extends StatefulWidget {
 class PagePaddingState extends State<PagePadding> {
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Padding(
       padding: EdgeInsets.all(10),
       child: widget.child,
