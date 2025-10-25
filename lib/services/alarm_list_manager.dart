@@ -634,8 +634,13 @@ class AlarmListManager {
     return getAnyUserToken(true) != null;
   }
 
-  Future<String?> redeemShareCode(String code) {
-    return OpenShockClient().redeemShareCode(code, this);
+  Future<String?> redeemShareCodeOrInvite(String code) async {
+    String? inviteRes = await OpenShockClient().acceptInvite(code, this);
+    if(inviteRes != null) {
+      inviteRes = await OpenShockClient().redeemShareCode(code, this);
+      if(inviteRes != null) return "Couldn't claim code as invite nor share code. Did you copy it correctly?";
+    }
+    return inviteRes;
   }
 
   Future<List<OpenShockDevice>> getDevices() async {

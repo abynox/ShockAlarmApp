@@ -520,6 +520,26 @@ class OpenShockClient {
         "Failed to create share");
   }
 
+
+  Future<ErrorContainer<String>> createInvite(List<Shocker> shockersToShare, OpenShockShareLimits limits, OpenShockUser? recipientUser) async {
+    Token? t = AlarmListManager.getInstance().getToken(shockersToShare[0].apiTokenId);
+    if (t == null) return ErrorContainer(null, "Token not found");
+    var shockerIdsWithLimits = [];
+    for(Shocker s in shockersToShare) {
+      Map<String,dynamic> l = limits.toJson(shockerId: s.id);
+      shockerIdsWithLimits.add(l);
+    }
+    var response = await PostRequest(t, "/2/shares/user/invites", jsonEncode({
+      "shockers": shockerIdsWithLimits,
+      "user": recipientUser?.id
+    }));
+    if (response.statusCode == 200) {
+      return ErrorContainer(response.body.replaceAll("\"", ""), null);
+    }
+    return ErrorContainer(
+        null, getErrorCode(response, "Failed to create Invite"));
+  }
+
   Future<String?> deleteShareCode(
       OpenShockShareCode shareCode, AlarmListManager alarmListManager) async {
     if (shareCode.shockerReference == null) return "Shocker not found";
@@ -540,6 +560,17 @@ class OpenShockClient {
     }
     return getErrorCode(await PostRequest(t, "/1/shares/code/${code}", ""),
         "Failed to redeem share code. Did you copy it correctly?");
+  }
+
+
+  Future<String?> acceptInvite(String code, AlarmListManager alarmListManager) async {
+    // first get a valid token
+    Token? t = await alarmListManager.getSpecificUserToken();
+    if (t == null) {
+      return "No valid session token found";
+    }
+    return getErrorCode(await PostRequest(t, "/2/shares/user/invites/incoming/${code}", ""),
+        "Failed to accept invite. Did you copy it correctly?");
   }
 
   Future<List<OpenShockDevice>> getDevices(Token t) async {
@@ -875,6 +906,7 @@ class OpenShockClient {
     return ErrorContainer(
         null, getErrorCode(response, "Failed to get backend information"));
   }
+
 }
 
 class OpenShockBackendInformationData {
@@ -1144,7 +1176,7 @@ class OpenShockShareLimits {
 
   OpenShockShareLimits();
 
-  dynamic toJson() {
+  dynamic toJson({String? shockerId}) {
     return {
       "limits": {"intensity": limits.intensity, "duration": limits.duration},
       "permissions": {
@@ -1152,7 +1184,8 @@ class OpenShockShareLimits {
         "vibrate": permissions.vibrate,
         "sound": permissions.sound,
         "live": permissions.live
-      }
+      },
+      if(shockerId != null) "id": shockerId
     };
   }
 
@@ -1173,6 +1206,12 @@ class OpenShockShareLimits {
     limits.permissions.vibrate = shocker.vibrateAllowed;
     limits.permissions.sound = shocker.soundAllowed;
     return limits;
+  }
+
+  void validate() {
+    if((limits.duration ?? OpenShockLimits.getMaxDuration()) > OpenShockLimits.getMaxDuration()) {
+      limits.duration = OpenShockLimits.getMaxDuration();
+    }
   }
 }
 

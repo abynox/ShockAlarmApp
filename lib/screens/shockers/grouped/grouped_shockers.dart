@@ -222,14 +222,13 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
                           iconColor: t.colorScheme.onSurfaceVariant,
                           itemBuilder: (context) {
                             return [
-                              if (AlarmListManager.getInstance().selectedShockers.length == 1)
-                                for (ShockerAction a in actions)
-                                  PopupMenuItem(
-                                      value: a.name,
-                                      child: Row(
-                                        spacing: 10,
-                                        children: [a.icon, Text(a.name)],
-                                      )),
+                              for (ShockerAction a in actions)
+                                if (AlarmListManager.getInstance().selectedShockers.length == 1 || a.allowMultipleShockers) PopupMenuItem(
+                                    value: a.name,
+                                    child: Row(
+                                      spacing: 10,
+                                      children: [a.icon, Text(a.name)],
+                                    )),
                               PopupMenuItem(
                                   value: "live",
                                   child: Row(
@@ -244,11 +243,14 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
                             ];
                           },
                           onSelected: (String value) {
-                            Shocker shocker = AlarmListManager.getInstance().shockers.firstWhere(
-                                (x) => x.id == AlarmListManager.getInstance().selectedShockers[0]);
+                            List<Shocker> shockers = [];
+                            for(String id in AlarmListManager.getInstance().selectedShockers) {
+                              shockers.add(AlarmListManager.getInstance().shockers.firstWhere(
+                                (x) => x.id == id));
+                            }
                             for (ShockerAction a in actions) {
                               if (a.name == value) {
-                                a.onClick(AlarmListManager.getInstance(), shocker, context, onRebuild);
+                                a.onClick(AlarmListManager.getInstance(), shockers, context, onRebuild);
                                 return;
                               }
                             }

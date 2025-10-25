@@ -38,13 +38,13 @@ class ShockerScreen extends StatefulWidget {
         builder: (context) {
           TextEditingController codeController = TextEditingController();
           return AlertDialog.adaptive(
-            title: Text("Redeem share code"),
+            title: Text("Claim invite or share code"),
             content: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
                   TextField(
                     controller: codeController,
-                    decoration: InputDecoration(labelText: "Share code"),
+                    decoration: InputDecoration(labelText: "invite or share code"),
                   )
                 ],
               ),
@@ -63,23 +63,24 @@ class ShockerScreen extends StatefulWidget {
                           "Invalid code", "The code cannot be empty");
                       return;
                     }
-                    if (await redeemShareCode(code, context, manager)) {
+                    if (await redeemShareCodeOrInvite(code, context, manager)) {
                       Navigator.of(context).pop();
+                      InfoDialog.show("Shares active", "You can now control the shockers.");
 
                       await AlarmListManager.getInstance().updateShockerStore();
                       reloadState();
                     }
                   },
-                  child: Text("Redeem"))
+                  child: Text("Claim"))
             ],
           );
         });
   }
 
-  static Future<bool> redeemShareCode(
+  static Future<bool> redeemShareCodeOrInvite(
       String code, BuildContext context, AlarmListManager manager) async {
-    LoadingDialog.show("Redeeming code");
-    String? error = await manager.redeemShareCode(code);
+    LoadingDialog.show("Claiming code");
+    String? error = await manager.redeemShareCodeOrInvite(code);
     if (error != null) {
       Navigator.of(context).pop();
       ErrorDialog.show("Error", error);
@@ -227,7 +228,7 @@ class ShockerScreen extends StatefulWidget {
                         Navigator.of(context).pop();
                         startRedeemShareCode(manager, context, reloadState);
                       },
-                      child: Text("Redeem share code")),
+                      child: Text("Claim invite")),
                   TextButton(
                       onPressed: () async {
                         await startPairShocker(manager, context, reloadState);

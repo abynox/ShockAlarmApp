@@ -72,6 +72,7 @@ class _SharesScreenState extends State<SharesScreen> {
                 TextButton(
                     onPressed: () async {
                       LoadingDialog.show("Creating share");
+                      limits.validate();
 
                       String? error = await OpenShockClient()
                           .addShare(shocker, limits, manager);

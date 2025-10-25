@@ -13,6 +13,7 @@ import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
 import 'package:shock_alarm_app/screens/screen_selector.dart';
 import 'package:shock_alarm_app/screens/shockers/shocking_controls.dart';
+import 'package:shock_alarm_app/screens/user_shares/create_user_share_dialog.dart';
 import 'package:shock_alarm_app/services/PatternGenerator.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/formatter.dart';
@@ -27,11 +28,12 @@ import '../../services/openshock.dart';
 
 class ShockerAction {
   String name;
-  Function(AlarmListManager, Shocker, BuildContext, Function) onClick;
+  Function(AlarmListManager, List<Shocker>, BuildContext, Function) onClick;
   Icon icon;
+  bool allowMultipleShockers = false;
 
   ShockerAction(
-      {this.name = "Action", required this.onClick, required this.icon});
+      {this.name = "Action", this.allowMultipleShockers = false, required this.onClick, required this.icon});
 }
 
 class ShockerItem extends StatefulWidget {
@@ -39,17 +41,18 @@ class ShockerItem extends StatefulWidget {
   final Shocker shocker;
   final AlarmListManager manager;
   final Function onRebuild;
-  int? Function(ControlType type, int intensity, int duration, Shocker shocker) onShock;
+  int? Function(ControlType type, int intensity, int duration, Shocker shocker)
+      onShock;
   static List<ShockerAction> ownShockerActions = [
     ShockerAction(
         name: "Edit",
         icon: Icon(Icons.edit),
-        onClick: (AlarmListManager manager, Shocker shocker,
+        onClick: (AlarmListManager manager, List<Shocker> shocker,
             BuildContext context, Function onRebuild) async {
           LoadingDialog.show("Loading details");
           List<OpenShockDevice> devices = await manager.getDevices();
           OpenShockShocker? s =
-              await OpenShockClient().getShockerDetails(shocker);
+              await OpenShockClient().getShockerDetails(shocker[0]);
           Navigator.of(context).pop();
           if (s == null) {
             ErrorDialog.show("Failed to get shocker details",
@@ -57,7 +60,7 @@ class ShockerItem extends StatefulWidget {
             return;
           }
           TextEditingController controller = TextEditingController();
-          controller.text = shocker.name;
+          controller.text = shocker[0].name;
           showDialog(
               context: context,
               builder: (context) => AlertDialog.adaptive(
@@ -65,7 +68,7 @@ class ShockerItem extends StatefulWidget {
                     content: ShockerDetails(
                       shocker: s,
                       devices: devices,
-                      apiTokenId: shocker.apiTokenId,
+                      apiTokenId: shocker[0].apiTokenId,
                     ),
                     actions: [
                       TextButton(
@@ -77,7 +80,7 @@ class ShockerItem extends StatefulWidget {
                           onPressed: () async {
                             LoadingDialog.show("Saving shocker");
                             String? errorMessage =
-                                await manager.editShocker(shocker, s);
+                                await manager.editShocker(shocker[0], s);
                             Navigator.of(context).pop();
                             if (errorMessage != null) {
                               ErrorDialog.show(
@@ -96,36 +99,41 @@ class ShockerItem extends StatefulWidget {
     ShockerAction(
         name: "Logs",
         icon: Icon(Icons.list),
-        onClick: (AlarmListManager manager, Shocker shocker,
+        allowMultipleShockers: true,
+        onClick: (AlarmListManager manager, List<Shocker> shocker,
             BuildContext context, Function onRebuild) {
           Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) =>
-                      LogScreen(shockers: [shocker], manager: manager)));
+                      LogScreen(shockers: shocker, manager: manager)));
+        }),
+    ShockerAction(name: "Create Share", icon: Icon(Icons.share), allowMultipleShockers: true, onClick: (AlarmListManager manager, List<Shocker> shockers,
+            BuildContext context, Function onRebuild) {
+          showDialog(context: context, builder: (context) => CreateUserShareDialog(shockersToShare: shockers));
         }),
     ShockerAction(
-        name: "Shares",
-        icon: Icon(Icons.share),
-        onClick: (AlarmListManager manager, Shocker shocker,
+        name: "Edit Shares",
+        icon: Icon(Icons.key),
+        onClick: (AlarmListManager manager, List<Shocker> shocker,
             BuildContext context, Function onRebuild) {
           Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) =>
-                      SharesScreen(shocker: shocker, manager: manager)));
+                      SharesScreen(shocker: shocker[0], manager: manager)));
         }),
     ShockerAction(
         name: "Delete",
         icon: Icon(Icons.delete),
-        onClick: (AlarmListManager manager, Shocker shocker,
+        onClick: (AlarmListManager manager, List<Shocker> shocker,
             BuildContext context, Function onRebuild) {
           showDialog(
               context: context,
               builder: (context) => DeleteDialog(
                   onDelete: () async {
                     LoadingDialog.show("Deleting shocker");
-                    String? errorMessage = await manager.deleteShocker(shocker);
+                    String? errorMessage = await manager.deleteShocker(shocker[0]);
                     Navigator.of(context).pop();
                     if (errorMessage != null) {
                       ErrorDialog.show(
@@ -138,20 +146,22 @@ class ShockerItem extends StatefulWidget {
                   },
                   title: "Delete shocker",
                   body:
-                      "Are you sure you want to delete the shocker ${shocker.name}?\n\n(You can add it again later. However shares will be lost until you manually recreate them all)"));
+                      "Are you sure you want to delete the shocker ${shocker[0].name}?\n\n(You can add it again later. However shares will be lost until you manually recreate them all)"));
         }),
   ];
 
   static List<ShockerAction> foreignShockerActions = [
     ShockerAction(
-        onClick: (AlarmListManager manager, Shocker shocker,
+      allowMultipleShockers: true,
+        onClick: (AlarmListManager manager, List<Shocker> shockers,
             BuildContext context, Function onRebuild) {
-          showDialog(
+              for(Shocker shocker in shockers) {
+                showDialog(
               context: context,
               builder: (context) => AlertDialog.adaptive(
-                    title: Text("Unlink shocker"),
+                    title: Text("Unlink shocker '${shocker.name}'"),
                     content: Text(
-                        "Are you sure you want to unlink the shocker ${shocker.name} from your account? After that you cannot control the shocker anymore unless you redeem another share code."),
+                        "Are you sure you want to unlink the shocker '${shocker.name}' from your account? After that you cannot control the shocker anymore unless you redeem another share code."),
                     actions: [
                       TextButton(
                           onPressed: () {
@@ -186,25 +196,26 @@ class ShockerItem extends StatefulWidget {
                           child: Text("Unlink"))
                     ],
                   ));
+              }
         },
         icon: Icon(Icons.delete),
         name: "Unlink"),
   ];
-  
+
   static int runningConfirmNumber = 0;
 
-  ShockerItem({
-    Key? key,
-    required this.shocker,
-    required this.manager,
-    required this.onRebuild,
-    required this.onShock
-  }) : super(key: key);
+  ShockerItem(
+      {Key? key,
+      required this.shocker,
+      required this.manager,
+      required this.onRebuild,
+      required this.onShock})
+      : super(key: key);
 
   static void ensureSafety() {
     runningConfirmNumber++;
   }
-  
+
   @override
   State<StatefulWidget> createState() => ShockerItemState();
 }
@@ -219,31 +230,34 @@ class ShockerItemState extends State<ShockerItem>
   double delayDuration = 0;
   bool loadingPause = false;
 
-  bool selected() =>
-      AlarmListManager.getInstance().selectedShockers.contains(widget.shocker.id);
+  bool selected() => AlarmListManager.getInstance()
+      .selectedShockers
+      .contains(widget.shocker.id);
 
-  bool liveEnabled() =>
-      AlarmListManager.getInstance().liveActiveForShockers.contains(widget.shocker.id);
+  bool liveEnabled() => AlarmListManager.getInstance()
+      .liveActiveForShockers
+      .contains(widget.shocker.id);
 
   @override
   void initState() {
     super.initState();
-    widget.shocker.controls.limitTo(widget.shocker.durationLimit, widget.shocker.intensityLimit);
+    widget.shocker.controls
+        .limitTo(widget.shocker.durationLimit, widget.shocker.intensityLimit);
   }
 
   void setPauseState(bool pause) async {
     setState(() {
       loadingPause = true;
-      if(pause) {
+      if (pause) {
         AlarmListManager.getInstance()
             .selectedShockers
             .remove(widget.shocker.id);
       }
     });
     ShockAlarmVibrations.pause(pause);
-    String? error =
-        await OpenShockClient().setPauseStateOfShocker(widget.shocker, widget.manager, pause);
-    if(!mounted) return;
+    String? error = await OpenShockClient()
+        .setPauseStateOfShocker(widget.shocker, widget.manager, pause);
+    if (!mounted) return;
     setState(() {
       loadingPause = false;
     });
@@ -259,7 +273,7 @@ class ShockerItemState extends State<ShockerItem>
     List<ShockerAction> actions = widget.shocker.isOwn
         ? ShockerItem.ownShockerActions
         : ShockerItem.foreignShockerActions;
-        return PaddedCard(
+    return PaddedCard(
         child: Column(
       children: [
         GestureDetector(
@@ -278,12 +292,12 @@ class ShockerItemState extends State<ShockerItem>
                 children: [
                   Checkbox(
                     value: selected(),
-                    shape: CircleBorder(),                    
+                    shape: CircleBorder(),
                     onChanged: (bool? value) {
                       print("Selected shocker ${widget.shocker.name}: $value");
                       if (value == null) return;
                       if (value) {
-                        if(widget.shocker.paused) return;
+                        if (widget.shocker.paused) return;
                         expanded = true;
                         AlarmListManager.getInstance()
                             .selectedShockers
@@ -334,12 +348,12 @@ class ShockerItemState extends State<ShockerItem>
                     onSelected: (String value) {
                       for (ShockerAction a in actions) {
                         if (a.name == value) {
-                          a.onClick(widget.manager, widget.shocker, context, widget.onRebuild);
+                          a.onClick(widget.manager, [widget.shocker], context,
+                              widget.onRebuild);
                           return;
                         }
                       }
                       if (value == "live") {
-
                         ShockerItem.ensureSafety();
                         setState(() {
                           if (AlarmListManager.getInstance()
@@ -349,10 +363,9 @@ class ShockerItemState extends State<ShockerItem>
                                 .liveActiveForShockers
                                 .remove(widget.shocker.id);
                           } else {
-
-                          AlarmListManager.getInstance()
-                              .selectedShockers
-                              .remove(widget.shocker.id);
+                            AlarmListManager.getInstance()
+                                .selectedShockers
+                                .remove(widget.shocker.id);
                             AlarmListManager.getInstance()
                                 .liveActiveForShockers
                                 .add(widget.shocker.id);
@@ -368,13 +381,17 @@ class ShockerItemState extends State<ShockerItem>
                     },
                   ),
                   if (loadingPause) CircularProgressIndicator(),
-                  if (widget.shocker.isOwn && widget.shocker.paused && !loadingPause)
+                  if (widget.shocker.isOwn &&
+                      widget.shocker.paused &&
+                      !loadingPause)
                     IconButton(
                         onPressed: () {
                           setPauseState(false);
                         },
                         icon: Icon(Icons.play_arrow)),
-                  if (widget.shocker.isOwn && !widget.shocker.paused && !loadingPause)
+                  if (widget.shocker.isOwn &&
+                      !widget.shocker.paused &&
+                      !loadingPause)
                     IconButton(
                         onPressed: () {
                           expanded = false;
@@ -420,8 +437,14 @@ class ShockerItemState extends State<ShockerItem>
               ? ShockingControls(
                   manager: widget.manager,
                   controlsContainer: widget.shocker.controls,
-                  key: ValueKey("${widget.shocker.getIdentifier()}-shocking-controls"),
-                  durationLimit: AlarmListManager.getInstance().settings.increaseMaxDuration ? widget.shocker.durationLimit : min(widget.shocker.durationLimit, OpenShockLimits.maxRecommendedDuration),
+                  key: ValueKey(
+                      "${widget.shocker.getIdentifier()}-shocking-controls"),
+                  durationLimit: AlarmListManager.getInstance()
+                          .settings
+                          .increaseMaxDuration
+                      ? widget.shocker.durationLimit
+                      : min(widget.shocker.durationLimit,
+                          OpenShockLimits.maxRecommendedDuration),
                   intensityLimit: widget.shocker.intensityLimit,
                   shockAllowed: widget.shocker.shockAllowed,
                   showActions: !selected(),
@@ -464,7 +487,9 @@ class ShockerItemState extends State<ShockerItem>
   }
 
   void onSendLive(ControlType type, int intensity) {
-    List<Control> controls = [widget.shocker.getLimitedControls(type, intensity, 300)];
+    List<Control> controls = [
+      widget.shocker.getLimitedControls(type, intensity, 300)
+    ];
     widget.manager.sendLiveControls(controls);
   }
 }

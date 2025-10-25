@@ -60,7 +60,7 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
     navigationBarItems = [
       if (supportsAlarms)
         BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarms'),
-      BottomNavigationBarItem(icon: Icon(Icons.link), label: 'Share Links'),
+      BottomNavigationBarItem(icon: Icon(Icons.link), label: 'Shares'),
       BottomNavigationBarItem(
           icon: OpenShockClient.getIconForControlType(ControlType.shock),
           label: 'Devices'),
@@ -199,7 +199,7 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
     String action = parts[2];
     String code = parts[3];
     if(action == "sharelink") {
-      // openshock://sharelink/code?name=name&server=server
+      // openshock://sharelink/<code>?name=<name>&server=<server>
       print("Sharelink url received");
       print("Url: $url");
 
@@ -245,8 +245,9 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
               ],
             );
           });
-    }
+    } 
     else if (action == "sharecode") {
+       // openshock://sharecode/<code>
       showDialog(
           context: context,
           builder: (context) {
@@ -262,7 +263,7 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
                     child: Text("Close")),
                 TextButton(
                     onPressed: () async {
-                      if (await ShockerScreen.redeemShareCode(
+                      if (await ShockerScreen.redeemShareCodeOrInvite(
                           code, context, manager)) {
                         Navigator.of(context).pop();
                         manager.reloadAllMethod!();

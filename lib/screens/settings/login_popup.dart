@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 import 'package:flutter/material.dart';
+import 'package:shock_alarm_app/components/predefined_spacing.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
@@ -73,7 +74,7 @@ class _LoginPopupState extends State<LoginPopup> {
                         controller: widget.passwordController,
                         autofillHints: [AutofillHints.password],
                       ),
-                      if(widget.backendInfo != null && useTurnstile) CloudFlareTurnstile(
+                      if(widget.backendInfo != null && useTurnstile) ...[Padding(padding: PredefinedSpacing.paddingMedium()) ,CloudFlareTurnstile(
                         siteKey: widget.backendInfo!.turnstileSiteKey!, //Change with your site key
                         baseUrl: widget.backendInfo!.frontendUrl,
                         mode: TurnstileMode.nonInteractive,
@@ -81,7 +82,7 @@ class _LoginPopupState extends State<LoginPopup> {
                           widget.turnstileToken = token;
                         },
                         onTokenExpired: reloadBackendData,
-                      ),
+                      )],
                     ],
                   ))
                 ],

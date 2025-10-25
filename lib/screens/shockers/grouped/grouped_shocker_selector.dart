@@ -192,9 +192,11 @@ class ShockerChipState extends State<ShockerChip> {
       actions.add(GestureDetector(
         onTap: () {
           Navigator.of(context).pop();
-          a.onClick(manager, shocker, context, manager.reloadAllMethod!);
+          a.onClick(manager, [shocker], context, manager.reloadAllMethod!);
         },
         child: Row(
+          spacing: 5,
+          mainAxisSize: MainAxisSize.min,
           children: [
             a.icon,
             Text(
@@ -202,8 +204,6 @@ class ShockerChipState extends State<ShockerChip> {
               style: t!.textTheme.titleLarge,
             )
           ],
-          spacing: 5,
-          mainAxisSize: MainAxisSize.min,
         ),
       ));
     }

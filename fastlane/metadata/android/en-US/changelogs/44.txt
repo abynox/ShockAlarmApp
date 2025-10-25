@@ -1,0 +1,5 @@
+**Changelog:**
+- Implemented V2 Shares of OpenShock api.
+- Reorganized shares page to accomodate new invite model
+- Added padding between turnstile challenge and password field
+- Made unlinking shockers also work when selecting multiple at once
