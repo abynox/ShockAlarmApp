@@ -907,6 +907,18 @@ class OpenShockClient {
         null, getErrorCode(response, "Failed to get backend information"));
   }
 
+  Future<OpenShockUser?> getUserByUsername(String username) async {
+    Token? t = await AlarmListManager.getInstance().getSpecificUserToken();
+    if (t == null) return null;
+    var response = await GetRequest(
+        t,
+        "/1/users/by-name/${username}");
+    if (response.statusCode == 200) {
+      return OpenShockUser.fromJson(jsonDecode(response.body));
+    }
+    return null;
+  }
+
 }
 
 class OpenShockBackendInformationData {
@@ -1391,7 +1403,7 @@ class OpenShockUser {
     name = json["name"];
     image = json["image"];
     if (json["connectionId"] != null) connectionId = json["connectionId"];
-    customName = json["customName"];
+    if(json["customName"] != null) customName = json["customName"];
   }
 
   toJson() {
