@@ -6,21 +6,26 @@ import 'package:shock_alarm_app/screens/tools/bottom/bottom.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 
-class ShockerUnpauseDialog extends StatefulWidget {
-  const ShockerUnpauseDialog({Key? key}) : super(key: key);
+class ShockerSelectDialog extends StatefulWidget {
+  String title;
+  Function(List<Shocker>) confirmCallback;
+  String buttonText;
+
+  ShockerSelectDialog(this.title, this.confirmCallback, this.buttonText, {Key? key}) : super(key: key);
+
 
   @override
-  State<StatefulWidget> createState() => ShockerUnpauseDialogState();
+  State<StatefulWidget> createState() => _ShockerSelectDialog();
 }
 
-class ShockerUnpauseDialogState extends State<ShockerUnpauseDialog> {
+class _ShockerSelectDialog extends State<ShockerSelectDialog> {
   List<Shocker> toUnpause = [];
 
   @override
   Widget build(BuildContext context) {
     ThemeData t = Theme.of(context);
     return AlertDialog.adaptive(
-      title: Text("Select shockers to unpause"),
+      title: Text(widget.title),
       content: Column(
           mainAxisSize: MainAxisSize.min,
           children: AlarmListManager.getInstance()
@@ -51,21 +56,9 @@ class ShockerUnpauseDialogState extends State<ShockerUnpauseDialog> {
             child: Text("Cancel")),
         TextButton(
             onPressed: () async {
-              LoadingDialog.show("Unpausing shockers");
-              for (var shocker in toUnpause) {
-                String? error = await OpenShockClient().setPauseStateOfShocker(
-                    shocker, AlarmListManager.getInstance(), false);
-                if (error != null) {
-                  Navigator.of(context).pop();
-                  ErrorDialog.show(
-                      "Error unpausing shocker ${shocker.name}", error);
-                  return;
-                }
-              }
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              widget.confirmCallback(toUnpause);
             },
-            child: Text("Unpause")),
+            child: Text(widget.buttonText)),
       ],
     );
   }

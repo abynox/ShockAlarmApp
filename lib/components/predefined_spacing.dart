@@ -6,6 +6,7 @@ class PredefinedSpacing extends StatelessWidget {
   static EdgeInsets paddingExtraSmall() => EdgeInsets.all(5);
   static EdgeInsets paddingSmall() => EdgeInsets.all(10);
   static EdgeInsets paddingMedium() => EdgeInsets.all(15);
+  static EdgeInsets paddingLarge() => EdgeInsets.all(30);
   static EdgeInsets paddingExtraLarge() => EdgeInsets.all(40);
 
   @override

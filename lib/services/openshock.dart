@@ -563,9 +563,9 @@ class OpenShockClient {
   }
 
 
-  Future<String?> acceptInvite(String code, AlarmListManager alarmListManager) async {
+  Future<String?> acceptInvite(String code) async {
     // first get a valid token
-    Token? t = await alarmListManager.getSpecificUserToken();
+    Token? t = await AlarmListManager.getInstance().getSpecificUserToken();
     if (t == null) {
       return "No valid session token found";
     }
@@ -907,8 +907,8 @@ class OpenShockClient {
         null, getErrorCode(response, "Failed to get backend information"));
   }
 
-  Future<OpenShockUser?> getUserByUsername(String username) async {
-    Token? t = await AlarmListManager.getInstance().getSpecificUserToken();
+  Future<OpenShockUser?> getUserByUsername(String username, int apiTokenId) async {
+    Token? t = await AlarmListManager.getInstance().getToken(apiTokenId);
     if (t == null) return null;
     var response = await GetRequest(
         t,
@@ -919,7 +919,105 @@ class OpenShockClient {
     return null;
   }
 
+  Future<List<OpenShockShareInvite>> getInvites(Token token) async {
+    var response = await GetRequest(token, "/2/shares/user/invites/outgoing");
+    List<OpenShockShareInvite> invites = [];
+    if (response.statusCode == 200) {
+      jsonDecode(response.body).forEach((element) {
+        OpenShockShareInvite i =
+            OpenShockShareInvite.fromJson(element, tokenReference: token);
+        i.outgoing = true;
+        invites.add(i);
+      });
+    }
+
+    response = await GetRequest(token, "/2/shares/user/invites/incoming");
+    if (response.statusCode == 200) {
+      jsonDecode(response.body).forEach((element) {
+        OpenShockShareInvite i =
+            OpenShockShareInvite.fromJson(element, tokenReference: token);
+        i.outgoing = false;
+        invites.add(i);
+      });
+    }
+    return invites;
+  }
+
+
+  Future<String?> deleteInvite(OpenShockShareInvite invite) async {
+    Token? t = invite.tokenReference;
+    if (t == null) return "Token not found";
+    return getErrorCode(
+        await DeleteRequest(
+            t, "/2/shares/user/invites/${invite.outgoing ? "outgoing" : "incoming"}/${invite.id}", ""),
+        "Failed to delete invite");
+  }
 }
+
+class OpenShockShockerPermLimitPairWithIdAndName {
+  String id = "";
+  String name = "";
+  OpenShockShockerLimits limits = OpenShockShockerLimits();
+  OpenShockShockerPermissions permissions = OpenShockShockerPermissions();
+
+  OpenShockShockerPermLimitPairWithIdAndName.fromjson(Map<String, dynamic> json) {
+    id = json["id"];
+    name = json["name"];
+    permissions.shock = json["permissions"]["shock"];
+    permissions.vibrate = json["permissions"]["vibrate"];
+    permissions.sound = json["permissions"]["sound"];
+    permissions.live = json["permissions"]["live"];
+    limits.intensity = json["limits"]["intensity"];
+    limits.duration = json["limits"]["duration"];
+  }
+}
+
+class OpenShockShareInvite {
+  String id = "";
+  DateTime createdAt = DateTime.now();
+  OpenShockUser owner = OpenShockUser();
+  OpenShockUser? sharedWith;
+
+  Token? tokenReference;
+  int tokenId = 0;
+  bool outgoing = false;
+
+  OpenShockShareInvite.fromJson(Map<String, dynamic> json, {this.tokenReference}) {
+    id = json["id"];
+    createdAt = DateTime.parse(json["createdAt"]);
+    if(json["sharedWith"] != null) {
+      sharedWith = OpenShockUser();
+      sharedWith!.id = json["sharedWith"]["id"];
+      sharedWith!.name = json["sharedWith"]["name"];
+      sharedWith!.image = json["sharedWith"]["image"];
+    }
+    if(json["owner"] != null) {
+      owner.id = json["owner"]["id"];
+      owner.name = json["owner"]["name"];
+      owner.image = json["owner"]["image"];
+    }
+    if(json["outgoing"] != null) outgoing = json["outgoing"];
+    if(json["tokenId"] != null) tokenId = json["tokenId"];
+  }
+
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "createdAt": createdAt.toIso8601String(),
+      "sharedWith": sharedWith?.toJson(),
+      "owner": owner?.toJson(),
+      "outgoing": outgoing,
+      "tokenId": tokenId
+    };
+  }
+
+  String getDisplayName() {
+    return (outgoing ? sharedWith?.name : owner.name) ?? "Unclaimed invite";
+  }
+  
+}
+
 
 class OpenShockBackendInformationData {
   String version = "";

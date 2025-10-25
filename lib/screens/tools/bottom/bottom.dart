@@ -2,6 +2,7 @@
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/page_padding.dart';
 import 'package:shock_alarm_app/components/predefined_spacing.dart';
+import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
 import 'package:shock_alarm_app/screens/logs/shocker_log_entry.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/screens/tools/bottom/shocker_unpause_dialog.dart';
@@ -106,9 +107,22 @@ class _BottomScreenState extends State<BottomScreen>
   }
 
   void unpause() async {
-    List<Shocker> toUnpause = [];
     await showDialog(
-        context: context, builder: (context) => ShockerUnpauseDialog());
+        context: context, builder: (context) => ShockerSelectDialog("Select shockers to unpause", (shockers) async {
+          LoadingDialog.show("Unpausing shockers");
+          for (var shocker in shockers) {
+            String? error = await OpenShockClient().setPauseStateOfShocker(
+                shocker, AlarmListManager.getInstance(), false);
+            if (error != null) {
+              Navigator.of(context).pop();
+              ErrorDialog.show(
+                  "Error unpausing shocker ${shocker.name}", error);
+              return;
+            }
+          }
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+        }, "Unpause"));
     setState(() {});
   }
 

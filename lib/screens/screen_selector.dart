@@ -7,6 +7,7 @@ import 'package:shock_alarm_app/components/page_padding.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/shockers/shock_screen_selector.dart';
 import 'package:shock_alarm_app/screens/shockers/individual/shockers.dart';
+import 'package:shock_alarm_app/screens/user_shares/user_share_screen.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import '../services/alarm_list_manager.dart';
 import 'alarms/alarms.dart';
@@ -53,7 +54,7 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
 
     screens = [
       if (supportsAlarms) AlarmsScreen(manager: manager),
-      ShareLinksScreen(),
+      UserShareScreen(),
       ShockScreenSelector(manager: manager),
       SettingsScreen(manager: manager),
     ];
@@ -85,7 +86,7 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
               ));
             },
             child: Icon(Icons.add)),
-      ShareLinksScreen.getFloatingActionButton(manager, context, () {
+      UserShareScreen.getFloatingActionButton(context, () {
         setState(() {});
       }),
       ShockerScreen.getFloatingActionButton(manager, context, () {

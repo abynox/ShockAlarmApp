@@ -28,7 +28,7 @@ class _CreateUserShareDialog extends State<CreateUserShareDialog> {
   TextEditingController usernameController = TextEditingController();
 
   void searchUser() async {
-    widget.user = await OpenShockClient().getUserByUsername(usernameController.text);
+    widget.user = await OpenShockClient().getUserByUsername(usernameController.text.trim(), widget.shockersToShare.first.apiTokenId);
     if(widget.user == null) {
       ErrorDialog.show("User not found", "Couldn't find a user by the name '${usernameController.text}'");
     }

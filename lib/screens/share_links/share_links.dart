@@ -113,57 +113,6 @@ class ShareLinksScreen extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => ShareLinksScreenState();
-
-  static getFloatingActionButton(
-      AlarmListManager manager, BuildContext context, Function reloadState) {
-    return FloatingActionButton(
-        onPressed: () {
-          if(!AlarmListManager.supportsWs()) {
-            if (!manager.hasValidAccount()) {
-              ErrorDialog.show("Not logged in",
-                  "Login to OpenShock to create a Share Link. To do this visit the settings page.");
-              return;
-            }
-            showDialog(context: context, builder: (builder) => ShareLinkCreationDialog());
-          }
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog.adaptive(
-              title: Text("Add Share Link"),
-              content: Text("What do you want to do?"),
-              actions: <Widget>[
-                TextButton(
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                      await SettingsScreen.showShareLinkPopup();
-                      InfoDialog.show("Share Link Info",
-                          "Share links you add to ShockAlarm are shown in the settings tab. From there you can see which ones you added and remove them if you don't need them anymore.\n\nThe shockers from the share link are shown in the devices tab.");
-                    },
-                    child: Text("Add existing share link")),
-                TextButton(
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                      if (!manager.hasValidAccount()) {
-                        ErrorDialog.show("Not logged in",
-                            "Login to OpenShock to create a Share Link. To do this visit the settings page.");
-                        return;
-                      }
-                      showDialog(
-                          context: context,
-                          builder: (context) => ShareLinkCreationDialog());
-                    },
-                    child: Text("Create new share link")),
-                TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text("Cancel")),
-              ],
-            ),
-          );
-        },
-        child: Icon(Icons.add));
-  }
 }
 
 class ShareLinksScreenState extends State<ShareLinksScreen> {
@@ -171,7 +120,9 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
 
   Future loadShares() async {
     await AlarmListManager.getInstance().updateShareLinks();
+    if(!mounted) return;
     setState(() {
+      if(!mounted) return;
       initialLoading = false;
     });
   }
@@ -184,6 +135,7 @@ class ShareLinksScreenState extends State<ShareLinksScreen> {
       loadShares();
     }
     AlarmListManager.getInstance().reloadAllMethod = () {
+      if(!mounted) return;
       setState(() {});
     };
     super.initState();

@@ -26,6 +26,8 @@ class AlarmListManager {
   final List<AlarmTone> alarmTones = [];
   final List<LivePattern> livePatterns = [];
   List<OpenShockShareLink>? shareLinks;
+
+  List<OpenShockShareInvite>? invites;
   final Map<String, bool> enabledHubs = {};
   Settings settings = Settings();
   Map<int, OpenShockWS?> ws = {};
@@ -75,6 +77,7 @@ class AlarmListManager {
     String alarmTones = prefs.getString("alarmTones") ?? "[]";
     String shareLinks = prefs.getString("shareLinks") ?? "[]";
     String livePatternsString = prefs.getString("livePatterns") ?? "[]";
+    String invitesString = prefs.getString("invites") ?? "[]";
     List<dynamic> alarmsList = jsonDecode(alarms);
     List<dynamic> tokensList = jsonDecode(tokens);
     List<dynamic> alarmServerTokensList = jsonDecode(alarmServerTokens);
@@ -83,6 +86,7 @@ class AlarmListManager {
     List<dynamic> alarmTonesList = jsonDecode(alarmTones);
     List<dynamic> shareLinksList = jsonDecode(shareLinks);
     List<dynamic> livePatternsList = jsonDecode(livePatternsString);
+    List<dynamic> invitesList = jsonDecode(invitesString);
     this.settings = Settings.fromJson(jsonDecode(settings));
     if (!supportsWs()) this.settings.useHttpShocking = true;
     for (var alarm in alarmsList) {
@@ -118,6 +122,12 @@ class AlarmListManager {
       OpenShockShareLink link = OpenShockShareLink.fromJson(shareLink);
       link.tokenReference = getToken(link.tokenId ?? 0);
       this.shareLinks!.add(link);
+    }
+    this.invites = [];
+    for (var invite in invitesList) {
+      OpenShockShareInvite inviteEntry = OpenShockShareInvite.fromJson(invite);
+      inviteEntry.tokenReference = getToken(inviteEntry.tokenId);
+      this.invites!.add(inviteEntry);
     }
     updateHubList();
     rebuildAlarmShockers();
@@ -635,7 +645,7 @@ class AlarmListManager {
   }
 
   Future<String?> redeemShareCodeOrInvite(String code) async {
-    String? inviteRes = await OpenShockClient().acceptInvite(code, this);
+    String? inviteRes = await OpenShockClient().acceptInvite(code);
     if(inviteRes != null) {
       inviteRes = await OpenShockClient().redeemShareCode(code, this);
       if(inviteRes != null) return "Couldn't claim code as invite nor share code. Did you copy it correctly?";
@@ -775,6 +785,7 @@ class AlarmListManager {
   Function(OpenShockDevice device)? onDeviceStatusUpdated;
 
   List<String> liveActiveForShockers = [];
+
 
   void deviceStatusHandler(List<dynamic> args) {
     for (var arg in args[0]) {
@@ -1112,5 +1123,25 @@ class AlarmListManager {
   void removePattern(pattern) {
     livePatterns.remove(pattern);
     saveLivePatterns();
+  }
+
+  Future updateInvites() async {
+    List<OpenShockShareInvite> invites = [];
+    OpenShockClient client = OpenShockClient();
+    for (Token token in getTokens()) {
+      invites.addAll(await client.getInvites(token));
+    }
+    this.invites = invites;
+    saveInvites();
+  }
+
+  void saveInvites() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("invites", jsonEncode(invites));
+  }
+
+  Future<String?> deleteInvite(OpenShockShareInvite invite) async {
+    OpenShockClient client = OpenShockClient();
+    return client.deleteInvite(invite);
   }
 }
