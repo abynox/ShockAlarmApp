@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/page_padding.dart';
+import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/main.dart';
 import 'package:shock_alarm_app/screens/shockers/shock_screen_selector.dart';
 import 'package:shock_alarm_app/screens/shockers/individual/shockers.dart';
@@ -271,6 +272,34 @@ class ScreenSelectorScreenState extends State<ScreenSelectorScreen> {
                       }
                     },
                     child: Text("Redeem"))
+              ],
+            );
+          });
+    } else if (action == "invite") {
+       // openshock://invite/<code>
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog.adaptive(
+              title: Text("Claim invite?"),
+              content: Text(
+                  "This will allow you to control someone elses shocker. The invite code is $code"),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Close")),
+                TextButton(
+                    onPressed: () async {
+                      if (await ShockerScreen.redeemShareCodeOrInvite(
+                          code, context, manager)) {
+                        Navigator.of(context).pop();
+                        InfoDialog.show("Claimed invite", "You can now control more shockers!");
+                        manager.reloadAllMethod!();
+                      }
+                    },
+                    child: Text("Claim"))
               ],
             );
           });

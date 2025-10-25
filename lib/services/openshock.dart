@@ -960,7 +960,7 @@ class OpenShockShockerPermLimitPairWithIdAndName {
   OpenShockShockerLimits limits = OpenShockShockerLimits();
   OpenShockShockerPermissions permissions = OpenShockShockerPermissions();
 
-  OpenShockShockerPermLimitPairWithIdAndName.fromjson(Map<String, dynamic> json) {
+  OpenShockShockerPermLimitPairWithIdAndName.fromJson(Map<String, dynamic> json) {
     id = json["id"];
     name = json["name"];
     permissions.shock = json["permissions"]["shock"];
@@ -970,6 +970,15 @@ class OpenShockShockerPermLimitPairWithIdAndName {
     limits.intensity = json["limits"]["intensity"];
     limits.duration = json["limits"]["duration"];
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "permissions": permissions.toJson(),
+      "limits": limits.toJson()
+    };
+  }
 }
 
 class OpenShockShareInvite {
@@ -977,7 +986,7 @@ class OpenShockShareInvite {
   DateTime createdAt = DateTime.now();
   OpenShockUser owner = OpenShockUser();
   OpenShockUser? sharedWith;
-
+  List<OpenShockShockerPermLimitPairWithIdAndName> shockers = [];
   Token? tokenReference;
   int tokenId = 0;
   bool outgoing = false;
@@ -998,6 +1007,11 @@ class OpenShockShareInvite {
     }
     if(json["outgoing"] != null) outgoing = json["outgoing"];
     if(json["tokenId"] != null) tokenId = json["tokenId"];
+    if(json["shockers"] != null) {
+      json['shockers'].forEach((v) {
+        shockers.add(OpenShockShockerPermLimitPairWithIdAndName.fromJson(v));
+      });
+    }
   }
 
 
@@ -1006,9 +1020,10 @@ class OpenShockShareInvite {
       "id": id,
       "createdAt": createdAt.toIso8601String(),
       "sharedWith": sharedWith?.toJson(),
-      "owner": owner?.toJson(),
+      "owner": owner.toJson(),
       "outgoing": outgoing,
-      "tokenId": tokenId
+      "tokenId": tokenId,
+      "shockers": shockers.map((x) => x.toJson()).toList()
     };
   }
 
@@ -1952,6 +1967,10 @@ class OpenShockShare {
 class OpenShockShockerLimits {
   int? intensity = 100;
   int? duration = OpenShockLimits.maxDuration;
+  
+  Map<String, dynamic> toJson() {
+    return {"intensity": intensity, "duration": duration};
+  }
 }
 
 class OpenShockShockerPermissions {
@@ -1959,4 +1978,13 @@ class OpenShockShockerPermissions {
   bool vibrate = true;
   bool sound = true;
   bool live = false;
+  
+  Map<String, dynamic> toJson() {
+    return {
+      "shock": shock,
+      "vibrate": vibrate,
+      "sound": sound,
+      "live": live
+    };
+  }
 }

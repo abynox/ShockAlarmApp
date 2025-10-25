@@ -136,6 +136,8 @@ class InviteItem extends StatelessWidget {
         child: Row(
       children: [
         Expanded(child: Text(invite.getDisplayName())),
+        Expanded(child: Wrap(children: invite.shockers.map((x) => Chip(label: Text(x.name))).toList(),)),
+
         Row(
           children: [
             IconButton(
