@@ -33,7 +33,10 @@ class ShockerAction {
   bool allowMultipleShockers = false;
 
   ShockerAction(
-      {this.name = "Action", this.allowMultipleShockers = false, required this.onClick, required this.icon});
+      {this.name = "Action",
+      this.allowMultipleShockers = false,
+      required this.onClick,
+      required this.icon});
 }
 
 class ShockerItem extends StatefulWidget {
@@ -44,6 +47,40 @@ class ShockerItem extends StatefulWidget {
   int? Function(ControlType type, int intensity, int duration, Shocker shocker)
       onShock;
   static List<ShockerAction> ownShockerActions = [
+    ShockerAction(
+        name: "Logs",
+        icon: Icon(Icons.list),
+        allowMultipleShockers: true,
+        onClick: (AlarmListManager manager, List<Shocker> shocker,
+            BuildContext context, Function onRebuild) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      LogScreen(shockers: shocker, manager: manager)));
+        }),
+    ShockerAction(
+        name: "Edit Shares",
+        icon: Icon(Icons.key),
+        onClick: (AlarmListManager manager, List<Shocker> shocker,
+            BuildContext context, Function onRebuild) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      SharesScreen(shocker: shocker[0], manager: manager)));
+        }),
+    ShockerAction(
+        name: "Create Share",
+        icon: Icon(Icons.share),
+        allowMultipleShockers: true,
+        onClick: (AlarmListManager manager, List<Shocker> shockers,
+            BuildContext context, Function onRebuild) {
+          showDialog(
+              context: context,
+              builder: (context) =>
+                  CreateUserShareDialog(shockersToShare: shockers));
+        }),
     ShockerAction(
         name: "Edit",
         icon: Icon(Icons.edit),
@@ -97,33 +134,6 @@ class ShockerItem extends StatefulWidget {
                   ));
         }),
     ShockerAction(
-        name: "Logs",
-        icon: Icon(Icons.list),
-        allowMultipleShockers: true,
-        onClick: (AlarmListManager manager, List<Shocker> shocker,
-            BuildContext context, Function onRebuild) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      LogScreen(shockers: shocker, manager: manager)));
-        }),
-    ShockerAction(name: "Create Share", icon: Icon(Icons.share), allowMultipleShockers: true, onClick: (AlarmListManager manager, List<Shocker> shockers,
-            BuildContext context, Function onRebuild) {
-          showDialog(context: context, builder: (context) => CreateUserShareDialog(shockersToShare: shockers));
-        }),
-    ShockerAction(
-        name: "Edit Shares",
-        icon: Icon(Icons.key),
-        onClick: (AlarmListManager manager, List<Shocker> shocker,
-            BuildContext context, Function onRebuild) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      SharesScreen(shocker: shocker[0], manager: manager)));
-        }),
-    ShockerAction(
         name: "Delete",
         icon: Icon(Icons.delete),
         onClick: (AlarmListManager manager, List<Shocker> shocker,
@@ -133,7 +143,8 @@ class ShockerItem extends StatefulWidget {
               builder: (context) => DeleteDialog(
                   onDelete: () async {
                     LoadingDialog.show("Deleting shocker");
-                    String? errorMessage = await manager.deleteShocker(shocker[0]);
+                    String? errorMessage =
+                        await manager.deleteShocker(shocker[0]);
                     Navigator.of(context).pop();
                     if (errorMessage != null) {
                       ErrorDialog.show(
@@ -152,51 +163,52 @@ class ShockerItem extends StatefulWidget {
 
   static List<ShockerAction> foreignShockerActions = [
     ShockerAction(
-      allowMultipleShockers: true,
+        allowMultipleShockers: true,
         onClick: (AlarmListManager manager, List<Shocker> shockers,
             BuildContext context, Function onRebuild) {
-              for(Shocker shocker in shockers) {
-                showDialog(
-              context: context,
-              builder: (context) => AlertDialog.adaptive(
-                    title: Text("Unlink shocker '${shocker.name}'"),
-                    content: Text(
-                        "Are you sure you want to unlink the shocker '${shocker.name}' from your account? After that you cannot control the shocker anymore unless you redeem another share code."),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("Cancel")),
-                      TextButton(
-                          onPressed: () async {
-                            LoadingDialog.show("Unlinking shocker");
-                            String? errorMessage;
-                            Token? token = manager.getToken(shocker.apiTokenId);
-                            if (token == null)
-                              errorMessage = "Token not found";
-                            else {
-                              OpenShockShare share = OpenShockShare()
-                                ..sharedWith =
-                                    (OpenShockUser()..id = token.userId)
-                                ..shockerReference = shocker;
-                              errorMessage = await manager.deleteShare(share);
-                            }
-                            if (errorMessage != null) {
+          for (Shocker shocker in shockers) {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog.adaptive(
+                      title: Text("Unlink shocker '${shocker.name}'"),
+                      content: Text(
+                          "Are you sure you want to unlink the shocker '${shocker.name}' from your account? After that you cannot control the shocker anymore unless you redeem another share code."),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
                               Navigator.of(context).pop();
-                              ErrorDialog.show(
-                                  "Failed to delete share", errorMessage);
-                              return;
-                            }
-                            await manager.updateShockerStore();
-                            Navigator.of(context).pop();
-                            Navigator.of(context).pop();
-                            onRebuild();
-                          },
-                          child: Text("Unlink"))
-                    ],
-                  ));
-              }
+                            },
+                            child: Text("Cancel")),
+                        TextButton(
+                            onPressed: () async {
+                              LoadingDialog.show("Unlinking shocker");
+                              String? errorMessage;
+                              Token? token =
+                                  manager.getToken(shocker.apiTokenId);
+                              if (token == null)
+                                errorMessage = "Token not found";
+                              else {
+                                OpenShockShare share = OpenShockShare()
+                                  ..sharedWith =
+                                      (OpenShockUser()..id = token.userId)
+                                  ..shockerReference = shocker;
+                                errorMessage = await manager.deleteShare(share);
+                              }
+                              if (errorMessage != null) {
+                                Navigator.of(context).pop();
+                                ErrorDialog.show(
+                                    "Failed to delete share", errorMessage);
+                                return;
+                              }
+                              await manager.updateShockerStore();
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                              onRebuild();
+                            },
+                            child: Text("Unlink"))
+                      ],
+                    ));
+          }
         },
         icon: Icon(Icons.delete),
         name: "Unlink"),
