@@ -228,7 +228,7 @@ class ShockerScreen extends StatefulWidget {
                         Navigator.of(context).pop();
                         startRedeemShareCode(manager, context, reloadState);
                       },
-                      child: Text("Claim invite")),
+                      child: Text("Claim invite or share code")),
                   TextButton(
                       onPressed: () async {
                         await startPairShocker(manager, context, reloadState);

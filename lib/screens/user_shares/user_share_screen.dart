@@ -47,7 +47,7 @@ class UserShareScreen extends StatefulWidget {
                 TextButton(onPressed: () async {
                   Navigator.of(context).pop();
                   ShockerScreen.startRedeemShareCode(AlarmListManager.getInstance(), context, reloadState);
-                }, child: Text("Claim Invite")),
+                }, child: Text("Claim Invite or share code")),
                 TextButton(
                     onPressed: () async {
                       Navigator.of(context).pop();
