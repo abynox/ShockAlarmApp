@@ -576,9 +576,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (widget.manager.getAlarmServerTokens().isEmpty)
                 PaddedCard(
                   child: Text(
-                      "You are not logged into an AlarmServer. Log in to one to schedule alarms on Web an Linux",
+                      "You are not logged into an AlarmServer. Log in to one to schedule alarms on Web and Linux and when your phone is off.",
                       textAlign: TextAlign.center,
-                      style: t.textTheme.headlineSmall),
+                      style: t.textTheme.bodyLarge),
                 ),
             ],
           ),
