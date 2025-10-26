@@ -232,14 +232,6 @@ class HubItemState extends State<HubItem> {
                   ),
                   actions: [
                     TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text("Cancel")),
-                    TextButton(
-                        onPressed: () => showCurrentToken(isCurrent: true),
-                        child: Text("Show current")),
-                    TextButton(
                         onPressed: () async {
                           LoadingDialog.show("Regenerating token");
                           ErrorContainer<bool> errorMessage =
@@ -274,7 +266,15 @@ class HubItemState extends State<HubItem> {
                                 });
                           }
                         },
-                        child: Text("Regenerate"))
+                        child: Text("Regenerate")),
+                    TextButton(
+                        onPressed: () => showCurrentToken(isCurrent: true),
+                        child: Text("Show current")),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text("Cancel")),
                   ]);
             }));
   }
@@ -318,7 +318,7 @@ class HubItemState extends State<HubItem> {
         builder: (builder) => AlertDialog.adaptive(
               title: Text("Captive portal"),
               content: Text(
-                  "The captive portal is the website hosted on your hub itself. It's only available in your wifi ans is used for managing the wifi connection and account linking. Here you can enable or disable it."),
+                  "The captive portal is the website hosted on your hub itself. It's only available in your wifi and is used for managing the wifi connection and account linking. Here you can enable or disable it."),
               actions: [
                 TextButton(
                     onPressed: () {
