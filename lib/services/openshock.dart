@@ -510,14 +510,21 @@ class OpenShockClient {
     return getErrorCode(response, "Failed to set limits");
   }
 
-  Future<String?> addShare(Shocker shocker, OpenShockShareLimits limits,
+  Future<ErrorContainer<OpenShockShareCode>> addShare(Shocker shocker, OpenShockShareLimits limits,
       AlarmListManager manager) async {
     Token? t = manager.getToken(shocker.apiTokenId);
-    if (t == null) return "Token not found";
+    if (t == null) return ErrorContainer(null, "Token not found");
     String body = jsonEncode(limits.toJson());
-    return getErrorCode(
-        await PostRequest(t, "/1/shockers/${shocker.id}/shares", body),
-        "Failed to create share");
+    var res = await PostRequest(t, "/1/shockers/${shocker.id}/shares", body);
+    if(res.statusCode != 200) {
+      return ErrorContainer(null, getErrorCode(
+        res,
+        "Failed to create share"));
+    }
+    OpenShockShareCode shareCode = OpenShockShareCode();
+    shareCode.shockerReference = shocker;
+    shareCode.id = jsonDecode(res.body)["data"];
+    return ErrorContainer(shareCode, null);
   }
 
 
@@ -1289,9 +1296,19 @@ class OpenShockShareCode {
   DateTime createdOn = DateTime.now();
   Shocker? shockerReference;
 
+  OpenShockShareCode();
+
   OpenShockShareCode.fromJson(Map<String, dynamic> json) {
     id = json["id"];
     createdOn = DateTime.parse(json["createdOn"]);
+  }
+
+  String getShareMessage() {
+    return "Claim my shocker with this share code: $id";
+  }
+
+  String getQrLink() {
+    return "openshock://sharecode/$id";
   }
 }
 

@@ -60,7 +60,7 @@ class UserShareScreen extends StatefulWidget {
                           context: context,
                           builder: (context) => ShareLinkCreationDialog());
                     },
-                    child: Text("Create new share link")),
+                    child: Text("Create share link")),
                 TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();

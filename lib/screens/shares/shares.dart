@@ -3,12 +3,14 @@ import 'package:shock_alarm_app/components/haptic_switch.dart';
 import 'package:shock_alarm_app/components/padded_card.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
+import 'package:shock_alarm_app/dialogs/share_or_qr_dialog.dart';
 import 'package:shock_alarm_app/screens/shockers/shocker_item.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shock_alarm_app/screens/shares/shocker_share_entry.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
+import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/limits.dart';
 
 import '../../components/qr_card.dart';
@@ -74,14 +76,15 @@ class _SharesScreenState extends State<SharesScreen> {
                       LoadingDialog.show("Creating share");
                       limits.validate();
 
-                      String? error = await OpenShockClient()
+                      ErrorContainer<OpenShockShareCode> error = await OpenShockClient()
                           .addShare(shocker, limits, manager);
                       Navigator.of(context).pop();
-                      if (error != null) {
-                        ErrorDialog.show("Failed to create share", error);
+                      if (error.error != null) {
+                        ErrorDialog.show("Failed to create share", error.error!);
                         return;
                       }
                       Navigator.of(context).pop();
+                      ShareOrQrDialog.show("Share code created", "Share it with your friend!", error.value!.getShareMessage(), error.value!.getQrLink(), "Scan to claim");
                     },
                     child: Text("Create share"))
               ],
@@ -247,7 +250,8 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                 IconButton(
                     onPressed: () async {
                       Share.share(
-                          "Claim my shocker with this share code: ${shareCode.id}");
+                        shareCode.getShareMessage()
+                          );
                     },
                     icon: Icon(Icons.share)),
                 IconButton(
@@ -259,7 +263,7 @@ class ShockerShareCodeEntryState extends State<ShockerShareCodeEntry> {
                               title: Text('Scan to claim'),
                               content: QrCard(
                                   data:
-                                      "openshock://sharecode/${shareCode.id}"),
+                                      shareCode.getQrLink()),
                               actions: [
                                 TextButton(
                                     onPressed: () {
