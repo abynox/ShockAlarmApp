@@ -48,15 +48,6 @@ class UserShareScreen extends StatefulWidget {
                   Navigator.of(context).pop();
                   ShockerScreen.startRedeemShareCode(AlarmListManager.getInstance(), context, reloadState);
                 }, child: Text("Claim Invite")),
-                // Maybe remove the add existing share link thingy to clean up this dialog?
-                TextButton(
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                      await SettingsScreen.showShareLinkPopup();
-                      InfoDialog.show("Share Link Info",
-                          "Share links you add to ShockAlarm are shown in the settings tab. From there you can see which ones you added and remove them if you don't need them anymore.\n\nThe shockers from the share link are shown in the devices tab.");
-                    },
-                    child: Text("Add existing share link")),
                 TextButton(
                     onPressed: () async {
                       Navigator.of(context).pop();
