@@ -288,6 +288,7 @@ class AlarmListManager {
     updateHubList();
     rebuildAlarmShockers();
     updateShareLinks();
+    updateInvites(incomingOnly: true);
     if (reloadAllMethod != null) reloadAllMethod!();
     if (tokenExpired) {
       showSessionExpired();
@@ -1126,13 +1127,17 @@ class AlarmListManager {
     saveLivePatterns();
   }
 
-  Future updateInvites() async {
+  Future updateInvites({bool incomingOnly = false}) async {
     List<OpenShockShareInvite> invites = [];
     OpenShockClient client = OpenShockClient();
     for (Token token in getTokens()) {
-      invites.addAll(await client.getInvites(token));
+      invites.addAll(await client.getInvites(token, incomingOnly: incomingOnly));
     }
+    if(incomingOnly) invites.addAll(this.invites?.where((x) => x.outgoing) ?? []);
     this.invites = invites;
+    if(incomingOnly && reloadAllMethod != null) {
+      reloadAllMethod!();
+    }
     saveInvites();
   }
 
@@ -1143,7 +1148,12 @@ class AlarmListManager {
 
   Future<String?> deleteInvite(OpenShockShareInvite invite) async {
     OpenShockClient client = OpenShockClient();
-    return client.deleteInvite(invite);
+    String? error = await client.deleteInvite(invite);
+    if(error == null) {
+      invites?.remove(invite);
+      saveInvites();
+    }
+    return error;
   }
 
   Future<void> updateUserShares() async {

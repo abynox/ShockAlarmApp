@@ -15,6 +15,7 @@ import 'package:shock_alarm_app/dialogs/info_dialog.dart';
 import 'package:shock_alarm_app/dialogs/loading_dialog.dart';
 import 'package:shock_alarm_app/screens/screen_selector.dart';
 import 'package:shock_alarm_app/screens/shares/shares.dart';
+import 'package:shock_alarm_app/screens/user_shares/invites_screen.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 import 'package:shock_alarm_app/services/openshock.dart';
 import 'package:shock_alarm_app/services/vibrations.dart';
@@ -364,6 +365,10 @@ class ShockerScreenState extends State<ShockerScreen> {
       child: Column(
         children: [
           Expanded(child: SingleChildScrollView(child: Column(children: [
+            InineInviteManager(reloadMethod: () => setState(() {
+              
+            }),),
+            Padding(padding: PredefinedSpacing.paddingLarge()),
             Text(
               'All devices',
               style: t.textTheme.headlineMedium,

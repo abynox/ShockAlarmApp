@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shock_alarm_app/components/constrained_container.dart';
 import 'package:shock_alarm_app/components/desktop_mobile_refresh_indicator.dart';
+import 'package:shock_alarm_app/components/predefined_spacing.dart';
 import 'package:shock_alarm_app/dialogs/yes_cancel_dialog.dart';
 import 'package:shock_alarm_app/screens/shockers/grouped/grouped_shocker_selector.dart';
 import 'package:shock_alarm_app/screens/shockers/live/live_controls.dart';
@@ -10,6 +11,7 @@ import 'package:shock_alarm_app/screens/shockers/shocker_item.dart';
 import 'package:shock_alarm_app/dialogs/error_dialog.dart';
 import 'package:shock_alarm_app/screens/screen_selector.dart';
 import 'package:shock_alarm_app/screens/logs/logs.dart';
+import 'package:shock_alarm_app/screens/user_shares/invites_screen.dart';
 import 'package:shock_alarm_app/services/alarm_manager.dart';
 import 'package:shock_alarm_app/services/limits.dart';
 import 'package:shock_alarm_app/services/openshockws.dart';
@@ -25,8 +27,7 @@ class GroupedShockerScreen extends StatefulWidget {
   int confirmedNumber = -1;
   bool dialogShowing = false;
 
-  GroupedShockerScreen({Key? key, required this.manager})
-      : super(key: key);
+  GroupedShockerScreen({Key? key, required this.manager}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _GroupedShockerScreenState();
@@ -59,9 +60,9 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
   }
 
   void executeAllLive(ControlType type, int intensity) {
-    // Enforce the limit of the confirm ui 
+    // Enforce the limit of the confirm ui
     // If the hard limit is on we do not need to show the dialog. redundancy is the limit function of the Controls themselves
-    
+
     // The cofirm limits check is now performed in the call to this method so it applies to everything that uses the live controls ui instead of just this view
     List<Control> controls = [];
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
@@ -74,7 +75,8 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
     List<Control> controls = [];
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       controls.add(
-          s.getLimitedControls(ControlType.stop, maxIntensity, durationInMs)..duration = min(durationInMs, OpenShockLimits.maxDuration));
+          s.getLimitedControls(ControlType.stop, maxIntensity, durationInMs)
+            ..duration = min(durationInMs, OpenShockLimits.maxDuration));
     }
     // we create a log entry for transparency with the other user
     if (AlarmListManager.getInstance().settings.liveControlsLogWorkaround) {
@@ -101,7 +103,9 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
     for (Shocker s in AlarmListManager.getInstance().getSelectedShockers()) {
       if (!s.isOwn) continue;
       shockerCount++;
-      OpenShockClient().setPauseStateOfShocker(s, AlarmListManager.getInstance(), pause).then((error) {
+      OpenShockClient()
+          .setPauseStateOfShocker(s, AlarmListManager.getInstance(), pause)
+          .then((error) {
         completedShockers++;
         if (error != null) {
           ErrorDialog.show("Failed to pause shocker", error);
@@ -158,7 +162,7 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
   @override
   Widget build(BuildContext context) {
     AlarmListManager.getInstance().reloadAllMethod = () {
-      if(!mounted) return;
+      if (!mounted) return;
       setState(() {});
     };
     ThemeData t = Theme.of(context);
@@ -166,7 +170,8 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
     List<ShockerAction> actions = isOwnShocker
         ? ShockerItem.ownShockerActions
         : ShockerItem.foreignShockerActions;
-    Shocker limitedShocker = AlarmListManager.getInstance().getSelectedShockerLimits();
+    Shocker limitedShocker =
+        AlarmListManager.getInstance().getSelectedShockerLimits();
 
     return DesktopMobileRefreshIndicator(
         onRefresh: () async {
@@ -176,6 +181,9 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
         child: Flex(
           direction: Axis.vertical,
           children: [
+            InineInviteManager(reloadMethod: () => setState(() {
+              
+            }),),
             GroupedShockerSelector(onChanged: onRebuild, onlyLive: liveEnabled),
             if (AlarmListManager.getInstance().selectedShockers.isNotEmpty)
               ConstrainedContainer(
@@ -203,8 +211,10 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
                             onPressed: () {
                               List<Shocker> shockers = [];
                               for (String shockerId
-                                  in AlarmListManager.getInstance().selectedShockers) {
-                                Shocker s = AlarmListManager.getInstance().shockers
+                                  in AlarmListManager.getInstance()
+                                      .selectedShockers) {
+                                Shocker s = AlarmListManager.getInstance()
+                                    .shockers
                                     .firstWhere((x) => x.id == shockerId);
                                 if (!s.isOwn) continue;
                                 shockers.add(s);
@@ -214,7 +224,8 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
                                   MaterialPageRoute(
                                       builder: (context) => LogScreen(
                                           shockers: shockers,
-                                          manager: AlarmListManager.getInstance())));
+                                          manager:
+                                              AlarmListManager.getInstance())));
                             },
                             child: Text("View logs"),
                           ),
@@ -223,12 +234,17 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
                           itemBuilder: (context) {
                             return [
                               for (ShockerAction a in actions)
-                                if (AlarmListManager.getInstance().selectedShockers.length == 1 || a.allowMultipleShockers) PopupMenuItem(
-                                    value: a.name,
-                                    child: Row(
-                                      spacing: 10,
-                                      children: [a.icon, Text(a.name)],
-                                    )),
+                                if (AlarmListManager.getInstance()
+                                            .selectedShockers
+                                            .length ==
+                                        1 ||
+                                    a.allowMultipleShockers)
+                                  PopupMenuItem(
+                                      value: a.name,
+                                      child: Row(
+                                        spacing: 10,
+                                        children: [a.icon, Text(a.name)],
+                                      )),
                               PopupMenuItem(
                                   value: "live",
                                   child: Row(
@@ -244,13 +260,16 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
                           },
                           onSelected: (String value) {
                             List<Shocker> shockers = [];
-                            for(String id in AlarmListManager.getInstance().selectedShockers) {
-                              shockers.add(AlarmListManager.getInstance().shockers.firstWhere(
-                                (x) => x.id == id));
+                            for (String id in AlarmListManager.getInstance()
+                                .selectedShockers) {
+                              shockers.add(AlarmListManager.getInstance()
+                                  .shockers
+                                  .firstWhere((x) => x.id == id));
                             }
                             for (ShockerAction a in actions) {
                               if (a.name == value) {
-                                a.onClick(AlarmListManager.getInstance(), shockers, context, onRebuild);
+                                a.onClick(AlarmListManager.getInstance(),
+                                    shockers, context, onRebuild);
                                 return;
                               }
                             }
@@ -263,7 +282,8 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
                                 ShockerItem.ensureSafety();
                                 liveEnabled = !liveEnabled;
                                 if (!liveEnabled) {
-                                  AlarmListManager.getInstance().disconnectAllFromLiveControlGateway();
+                                  AlarmListManager.getInstance()
+                                      .disconnectAllFromLiveControlGateway();
                                 }
                               });
                             }
@@ -282,11 +302,10 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
                                 ErrorDialog.show(
                                     "Error connecting to hubs", error.error!);
                               }
-                              setState(() {
-                                
-                              });
+                              setState(() {});
                             },
-                            hubConnected: AlarmListManager.getInstance().areSelectedShockersConnected(),
+                            hubConnected: AlarmListManager.getInstance()
+                                .areSelectedShockersConnected(),
                             onSendLive: executeAllLive,
                             soundAllowed: limitedShocker.soundAllowed,
                             vibrateAllowed: limitedShocker.vibrateAllowed,
@@ -297,7 +316,8 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
                           )
                         : ShockingControls(
                             manager: AlarmListManager.getInstance(),
-                            controlsContainer: AlarmListManager.getInstance().controls,
+                            controlsContainer:
+                                AlarmListManager.getInstance().controls,
                             durationLimit: limitedShocker.durationLimit,
                             intensityLimit: limitedShocker.intensityLimit,
                             soundAllowed: limitedShocker.soundAllowed,

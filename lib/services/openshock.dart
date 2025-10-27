@@ -926,16 +926,19 @@ class OpenShockClient {
     return null;
   }
 
-  Future<List<OpenShockShareInvite>> getInvites(Token token) async {
-    var response = await GetRequest(token, "/2/shares/user/invites/outgoing");
+  Future<List<OpenShockShareInvite>> getInvites(Token token, {bool incomingOnly = false}) async {
+    http.Response response;
     List<OpenShockShareInvite> invites = [];
-    if (response.statusCode == 200) {
-      jsonDecode(response.body).forEach((element) {
-        OpenShockShareInvite i =
-            OpenShockShareInvite.fromJson(element, tokenReference: token);
-        i.outgoing = true;
-        invites.add(i);
-      });
+    if(!incomingOnly) {
+      response = await GetRequest(token, "/2/shares/user/invites/outgoing");
+      if (response.statusCode == 200) {
+        jsonDecode(response.body).forEach((element) {
+          OpenShockShareInvite i =
+              OpenShockShareInvite.fromJson(element, tokenReference: token);
+          i.outgoing = true;
+          invites.add(i);
+        });
+      }
     }
 
     response = await GetRequest(token, "/2/shares/user/invites/incoming");

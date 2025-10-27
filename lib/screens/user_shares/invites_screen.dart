@@ -193,3 +193,33 @@ class InviteItem extends StatelessWidget {
     ));
   }
 }
+
+
+class InineInviteManager extends StatefulWidget {
+  Function() reloadMethod;
+
+  InineInviteManager({required this.reloadMethod});
+
+  @override
+  State<StatefulWidget> createState() => _InlineInviteManagerState();
+}
+
+class _InlineInviteManagerState extends State<InineInviteManager> {
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    Iterable<OpenShockShareInvite> incoming =
+        AlarmListManager.getInstance().invites?.where((x) => !x.outgoing) ?? [];
+    if(incoming.isEmpty) return SizedBox.shrink();
+    ThemeData t = Theme.of(context);
+    return Column(
+      children: [
+        Padding(padding: PredefinedSpacing.paddingLarge()),
+        Text("Incoming invites", style: t.textTheme.headlineSmall,),
+        ...incoming.map((x) => InviteItem(
+                invite: x,
+                reloadMethod: widget.reloadMethod)),
+      ],
+    );
+  }
+}
