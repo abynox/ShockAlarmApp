@@ -182,7 +182,7 @@ class InviteItem extends StatelessWidget {
                     ErrorDialog.show("Error accepting invite", error);
                     return;
                   }
-                  InfoDialog.show("Invite accepted", "You successfully accepted the invite by ${invite.getDisplayName()}. You can now control their shockers via the shockers page");
+                  InfoDialog.show("Invite accepted", "You successfully accepted the invite by ${invite.getDisplayName()}. You can now control their shockers via the devices page");
                   AlarmListManager.getInstance().updateShockerStore();
                   reloadMethod();
                 },

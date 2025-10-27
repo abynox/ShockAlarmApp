@@ -231,7 +231,7 @@ class _ShareLinkShockerState extends State<ShareLinkShocker> {
                       }
                       if (widget.shocker.pauseReasons
                           .contains(PauseReason.shocker)) {
-                        unpauseInstructions += " on the shockers page";
+                        unpauseInstructions += " on the devices page";
                       }
                       unpauseInstructions += ".";
                       InfoDialog.show("Shocker is paused",
