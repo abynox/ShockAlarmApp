@@ -69,7 +69,7 @@ class _UserShareEditScreenState extends State<UserShareEditScreen> {
         appBar: AppBar(
           title: Row(
             spacing: 10,
-            children: [Text('Shares with ${widget.user.name}')],
+            children: [Text('Shared with ${widget.user.name}')],
           ),
         ),
         body: Padding(
