@@ -5,6 +5,8 @@ on:
 
 jobs:
   build:
+    env:
+      PUB_CACHE: ${{ github.workspace }}/.pub-cache
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
@@ -25,7 +27,7 @@ jobs:
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
           pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
           pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-      - run: flutter doctor
+      #- run: flutter doctor
       - name: Setup Java
         uses: actions/setup-java@v3
         with:

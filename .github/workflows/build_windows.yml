@@ -14,6 +14,8 @@ on:
 
 jobs:
   build-windows:
+    env:
+      PUB_CACHE: ${{ github.workspace }}/.pub-cache
     name: Build for Windows
     runs-on: windows-latest
     permissions:
