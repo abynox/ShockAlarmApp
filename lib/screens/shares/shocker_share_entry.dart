@@ -8,14 +8,15 @@ import 'package:shock_alarm_app/services/openshock.dart';
 
 class ShockerShareEntry extends StatefulWidget {
   OpenShockShare share;
-  final AlarmListManager manager;
   Function() onRebuild;
+  
+  bool showUsername = true;
 
   ShockerShareEntry(
       {Key? key,
       required this.share,
-      required this.manager,
-      required this.onRebuild})
+      required this.onRebuild,
+      this.showUsername = true})
       : super(key: key);
 
   @override
@@ -35,7 +36,7 @@ class _ShockerShareEntryState extends State<ShockerShareEntry> {
       pausing = true;
     });
     String? error = await OpenShockClient()
-        .setPauseStateOfShare(widget.share, widget.manager, paused);
+        .setPauseStateOfShare(widget.share, paused);
     setState(() {
       pausing = false;
     });
@@ -72,7 +73,7 @@ class _ShockerShareEntryState extends State<ShockerShareEntry> {
                         deleting = true;
                       });
                       String? errorMessage =
-                          await widget.manager.deleteShare(widget.share);
+                          await AlarmListManager.getInstance().deleteShare(widget.share);
                       if (errorMessage != null) {
                         setState(() {
                           deleting = false;
@@ -100,7 +101,7 @@ class _ShockerShareEntryState extends State<ShockerShareEntry> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              widget.share.sharedWith.name,
+              widget.showUsername ? widget.share.sharedWith.name : widget.share.shockerReference?.name ?? "Unknown shocker",
               style: t.textTheme.headlineSmall,
             ),
             Row(
@@ -124,7 +125,7 @@ class _ShockerShareEntryState extends State<ShockerShareEntry> {
                             });
                             String? error = await OpenShockClient()
                                 .setLimitsOfShare(
-                                    widget.share, limits, widget.manager);
+                                    widget.share, limits);
                             setState(() {
                               saving = false;
                             });

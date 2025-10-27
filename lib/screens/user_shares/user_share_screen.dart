@@ -10,10 +10,11 @@ import 'package:shock_alarm_app/screens/shockers/shocker_item.dart';
 import 'package:shock_alarm_app/screens/tools/bottom/shocker_unpause_dialog.dart';
 import 'package:shock_alarm_app/screens/user_shares/create_user_share_dialog.dart';
 import 'package:shock_alarm_app/screens/user_shares/invites_screen.dart';
+import 'package:shock_alarm_app/screens/user_shares/user_shares_screen.dart';
 import 'package:shock_alarm_app/services/alarm_list_manager.dart';
 
 class UserShareScreen extends StatefulWidget {
-  int i = 0;
+  int i = 1;
 
   @override
   State<StatefulWidget> createState() => _UserShareScreen();
@@ -90,7 +91,8 @@ class _UserShareScreen extends State<UserShareScreen> {
         SegmentedButton<int>(
           segments: [
             ButtonSegment(value: 0, label: Text("Share links")),
-            ButtonSegment(value: 1, label: Text("Invites")),
+            ButtonSegment(value: 1, label: Text("Shared")),
+            ButtonSegment(value: 2, label: Text("Invites")),
           ],
           showSelectedIcon: false,
           selected: {
@@ -102,6 +104,8 @@ class _UserShareScreen extends State<UserShareScreen> {
         if (widget.i == 0)
           Expanded(child: ShareLinksScreen())
         else if (widget.i == 1)
+          Expanded(child: UserSharesScreen())
+        else if (widget.i == 2)
           Expanded(child: InvitesScreen())
       ],
     ));

@@ -33,6 +33,7 @@ class AlarmListManager {
   Map<int, OpenShockWS?> ws = {};
   static AlarmListManager? instance;
   AlarmTone? selectedTone;
+  OpenShockUserShares? userShares;
 
   Map<String?, List<ShockerLog>> shockerLog = {};
 
@@ -1143,5 +1144,17 @@ class AlarmListManager {
   Future<String?> deleteInvite(OpenShockShareInvite invite) async {
     OpenShockClient client = OpenShockClient();
     return client.deleteInvite(invite);
+  }
+
+  Future<void> updateUserShares() async {
+    OpenShockUserShares shares = OpenShockUserShares();
+    OpenShockClient client = OpenShockClient();
+    for (Token token in getTokens()) {
+      ErrorContainer<OpenShockUserShares> s = await client.getShares(token);
+      if(s.value == null) continue;
+      shares.incoming.addAll(s.value!.incoming);
+      shares.outgoing.addAll(s.value!.outgoing);
+    }
+    userShares = shares;
   }
 }

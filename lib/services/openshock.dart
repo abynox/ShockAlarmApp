@@ -478,10 +478,10 @@ class OpenShockClient {
   }
 
   Future<String?> setPauseStateOfShare(
-      OpenShockShare share, AlarmListManager manager, bool pause) async {
+      OpenShockShare share, bool pause) async {
     if (share.shockerReference == null) return "Shocker not found";
     Shocker s = share.shockerReference!;
-    Token? t = manager.getToken(s.apiTokenId);
+    Token? t = AlarmListManager.getInstance().getToken(s.apiTokenId);
     if (t == null) return "Token not found";
     String body = jsonEncode({"pause": pause});
     var response = await PostRequest(
@@ -494,10 +494,10 @@ class OpenShockClient {
   }
 
   Future<String?> setLimitsOfShare(OpenShockShare share,
-      OpenShockShareLimits limits, AlarmListManager manager) async {
+      OpenShockShareLimits limits) async {
     if (share.shockerReference == null) return "Shocker not found";
     Shocker s = share.shockerReference!;
-    Token? t = manager.getToken(s.apiTokenId);
+    Token? t = AlarmListManager.getInstance().getToken(s.apiTokenId);
     if (t == null) return "Token not found";
     String body = jsonEncode(limits.toJson());
     var response = await PatchRequest(
@@ -959,6 +959,15 @@ class OpenShockClient {
             t, "/2/shares/user/invites/${invite.outgoing ? "outgoing" : "incoming"}/${invite.id}", ""),
         "Failed to delete invite");
   }
+
+
+  Future<ErrorContainer<OpenShockUserShares>> getShares(Token token) async {
+    var response = await GetRequest(token, "/2/shares/user");
+    if (response.statusCode == 200) {
+      return ErrorContainer(OpenShockUserShares.fromJson(jsonDecode(response.body)), null);
+    }
+    return ErrorContainer(null, getErrorCode(response, "Failed to fetch user shares"));
+  }
 }
 
 class OpenShockShockerPermLimitPairWithIdAndName {
@@ -970,12 +979,8 @@ class OpenShockShockerPermLimitPairWithIdAndName {
   OpenShockShockerPermLimitPairWithIdAndName.fromJson(Map<String, dynamic> json) {
     id = json["id"];
     name = json["name"];
-    permissions.shock = json["permissions"]["shock"];
-    permissions.vibrate = json["permissions"]["vibrate"];
-    permissions.sound = json["permissions"]["sound"];
-    permissions.live = json["permissions"]["live"];
-    limits.intensity = json["limits"]["intensity"];
-    limits.duration = json["limits"]["duration"];
+    permissions = OpenShockShockerPermissions.fromJson(json["permissions"]);
+    limits = OpenShockShockerLimits.fromJson(json["limits"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -1000,17 +1005,19 @@ class OpenShockShareInvite {
 
   OpenShockShareInvite.fromJson(Map<String, dynamic> json, {this.tokenReference}) {
     id = json["id"];
+    
+    if(tokenReference != null) {
+      tokenId = tokenReference!.id;
+    } else {
+      tokenId = json["tokenId"];
+      tokenReference = AlarmListManager.getInstance().getToken(tokenId);
+    }
     createdAt = DateTime.parse(json["createdAt"]);
     if(json["sharedWith"] != null) {
-      sharedWith = OpenShockUser();
-      sharedWith!.id = json["sharedWith"]["id"];
-      sharedWith!.name = json["sharedWith"]["name"];
-      sharedWith!.image = json["sharedWith"]["image"];
+      sharedWith = OpenShockUser.fromJson(json["sharedWith"]);
     }
     if(json["owner"] != null) {
-      owner.id = json["owner"]["id"];
-      owner.name = json["owner"]["name"];
-      owner.image = json["owner"]["image"];
+      owner = OpenShockUser.fromJson(json["owner"]);
     }
     if(json["outgoing"] != null) outgoing = json["outgoing"];
     if(json["tokenId"] != null) tokenId = json["tokenId"];
@@ -1547,6 +1554,37 @@ class OpenShockUser {
   }
 }
 
+class OpenShockUserWithShares extends OpenShockUser {
+  List<OpenShockShare> shares = [];
+
+  bool outgoing = false;
+
+  OpenShockUserWithShares.fromJson(Map<String, dynamic> json, this.outgoing) : super.fromJson(json) {
+    for(var s in json["shares"]) {
+      OpenShockShare share = OpenShockShare.fromJson(s, sharedWithReplacement: this);
+      share.outgoing = outgoing;
+      share.shockerReference = AlarmListManager.getInstance().shockers.firstWhere((x) => x.id == s["id"]);
+      shares.add(share);
+    }
+  }
+}
+
+class OpenShockUserShares {
+  List<OpenShockUserWithShares> outgoing = [];
+  List<OpenShockUserWithShares> incoming = [];
+
+  OpenShockUserShares();
+
+  OpenShockUserShares.fromJson(Map<String, dynamic> json) {
+    for(var s in json["outgoing"]) {
+      outgoing.add(OpenShockUserWithShares.fromJson(s, true));
+    }
+    for(var s in json["incoming"]) {
+      incoming.add(OpenShockUserWithShares.fromJson(s, false));
+    }
+  }
+}
+
 class Hub {
   String name = "";
   String id = "";
@@ -1728,24 +1766,28 @@ class Shocker {
     return levels.join(", ");
   }
 
+  void processPausedInt(int pausedReson, {bool overwriteIsPaused = false}) {
+    if (pausedReson & 1 != 0) {
+      pauseReasons.add(PauseReason.shocker);
+    }
+    if (pausedReson & 2 != 0) {
+      pauseReasons.add(PauseReason.share);
+    }
+    if (pausedReson & 4 != 0) {
+      pauseReasons.add(PauseReason.shareLink);
+    }
+    if(overwriteIsPaused) {
+      paused = pauseReasons.isNotEmpty;
+    }
+  }
+
   Shocker.fromOpenShockShocker(OpenShockShocker shocker, {bool overwriteIsPaused = false}) {
     id = shocker.id;
     name = shocker.name;
 
     paused = shocker.isPaused;
     if (shocker.paused != null) {
-      if (shocker.paused! & 1 != 0) {
-        pauseReasons.add(PauseReason.shocker);
-      }
-      if (shocker.paused! & 2 != 0) {
-        pauseReasons.add(PauseReason.share);
-      }
-      if (shocker.paused! & 4 != 0) {
-        pauseReasons.add(PauseReason.shareLink);
-      }
-      if(overwriteIsPaused) {
-        paused = pauseReasons.isNotEmpty;
-      }
+      processPausedInt(shocker.paused!, overwriteIsPaused: overwriteIsPaused);
     }
 
     if (shocker.permissions != null) {
@@ -1963,30 +2005,40 @@ class OpenShockShare {
   OpenShockShockerLimits limits = OpenShockShockerLimits();
   bool paused = false;
   Shocker? shockerReference;
+  
+  bool outgoing = true;
 
   OpenShockShare();
 
-  OpenShockShare.fromJson(Map<String, dynamic> json) {
-    sharedWith.id = json["sharedWith"]["id"];
-    sharedWith.name = json["sharedWith"]["name"];
-    sharedWith.image = json["sharedWith"]["image"];
+  OpenShockShare.fromJson(Map<String, dynamic> json, {OpenShockUser? sharedWithReplacement}) {
+    if(json["sharedWith"] != null) sharedWith = OpenShockUser.fromJson(json["sharedWith"]);
+    if(sharedWithReplacement != null) sharedWith = sharedWithReplacement;
     createdOn = DateTime.parse(json["createdOn"]);
-    permissions.shock = json["permissions"]["shock"];
-    permissions.vibrate = json["permissions"]["vibrate"];
-    permissions.sound = json["permissions"]["sound"];
-    permissions.live = json["permissions"]["live"];
-    limits.intensity = json["limits"]["intensity"];
-    limits.duration = json["limits"]["duration"];
-    paused = json["paused"];
+    permissions = OpenShockShockerPermissions.fromJson(json["permissions"]);
+    limits = OpenShockShockerLimits.fromJson(json["limits"]);
+    if( json["paused"].runtimeType == 0.runtimeType) {
+      Shocker s = Shocker();
+      s.processPausedInt(json["paused"]);
+      paused = s.pauseReasons.isNotEmpty;
+    } else if(json["paused"].runtimeType == true.runtimeType) {
+      paused = json["paused"];
+    }
   }
 }
 
 class OpenShockShockerLimits {
   int? intensity = 100;
   int? duration = OpenShockLimits.maxDuration;
+
+  OpenShockShockerLimits();
   
   Map<String, dynamic> toJson() {
     return {"intensity": intensity, "duration": duration};
+  }
+  
+  OpenShockShockerLimits.fromJson(json) {
+    intensity = json["intensity"];
+    duration = json["duration"];
   }
 }
 
@@ -1995,6 +2047,15 @@ class OpenShockShockerPermissions {
   bool vibrate = true;
   bool sound = true;
   bool live = false;
+
+  OpenShockShockerPermissions();
+
+  OpenShockShockerPermissions.fromJson(Map<String, dynamic> j) {
+    shock = j["shock"];
+    vibrate = j["vibrate"];
+    sound = j["sound"];
+    live = j["live"];
+  }
   
   Map<String, dynamic> toJson() {
     return {

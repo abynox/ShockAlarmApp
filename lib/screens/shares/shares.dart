@@ -101,7 +101,6 @@ class _SharesScreenState extends State<SharesScreen> {
     for (OpenShockShare share in shares ?? []) {
       shareEntries.add(ShockerShareEntry(
           share: share,
-          manager: manager,
           key: ValueKey(share.sharedWith.id),
           onRebuild: () {
             setState(() {
