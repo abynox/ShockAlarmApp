@@ -1,0 +1,3 @@
+**Changelog:**
+- Added incoming invites to top of devices page
+- Fixed reference from 'shocker' page to 'devices' page in invite accepted dialog
