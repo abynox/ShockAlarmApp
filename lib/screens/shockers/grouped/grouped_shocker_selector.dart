@@ -110,6 +110,7 @@ class GroupedShockerSelectorState extends State<GroupedShockerSelector> {
                 return children[index];
               },
               itemCount: children.length,
+              padding: EdgeInsets.all(0),
             ),
     ));
   }

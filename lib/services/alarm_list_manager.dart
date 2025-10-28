@@ -1156,15 +1156,21 @@ class AlarmListManager {
     return error;
   }
 
-  Future<void> updateUserShares() async {
+  Future<bool> updateUserShares() async {
     OpenShockUserShares shares = OpenShockUserShares();
     OpenShockClient client = OpenShockClient();
-    for (Token token in getTokens()) {
-      ErrorContainer<OpenShockUserShares> s = await client.getShares(token);
-      if(s.value == null) continue;
-      shares.incoming.addAll(s.value!.incoming);
-      shares.outgoing.addAll(s.value!.outgoing);
+    // Duct tape fix for loading shares before shockers are present
+    try {
+      for (Token token in getTokens()) {
+        ErrorContainer<OpenShockUserShares> s = await client.getShares(token);
+        if(s.value == null) continue;
+        shares.incoming.addAll(s.value!.incoming);
+        shares.outgoing.addAll(s.value!.outgoing);
+      }
+      userShares = shares;
+      return true;
+    } catch(e) { 
+      return false;
     }
-    userShares = shares;
   }
 }

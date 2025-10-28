@@ -365,15 +365,10 @@ class ShockerScreenState extends State<ShockerScreen> {
       child: Column(
         children: [
           Expanded(child: SingleChildScrollView(child: Column(children: [
-            InineInviteManager(reloadMethod: () => setState(() {
+            SafeArea(child: SizedBox.shrink()),
+            ConstrainedContainer(child: InineInviteManager(reloadMethod: () => setState(() {
               
-            }),),
-            Padding(padding: PredefinedSpacing.paddingLarge()),
-            Text(
-              'All devices',
-              style: t.textTheme.headlineMedium,
-              textAlign: TextAlign.center,
-            ),
+            }),)),
             if (groupedShockers.isEmpty)
               Text(
                 "No shockers found",

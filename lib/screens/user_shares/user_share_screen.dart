@@ -87,8 +87,8 @@ class _UserShareScreen extends State<UserShareScreen> {
     return ConstrainedContainer(
         child: Column(
       children: [
-        Padding(padding: PredefinedSpacing.paddingLarge()),
-        SegmentedButton<int>(
+          SafeArea(child: SizedBox.shrink()),
+          SegmentedButton<int>(
           segments: [
             ButtonSegment(value: 0, label: Text("Share links")),
             ButtonSegment(value: 1, label: Text("Shared")),

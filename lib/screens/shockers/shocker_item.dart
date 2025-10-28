@@ -324,10 +324,10 @@ class ShockerItemState extends State<ShockerItem>
                       widget.onRebuild();
                     },
                   ),
-                  Text(
+                  Expanded(child: Text(
                     widget.shocker.name,
                     overflow: TextOverflow.ellipsis,
-                  ),
+                  ),)
                 ],
               )),
               Row(

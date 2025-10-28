@@ -181,9 +181,10 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
         child: Flex(
           direction: Axis.vertical,
           children: [
-            InineInviteManager(reloadMethod: () => setState(() {
+            SafeArea(child: SizedBox.shrink()),
+            ConstrainedContainer(child: InineInviteManager(reloadMethod: () => setState(() {
               
-            }),),
+            }),)),
             GroupedShockerSelector(onChanged: onRebuild, onlyLive: liveEnabled),
             if (AlarmListManager.getInstance().selectedShockers.isNotEmpty)
               ConstrainedContainer(
@@ -332,7 +333,7 @@ class _GroupedShockerScreenState extends State<GroupedShockerScreen> {
                 ),
               )
             else
-              Text("No shockers selected", style: t.textTheme.headlineMedium)
+              SizedBox.shrink()
           ],
         ));
   }

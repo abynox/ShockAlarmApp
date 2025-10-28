@@ -32,12 +32,15 @@ class UserSharesScreen extends StatefulWidget {
 
 class _UserSharesScreen extends State<UserSharesScreen> {
   bool initialLoading = false;
+  bool error = false;
 
   Future loadShares() async {
-    await AlarmListManager.getInstance().updateUserShares();
+    this.error = false;
+    bool success = await AlarmListManager.getInstance().updateUserShares();
     if (!mounted) return;
     setState(() {
       initialLoading = false;
+      this.error = !success;
     });
   }
 
@@ -85,7 +88,7 @@ class _UserSharesScreen extends State<UserSharesScreen> {
         : DesktopMobileRefreshIndicator(
             onRefresh: loadShares,
             child: ConstrainedContainer(
-              child: ListView(children: shareEntries),
+              child: ListView(children: error ? [Text("An error occured while loading the shares. Please try again", style: t.textTheme.headlineSmall, textAlign: TextAlign.center,)] : shareEntries),
             ));
   }
 }

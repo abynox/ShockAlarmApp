@@ -214,7 +214,6 @@ class _InlineInviteManagerState extends State<InineInviteManager> {
     ThemeData t = Theme.of(context);
     return Column(
       children: [
-        Padding(padding: PredefinedSpacing.paddingLarge()),
         Text("Incoming invites", style: t.textTheme.headlineSmall,),
         ...incoming.map((x) => InviteItem(
                 invite: x,
